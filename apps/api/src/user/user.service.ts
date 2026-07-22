@@ -1,19 +1,27 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
 import { CreateUserDto } from './create-user.dto.js';
+import { User } from './user.model.js';
 
 @Injectable()
 export class UserService {
+  constructor(
+    @InjectModel(User)
+    private readonly userRepo: typeof User,
+  ) {}
 
-  findOne(userId: number) {
-    return {
-      name: 'John Doe',
-      email: ''
-    };
+  findAll() {
+    return this.userRepo.findAll();
   }
 
-  createUser(dto: CreateUserDto, userId: number): CreateUserDto {
-    // Here you can implement the logic to create a user, e.g., save to a database
-    // For demonstration purposes, we'll just return the userDto
-    return dto;
+  findOne(userId: number) {
+    return this.userRepo.findByPk(userId);
+  }
+
+  async createUser(dto: CreateUserDto, userId: number) {
+    return await this.userRepo.create({
+      password: dto.password,
+      username: dto.name,
+    });
   }
 }

@@ -6,7 +6,7 @@ export const CreateUserSchema = z.object({
   }),
   email: z.email({
     error: "email is required",
-  }),
+  }).optional(),
   password: z
     .string({
       error: "password is required",

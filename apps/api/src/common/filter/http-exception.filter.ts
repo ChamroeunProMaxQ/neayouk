@@ -5,6 +5,10 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import {
+  EmptyResultError as SequelizeEmptyResultError,
+  ValidationError as SequelizeValidationError,
+} from 'sequelize';
 
 import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
 import { ResponseDto } from '@repo/shared';
@@ -32,6 +36,26 @@ export class HttpExceptionsFilter implements ExceptionFilter {
     // const request = ctx.getRequest<Request>();
     this.logger.debug(exception?.constructor?.name);
     this.logger.error(exception);
+
+    if (exception instanceof SequelizeValidationError) {
+      const errors = exception.errors.map((error) => {
+        return error.message;
+      });
+      const responseDto = new ResponseDto(
+        HttpStatus.BAD_REQUEST,
+        errors?.at(0) ?? '',
+        errors,
+      );
+      return response.json(responseDto);
+    }
+
+    if (exception instanceof SequelizeEmptyResultError) {
+      return response.status(HttpStatus.NOT_FOUND).json({
+        code: HttpStatus.NOT_FOUND,
+        message: 'not found',
+        data: null,
+      });
+    }
 
     if (exception instanceof ZodValidationException) {
       const errors = exception.getZodError() as string;

@@ -27,6 +27,9 @@ export class ResponseInterceptor implements NestInterceptor {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
+    // exclude metrics routes
+    if (request.path.includes('/metrics')) return next.handle();
+
     const statusCode = response.statusCode;
     const { page, pageSize } = (request.query ??
       {}) as unknown as PaginationDto;

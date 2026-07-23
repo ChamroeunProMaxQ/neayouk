@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - prometheus:9090
+
+  # NestJS metrics
+  - job_name: nestjs
+    metrics_path: /metrics
+    scrape_interval: 5s
+    static_configs:
+      - targets:
+          # NestJS running on host machine
+          - host.docker.internal:3000
+
+          # If NestJS is another Docker service, replace with:
+          # - nestjs:3000

@@ -1,12 +1,22 @@
-import { Module } from '@nestjs/common';
+import {
+  Module,
+  type MiddlewareConsumer,
+  type NestModule,
+} from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
+import { LoggerModule } from './common/config/logger.config.js';
+import { oberservableConfig } from './common/config/oberservable.config.js';
 import { HttpExceptionsFilter } from './common/filter/http-exception.filter.js';
+import { HttpMetricsInterceptor } from './common/interceptor/http-metrics.interceptor .js';
 import { ResponseInterceptor } from './common/interceptor/response.interceptor.js';
+import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware.js';
+import { HttpRequestDurationProvider } from './common/provider/http-request-duration.provider .js';
+import { HttpRequestsCounterProvider } from './common/provider/http-requests-counter.provider .js';
 import { UserModule } from './user/user.module.js';
 
 @Module({
@@ -38,10 +48,14 @@ import { UserModule } from './user/user.module.js';
       }),
     }),
     UserModule,
+    LoggerModule,
+    ...oberservableConfig,
   ],
   controllers: [AppController],
   providers: [
     AppService,
+    HttpRequestDurationProvider,
+    HttpRequestsCounterProvider,
     {
       provide: APP_PIPE,
       useClass: ZodValidationPipe,
@@ -55,9 +69,17 @@ import { UserModule } from './user/user.module.js';
       useClass: ResponseInterceptor,
     },
     {
+      provide: APP_INTERCEPTOR,
+      useClass: HttpMetricsInterceptor,
+    },
+    {
       provide: APP_FILTER,
       useClass: HttpExceptionsFilter,
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(HttpLoggerMiddleware).forRoutes('*');
+  }
+}

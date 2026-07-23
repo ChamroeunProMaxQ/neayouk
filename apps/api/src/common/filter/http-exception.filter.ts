@@ -3,18 +3,25 @@ import {
   Catch,
   HttpException,
   HttpStatus,
-  Logger,
+  Inject,
 } from '@nestjs/common';
 import {
   EmptyResultError as SequelizeEmptyResultError,
   ValidationError as SequelizeValidationError,
 } from 'sequelize';
 
-import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
+import type {
+  ArgumentsHost,
+  ExceptionFilter,
+  LoggerService,
+} from '@nestjs/common';
 import { ResponseDto } from '@repo/shared';
 // import { ThrottlerException } from '@nestjs/throttler';
-import type { Response } from 'express';
+import { InjectMetric } from '@willsoto/nestjs-prometheus';
+import type { Request, Response } from 'express';
 import { ZodValidationException } from 'nestjs-zod';
+import { Counter } from 'prom-client';
+import { APP_LOGGER } from '../config/logger.config.js';
 // import {
 //   EmptyResultError as SequelizeEmptyResultError,
 //   ValidationError as SequelizeValidationError,
@@ -26,15 +33,19 @@ type BadRequestExceptionResponse = {
 
 @Catch()
 export class HttpExceptionsFilter implements ExceptionFilter {
-  private readonly logger = new Logger(HttpExceptionsFilter.name);
+  constructor(
+    @InjectMetric('http_requests_total')
+    private readonly httpRequestsCounter: Counter,
 
-  constructor() {}
+    @Inject(APP_LOGGER)
+    private readonly logger: LoggerService,
+  ) {}
 
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response: Response = ctx.getResponse();
-    // const request = ctx.getRequest<Request>();
-    this.logger.debug(exception?.constructor?.name);
+    const request: Request = ctx.getRequest();
+    this.logger.log(exception?.constructor?.name);
     this.logger.error(exception);
 
     if (exception instanceof SequelizeValidationError) {
@@ -46,10 +57,12 @@ export class HttpExceptionsFilter implements ExceptionFilter {
         errors?.at(0) ?? '',
         errors,
       );
-      return response.json(responseDto);
+      this.incrementHttpMetric(request, HttpStatus.BAD_REQUEST);
+      return response.status(HttpStatus.BAD_REQUEST).json(responseDto);
     }
 
     if (exception instanceof SequelizeEmptyResultError) {
+      this.incrementHttpMetric(request, HttpStatus.NOT_FOUND);
       return response.status(HttpStatus.NOT_FOUND).json({
         code: HttpStatus.NOT_FOUND,
         message: 'not found',
@@ -66,7 +79,7 @@ export class HttpExceptionsFilter implements ExceptionFilter {
         messsageArray.at(0),
         messsageArray,
       );
-
+      this.incrementHttpMetric(request, exception.getStatus());
       return response.json(responseDto);
     }
 
@@ -81,6 +94,7 @@ export class HttpExceptionsFilter implements ExceptionFilter {
         isArrayMsg ? messageArray[0] : (messageArray as unknown as string),
         isArrayMsg ? messageArray : [messageArray],
       );
+      this.incrementHttpMetric(request, exception.getStatus());
       return response.json(responseDto);
     }
 
@@ -99,9 +113,17 @@ export class HttpExceptionsFilter implements ExceptionFilter {
       exception instanceof HttpException
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
-
+    this.incrementHttpMetric(request, status);
     return response
       .status(status)
       .json(new ResponseDto(status, extractMessage(), null));
+  }
+
+  private incrementHttpMetric(request: Request, status: number) {
+    this.httpRequestsCounter.inc({
+      method: request.method,
+      route: request.route?.path ?? request.url,
+      status: status.toString(),
+    });
   }
 }

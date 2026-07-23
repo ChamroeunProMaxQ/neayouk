@@ -1,9 +1,11 @@
 import type { LoggerService } from '@nestjs/common';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import type { FindOptions } from 'sequelize';
 import { APP_LOGGER } from '../common/config/logger.config.js';
-import { CreateUserDto } from './create-user.dto.js';
-import { User } from './user.model.js';
+import { CreateUserDto } from './dto/create-user.dto.js';
+import { FindUsersDto } from './dto/find-users.dto.js';
+import { User } from './model/user.model.js';
 
 @Injectable()
 export class UserService {
@@ -14,9 +16,9 @@ export class UserService {
     private readonly logger: LoggerService,
   ) {}
 
-  findAll() {
-    this.logger.log(`this is log from winston lok`);
-    return this.userRepo.findAll();
+  findAll(dto: FindUsersDto) {
+    const findOptions: FindOptions<User> = {};
+    return this.userRepo.findAll(findOptions);
   }
 
   async findOne(userId: number) {
@@ -32,7 +34,7 @@ export class UserService {
   async createUser(dto: CreateUserDto, userId: number) {
     return await this.userRepo.create({
       password: dto.password,
-      username: dto.name,
+      username: dto.username,
     });
   }
 }

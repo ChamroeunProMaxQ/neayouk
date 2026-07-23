@@ -5,9 +5,11 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
   Req,
 } from '@nestjs/common';
-import { CreateUserDto } from './create-user.dto.js';
+import { CreateUserDto } from './dto/create-user.dto.js';
+import { FindUsersDto } from './dto/find-users.dto.js';
 import { UserService } from './user.service.js';
 
 @Controller('/api/v1/users')
@@ -16,8 +18,8 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  findAll() {
-    return this.userService.findAll();
+  findAll(@Query() dto: FindUsersDto) {
+    return this.userService.findAll(dto);
   }
 
   @Get(':id')

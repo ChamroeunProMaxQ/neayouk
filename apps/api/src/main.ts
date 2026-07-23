@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { ZodValidationPipe } from 'nestjs-zod';
 import { AppModule } from './app.module.js';
 import { swaggerConfig } from './common/config/swagger.config.js';
 import './tracing.js';
@@ -12,6 +13,7 @@ async function bootstrap() {
   });
 
   swaggerConfig(app);
+  app.useGlobalPipes(new ZodValidationPipe());
 
   await app.listen(3000);
 }

@@ -3,6 +3,14 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "builder": "tsc",
-      "deleteOutDir": true
+    "deleteOutDir": true,
+    "plugins": [
+      {
+        "name": "@nestjs/swagger/plugin",
+        "options": {
+          "classValidatorShim": true
+        }
+      }
+    ]
   }
 }

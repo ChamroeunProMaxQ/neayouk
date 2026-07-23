@@ -1,9 +1,9 @@
-import { UserStatusEnum, UserTypeEnum } from '@repo/shared';
+import { UserStatusEnum, UserTypeEnum, type UserAttribute } from '@repo/shared';
 import { randomUUID } from 'node:crypto';
 import { DataTypes, type CreationOptional } from 'sequelize';
 import { Column, Table } from 'sequelize-typescript';
-import { hashPassword } from '../common/helper/password.helper.js';
-import { BaseModel } from '../common/model/base.model.js';
+import { hashPassword } from '../../common/helper/password.helper.js';
+import { BaseModel } from '../../common/model/base.model.js';
 
 @Table({
   tableName: 'users',
@@ -11,7 +11,7 @@ import { BaseModel } from '../common/model/base.model.js';
   paranoid: true,
   underscored: true,
 })
-export class User extends BaseModel<User> {
+export class User extends BaseModel<User> implements UserAttribute {
   @Column({
     type: DataTypes.INTEGER,
     primaryKey: true,

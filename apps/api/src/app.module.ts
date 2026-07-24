@@ -24,7 +24,7 @@ import { UserModule } from './user/user.module.js';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env', '.env.stg', '.env.prod'],
+      envFilePath: ['.env', '.env.stg', '.env.prod', '.env.test'],
       load: [],
       cache: true,
       expandVariables: true,

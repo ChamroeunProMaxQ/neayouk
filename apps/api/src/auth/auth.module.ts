@@ -20,7 +20,7 @@ import { JwtStrategy } from './jwt.strategy.js';
       useFactory: (configService: ConfigService) => ({
         secret: configService.getOrThrow<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: configService.getOrThrow<number>('JWT_EXPIRES_IN'),
+          expiresIn: Number(configService.getOrThrow<string>('JWT_EXPIRES_IN')),
         },
       }),
     }),

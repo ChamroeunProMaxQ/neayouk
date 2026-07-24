@@ -22,10 +22,6 @@ import type { Request, Response } from 'express';
 import { ZodValidationException } from 'nestjs-zod';
 import { Counter } from 'prom-client';
 import { APP_LOGGER } from '../config/logger.config.js';
-// import {
-//   EmptyResultError as SequelizeEmptyResultError,
-//   ValidationError as SequelizeValidationError,
-// } from 'sequelize';
 
 type BadRequestExceptionResponse = {
   message: string[];
@@ -45,6 +41,7 @@ export class HttpExceptionsFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response: Response = ctx.getResponse();
     const request: Request = ctx.getRequest();
+    this.logger.log('FILTER EXECUTED');
     this.logger.log(exception?.constructor?.name);
     this.logger.error(exception);
 

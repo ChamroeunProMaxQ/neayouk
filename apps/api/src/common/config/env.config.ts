@@ -36,4 +36,6 @@ export const envConfig = {
   DB_USER: resolveEnv<string>('DB_USER'),
   DB_PASSWORD: resolveEnv<string>('DB_PASSWORD'),
   DB_NAME: resolveEnv<string>('DB_NAME'),
+  JWT_SECRET: resolveEnv<string>('JWT_SECRET'),
+  JWT_EXPIRES_IN: resolveEnv<number>('JWT_EXPIRES_IN'),
 };

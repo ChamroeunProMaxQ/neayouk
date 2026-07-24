@@ -6,7 +6,12 @@ export const swaggerConfig = (app: INestApplication) => {
     .setTitle('D1 Nest Monorepo Template')
     .setDescription('api docs')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, documentFactory);
+  SwaggerModule.setup('api/docs', app, documentFactory, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
 };

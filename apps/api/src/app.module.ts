@@ -9,6 +9,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
+import { AuthModule } from './auth/auth.module.js';
 import { LoggerModule } from './common/config/logger.config.js';
 import { oberservableConfig } from './common/config/oberservable.config.js';
 import { HttpExceptionsFilter } from './common/filter/http-exception.filter.js';
@@ -50,6 +51,7 @@ import { UserModule } from './user/user.module.js';
     UserModule,
     LoggerModule,
     ...oberservableConfig,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,5 +1,5 @@
 import type { LoggerService } from '@nestjs/common';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import type { FindOptions } from 'sequelize';
 import { APP_LOGGER } from '../common/config/logger.config.js';
@@ -12,6 +12,8 @@ export class UserService {
   constructor(
     @InjectModel(User)
     private readonly userRepo: typeof User,
+
+    // private readonly userInfoRepo: type userInfo;
     @Inject(APP_LOGGER)
     private readonly logger: LoggerService,
   ) {}
@@ -32,6 +34,15 @@ export class UserService {
     });
     //span.end();
     return user;
+  }
+
+  async findByUsername(username: string) {
+    return this.userRepo.findOne({
+      where: {
+        username,
+      },
+      rejectOnEmpty: new NotFoundException('user not found'),
+    });
   }
 
   async createUser(dto: CreateUserDto, userId: number) {

@@ -1,6 +1,12 @@
 import * as dotenv from 'dotenv';
 
-dotenv.config();
+console.log('node env', process.env.NODE_ENV);
+
+const nodeEnv = process.env.NODE_ENV;
+
+dotenv.config({
+  path: nodeEnv == 'test' ? '.env.test' : 'env',
+});
 
 function resolveEnv<T = string>(key: string): T | undefined {
   const value = process.env[key];
@@ -26,8 +32,8 @@ export const envConfig = {
   NODE_ENV: resolveEnv<string>('NODE_ENV'),
   OBSERVABLE_ENABLE: resolveEnv<boolean>('OBSERVABLE_ENABLE'),
   DB_HOST: resolveEnv<string>('DB_HOST'),
-  DB_PORT: resolveEnv<number>('DB_PORT'),
-  DB_USER: resolveEnv<number>('DB_USER'),
-  DB_PASSWORD: resolveEnv<number>('DB_PASSWORD'),
-  DB_NAME: resolveEnv<number>('DB_NAME'),
+  DB_PORT: resolveEnv<string>('DB_PORT'),
+  DB_USER: resolveEnv<string>('DB_USER'),
+  DB_PASSWORD: resolveEnv<string>('DB_PASSWORD'),
+  DB_NAME: resolveEnv<string>('DB_NAME'),
 };

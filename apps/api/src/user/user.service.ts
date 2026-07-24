@@ -18,7 +18,10 @@ export class UserService {
 
   findAll(dto: FindUsersDto) {
     const findOptions: FindOptions<User> = {};
-    return this.userRepo.findAll(findOptions);
+    return this.userRepo.findAndCountAll({
+      limit: dto.pageSize,
+      offset: dto.pageSize * (dto.page - 1),
+    });
   }
 
   async findOne(userId: number) {

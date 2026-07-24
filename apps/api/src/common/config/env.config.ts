@@ -5,7 +5,7 @@ console.log('node env', process.env.NODE_ENV);
 const nodeEnv = process.env.NODE_ENV;
 
 dotenv.config({
-  path: nodeEnv == 'test' ? '.env.test' : 'env',
+  path: nodeEnv == 'test' ? '.env.test' : '.env',
 });
 
 function resolveEnv<T = string>(key: string): T | undefined {

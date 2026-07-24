@@ -3,13 +3,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 
 import { ZodValidationPipe } from 'nestjs-zod';
-import { Sequelize } from 'sequelize-typescript';
 import { migrator, seeder } from '../database/umzug.js';
 import { AppModule } from '../src/app.module.js';
 
 describe('UserController (e2e)', () => {
   let app: INestApplication;
-  let sequelize: Sequelize;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -17,7 +15,6 @@ describe('UserController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    sequelize = moduleFixture.get(Sequelize);
 
     await migrator.up();
     await seeder.up();

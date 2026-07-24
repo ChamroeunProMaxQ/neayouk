@@ -17,6 +17,8 @@ const sequelizeOptions: Options = {
   password: envConfig.DB_PASSWORD?.toString(),
 };
 
+console.log(sequelizeOptions);
+
 const sequelize = new Sequelize(sequelizeOptions);
 const migrationsPath = path.join(__dirname, 'migrations');
 const seederPath = path.join(__dirname, 'seeds');
@@ -24,9 +26,12 @@ const seederPath = path.join(__dirname, 'seeds');
 // console.log('sequelize', sequelize);
 // console.log(`Migrations path: ${process.cwd()}`, migrationsPath);
 
+const isCompiled = import.meta.url.endsWith('.js');
+const ext = isCompiled ? 'js' : 'ts';
+
 export const migrator = new Umzug({
   migrations: {
-    glob: [`*.@(ts|js)`, { cwd: migrationsPath }],
+    glob: [`*.${ext}`, { cwd: migrationsPath }],
   },
   context: sequelize,
   storage: getSequelizeStorage('MigrationMeta'),
@@ -39,7 +44,7 @@ export const migrator = new Umzug({
 
 export const seeder = new Umzug({
   migrations: {
-    glob: [`*.@(ts|js)`, { cwd: seederPath }],
+    glob: [`*.${ext}`, { cwd: seederPath }],
   },
   context: sequelize,
   storage: getSequelizeStorage('SeederMeta'),

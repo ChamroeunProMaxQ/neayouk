@@ -1,9 +1,11 @@
+import { TokenStatusEnum, TokenTypeEnum } from "./token.enum.js";
+
 export interface UserTokenAttribute {
   id: number;
   token: string;
-  tokenType: string;
+  tokenType: TokenTypeEnum;
   expDate: Date;
-  status: string;
+  status: TokenStatusEnum;
   userId: number;
 }
 

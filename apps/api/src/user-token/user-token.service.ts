@@ -9,8 +9,8 @@ import {
 import type { FindOptionsWhere } from 'typeorm';
 import { MoreThan, Repository } from 'typeorm';
 import type { JwtPayload } from '../auth/dto/jwt-payload.dto.js';
-import type { User } from '../user/model/user.model.js';
-import { UserToken } from './model/user-token.model.js';
+import type { User } from '../user/entity/user.entity.js';
+import { UserToken } from './entity/user-token.entity.js';
 
 @Injectable()
 export class UserTokenService {

@@ -1,7 +1,7 @@
 import { type Permissions, Actions, type AuthorizableUser } from 'nest-casl';
 import { type InferSubjects } from '@casl/ability';
 
-import { User } from './model/user.model.js';
+import { User } from './entity/user.entity.js';
 import { UserTypeEnum } from '@repo/shared';
 
 export type Subjects = InferSubjects<typeof User>;
@@ -14,15 +14,13 @@ export const permissions: Permissions<
 > = {
 
     CUSTOMER({ user, can, cannot }) {
-        console.log('user in permission:', user);
         can(Actions.read, User, { id: user?.id });
         can(Actions.update, User, { id: user?.id });
-        cannot(Actions.read, User);
         cannot(Actions.create, User);
         cannot(Actions.delete, User);
     },
 
-    CMS({ can, cannot }) {
+    CMS({ can }) {
         can(Actions.manage, User);
     },
 };

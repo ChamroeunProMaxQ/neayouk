@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module.js';
-import { User } from './model/user.model.js';
+import { User } from './entity/user.entity.js';
 import { UserController } from './user.controller.js';
 import { UserService } from './user.service.js';
 import { CaslModule } from 'nest-casl';

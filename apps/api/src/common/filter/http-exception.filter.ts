@@ -21,6 +21,8 @@ import { Counter } from 'prom-client';
 import { EntityNotFoundError, QueryFailedError } from 'typeorm';
 import { APP_LOGGER } from '../config/logger.config.js';
 
+import { isNestLensRequest } from '../helper/nestlens.helper.js';
+
 type BadRequestExceptionResponse = {
   message: string[];
 };
@@ -46,8 +48,7 @@ export class HttpExceptionsFilter implements ExceptionFilter {
     const response: Response = ctx.getResponse();
     const request: Request = ctx.getRequest();
 
-    const url = request.originalUrl || request.url || request.path || '';
-    if (url.includes('nestlens')) {
+    if (isNestLensRequest(host)) {
       throw exception;
     }
 

@@ -29,7 +29,6 @@ import { caslConfig } from './common/config/casl.config.js';
 import { envModuelConfig } from './common/config/env.config.js';
 import { nestlenConfig } from './common/config/nestlen.config.js';
 import { typeOrmConfig } from './common/config/orm.config.js';
-import { NestLensGateModule } from './common/provider/nestlens-gate.module.js';
 import { NestLensModelSubscriberModule } from './common/provider/nestlens-model-subscriber.module.js';
 
 @Module({
@@ -39,7 +38,6 @@ import { NestLensModelSubscriberModule } from './common/provider/nestlens-model-
     typeOrmConfig,
     UserModule,
     NestLensModelSubscriberModule,
-    NestLensGateModule,
     nestlenConfig,
     ...oberservableConfig,
     LoggerModule,
@@ -78,6 +76,6 @@ import { NestLensModelSubscriberModule } from './common/provider/nestlens-model-
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(HttpLoggerMiddleware).forRoutes('*');
+    consumer.apply(HttpLoggerMiddleware).forRoutes('*path');
   }
 }

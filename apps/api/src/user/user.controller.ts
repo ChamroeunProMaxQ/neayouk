@@ -20,9 +20,11 @@ import { UserService } from './user.service.js';
 import { AccessGuard, DefaultActions, UseAbility } from 'nest-casl';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
 import { CaslAccessGuard } from '../common/guard/casl-access.guard.js';
-import { User } from './model/user.model.js';
+import { User } from './entity/user.entity.js';
 import { UserHook } from './user.hook.js';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { UserTypes } from '../common/decorator/user-type.decorator.js';
+import { UserTypeEnum } from '@repo/shared';
 
 @ApiBearerAuth()
 @Controller('users')
@@ -31,8 +33,8 @@ export class UserController {
     //
   }
 
-
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
   @UseAbility(DefaultActions.read, User)
   @Get()
   findAll(@Query() dto: FindUsersDto) {

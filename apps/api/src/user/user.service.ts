@@ -6,7 +6,7 @@ import { APP_LOGGER } from '../common/config/logger.config.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { FindUsersDto } from './dto/find-users.dto.js';
 import type { UpdateUserDto } from './dto/update-user.dto.js';
-import { User } from './model/user.model.js';
+import { User } from './entity/user.entity.js';
 
 @Injectable()
 export class UserService {

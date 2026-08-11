@@ -1,6 +1,6 @@
 import { Inject, Injectable, NotFoundException, UnauthorizedException, type LoggerService } from '@nestjs/common';
 import { UserService } from './user.service.js';
-import { User } from './model/user.model.js';
+import { User } from './entity/user.entity.js';
 import type { AuthorizableUser, SubjectBeforeFilterHook } from 'nest-casl';
 import type { Request } from 'express';
 import { APP_LOGGER } from '../common/config/logger.config.js';

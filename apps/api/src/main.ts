@@ -1,3 +1,4 @@
+import { VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { AppModule } from './app.module.js';
@@ -10,6 +11,24 @@ async function bootstrap() {
   app.enableCors({
     origin: 'http://localhost:5173',
     credentials: true,
+  });
+
+  app.setGlobalPrefix('api', {
+    exclude: [
+      'api/docs',
+      'api/docs/*path',
+      'metrics',
+      'metrics/*path',
+      'nestlens',
+      'nestlens/*path',
+      '__nestlens__',
+      '__nestlens__/*path',
+    ],
+  });
+
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
   });
 
   swaggerConfig(app);

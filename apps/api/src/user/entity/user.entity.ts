@@ -11,8 +11,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { hashPassword } from '../../common/helper/password.helper.js';
-import { UserToken } from '../../user-token/entity/user-token.entity.js';
+import { hashPassword } from '@src/common/helper/password.helper.js';
+import { UserToken } from '@src/user-token/entity/user-token.entity.js';
 
 @Entity({ name: 'users' })
 export class User implements UserAttribute {

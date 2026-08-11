@@ -4,7 +4,7 @@ import * as path from 'path';
 import type { Promisable, UmzugStorage } from 'umzug';
 import { Umzug } from 'umzug';
 import { DataSource } from 'typeorm';
-import { envConfig } from '../src/common/config/env.config.js';
+import { envConfig } from '@src/common/config/env.config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

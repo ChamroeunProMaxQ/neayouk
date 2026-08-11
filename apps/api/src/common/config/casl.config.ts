@@ -1,4 +1,4 @@
-import type { JwtPayload } from "@app/src/auth/dto/jwt-payload.dto.js";
+import type { JwtPayload } from "@src/auth/dto/jwt-payload.dto.js";
 import { UserTypeEnum } from "@repo/shared";
 import type { Request } from "express";
 import { CaslModule, type AuthorizableUser } from "nest-casl";

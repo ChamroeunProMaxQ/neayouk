@@ -1,9 +1,9 @@
 import { VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
-import { AppModule } from './app.module.js';
-import { swaggerConfig } from './common/config/swagger.config.js';
-import './tracing.js';
+import { AppModule } from '@src/app.module.js';
+import { swaggerConfig } from '@src/common/config/swagger.config.js';
+import '@src/tracing.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

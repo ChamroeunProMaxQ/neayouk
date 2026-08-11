@@ -19,9 +19,9 @@ import { CollectorService } from 'nestlens';
 import { ZodValidationException } from 'nestjs-zod';
 import { Counter } from 'prom-client';
 import { EntityNotFoundError, QueryFailedError } from 'typeorm';
-import { APP_LOGGER } from '../config/logger.config.js';
+import { APP_LOGGER } from '@src/common/config/logger.config.js';
 
-import { isNestLensRequest } from '../helper/nestlens.helper.js';
+import { isNestLensRequest } from '@src/common/helper/nestlens.helper.js';
 
 type BadRequestExceptionResponse = {
   message: string[];

@@ -8,8 +8,8 @@ import {
 } from '@repo/shared';
 import type { FindOptionsWhere } from 'typeorm';
 import { MoreThan, Repository } from 'typeorm';
-import type { JwtPayload } from '../auth/dto/jwt-payload.dto.js';
-import type { User } from '../user/entity/user.entity.js';
+import type { JwtPayload } from '@src/auth/dto/jwt-payload.dto.js';
+import type { User } from '@src/user/entity/user.entity.js';
 import { UserToken } from './entity/user-token.entity.js';
 
 @Injectable()

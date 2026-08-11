@@ -3,8 +3,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 
 import { ZodValidationPipe } from 'nestjs-zod';
-import { migrator, seeder } from '../database/umzug.js';
-import { AppModule } from '../src/app.module.js';
+import { migrator, seeder } from '@database/umzug.js';
+import { AppModule } from '@src/app.module.js';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;

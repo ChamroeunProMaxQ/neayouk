@@ -2,7 +2,7 @@ import { Body, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { UserTypeEnum } from '@repo/shared';
 import type { Request } from 'express';
-import { UserTypes } from '../common/decorator/user-type.decorator.js';
+import { UserTypes } from '@src/common/decorator/user-type.decorator.js';
 import type { CreateUserDto } from './dto/create-user.dto.js';
 import { UserService } from './user.service.js';
 

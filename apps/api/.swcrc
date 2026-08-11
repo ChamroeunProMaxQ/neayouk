@@ -8,9 +8,15 @@
     "transform": {
       "legacyDecorator": true,
       "decoratorMetadata": true
+    },
+    "baseUrl": ".",
+    "paths": {
+      "@src/*": ["src/*"],
+      "@test/*": ["test/*"],
+      "@database/*": ["database/*"],
+      "@app/*": ["*"]
     }
   },
-   "baseUrl": ".",
   "module": {
     "type": "es6"
   }

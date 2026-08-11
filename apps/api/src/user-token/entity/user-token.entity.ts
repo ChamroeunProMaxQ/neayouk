@@ -12,7 +12,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from '../../user/entity/user.entity.js';
+import { User } from '@src/user/entity/user.entity.js';
 
 @Entity({ name: 'user_tokens' })
 export class UserToken implements UserTokenAttribute {

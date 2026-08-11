@@ -5,9 +5,9 @@ import { UserTypeEnum } from '@repo/shared';
 import request from 'supertest';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { ZodValidationPipe } from 'nestjs-zod';
-import { migrator, seeder } from '../database/umzug.js';
-import { HttpExceptionsFilter } from '../src/common/filter/http-exception.filter.js';
-import { AppModule } from '../src/app.module.js';
+import { migrator, seeder } from '@database/umzug.js';
+import { HttpExceptionsFilter } from '@src/common/filter/http-exception.filter.js';
+import { AppModule } from '@src/app.module.js';
 
 describe('Forbidden Requests (e2e)', () => {
   let app: INestApplication;

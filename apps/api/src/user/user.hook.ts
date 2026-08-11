@@ -3,7 +3,7 @@ import { UserService } from './user.service.js';
 import { User } from './entity/user.entity.js';
 import type { AuthorizableUser, SubjectBeforeFilterHook } from 'nest-casl';
 import type { Request } from 'express';
-import { APP_LOGGER } from '../common/config/logger.config.js';
+import { APP_LOGGER } from '@src/common/config/logger.config.js';
 
 @Injectable()
 export class UserHook implements SubjectBeforeFilterHook<User, Request> {

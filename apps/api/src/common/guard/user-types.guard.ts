@@ -2,8 +2,8 @@ import type { CanActivate, ExecutionContext } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { UserTypeEnum } from '@repo/shared';
-import { USER_TYPES_KEY } from '../decorator/user-type.decorator.js';
-import { isNestLensRequest } from '../helper/nestlens.helper.js';
+import { USER_TYPES_KEY } from '@src/common/decorator/user-type.decorator.js';
+import { isNestLensRequest } from '@src/common/helper/nestlens.helper.js';
 
 @Injectable()
 export class UserTypesGuard implements CanActivate {

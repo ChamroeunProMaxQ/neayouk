@@ -14,7 +14,11 @@
     "sourceMap": true,
     "outDir": "./dist",
     "verbatimModuleSyntax": true,
+    "baseUrl": ".",
     "paths": {
+      "@src/*": ["./src/*"],
+      "@test/*": ["./test/*"],
+      "@database/*": ["./database/*"],
       "@app/*": ["./*"]
     }
   }

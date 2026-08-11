@@ -2,7 +2,7 @@ import type { LoggerService } from '@nestjs/common';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { APP_LOGGER } from '../common/config/logger.config.js';
+import { APP_LOGGER } from '@src/common/config/logger.config.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { FindUsersDto } from './dto/find-users.dto.js';
 import type { UpdateUserDto } from './dto/update-user.dto.js';

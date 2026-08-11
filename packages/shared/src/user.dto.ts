@@ -22,11 +22,11 @@ export interface UserAttribute {
 export interface CreateUserAttribute extends Omit<
   UserAttribute,
   "id" | "userType" | "uuid" | "computedNameId" | "status"
-> {}
+> { }
 
 export interface UpdateUserAttribute extends Partial<
   Omit<UserAttribute, "id" | "computedNameId">
-> {}
+> { }
 
 export const CreateUserSchema = z.object({
   username: z.string({
@@ -39,6 +39,7 @@ export const CreateUserSchema = z.object({
     .min(6, {
       error: "password must be more than 6 charectors",
     }),
+  userType: z.string()
 }) satisfies z.ZodType<CreateUserAttribute>;
 
 export const UpdateUserSchema = z.object({

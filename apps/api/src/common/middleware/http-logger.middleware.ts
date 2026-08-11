@@ -5,7 +5,7 @@ import {
   type NestMiddleware,
 } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
-import { APP_LOGGER } from '../config/logger.config.js';
+import { APP_LOGGER } from '@src/common/config/logger.config.js';
 
 @Injectable()
 export class HttpLoggerMiddleware implements NestMiddleware {

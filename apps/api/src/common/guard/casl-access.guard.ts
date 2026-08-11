@@ -2,7 +2,7 @@ import type { ExecutionContext } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { AccessGuard, AccessService } from 'nest-casl';
-import { isNestLensRequest } from '../helper/nestlens.helper.js';
+import { isNestLensRequest } from '@src/common/helper/nestlens.helper.js';
 
 @Injectable()
 export class CaslAccessGuard extends AccessGuard {

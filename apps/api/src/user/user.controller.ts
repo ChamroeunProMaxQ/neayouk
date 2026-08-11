@@ -18,12 +18,12 @@ import { FindUsersDto } from './dto/find-users.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
 import { UserService } from './user.service.js';
 import { AccessGuard, DefaultActions, UseAbility } from 'nest-casl';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
-import { CaslAccessGuard } from '../common/guard/casl-access.guard.js';
+import { JwtAuthGuard } from '@src/auth/jwt-auth.guard.js';
+import { CaslAccessGuard } from '@src/common/guard/casl-access.guard.js';
 import { User } from './entity/user.entity.js';
 import { UserHook } from './user.hook.js';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { UserTypes } from '../common/decorator/user-type.decorator.js';
+import { UserTypes } from '@src/common/decorator/user-type.decorator.js';
 import { UserTypeEnum } from '@repo/shared';
 
 @ApiBearerAuth()

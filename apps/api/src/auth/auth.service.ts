@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { comparePassword } from '../common/helper/password.helper.js';
-import { UserTokenService } from '../user-token/user-token.service.js';
-import { UserService } from '../user/user.service.js';
+import { comparePassword } from '@src/common/helper/password.helper.js';
+import { UserTokenService } from '@src/user-token/user-token.service.js';
+import { UserService } from '@src/user/user.service.js';
 import type { LogInDto } from './dto/log-in.dto.js';
 
 @Injectable()

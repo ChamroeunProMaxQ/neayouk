@@ -1,26 +1,22 @@
-import {
-  BadRequestException,
-  Catch,
-  HttpException,
-  HttpStatus,
-  Inject,
-} from '@nestjs/common';
-import {
-  EmptyResultError as SequelizeEmptyResultError,
-  ValidationError as SequelizeValidationError,
-} from 'sequelize';
-
 import type {
   ArgumentsHost,
   ExceptionFilter,
   LoggerService,
 } from '@nestjs/common';
+import {
+  BadRequestException,
+  Catch,
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Inject,
+} from '@nestjs/common';
 import { ResponseDto } from '@repo/shared';
-// import { ThrottlerException } from '@nestjs/throttler';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import type { Request, Response } from 'express';
 import { ZodValidationException } from 'nestjs-zod';
 import { Counter } from 'prom-client';
+import { EntityNotFoundError, QueryFailedError } from 'typeorm';
 import { APP_LOGGER } from '../config/logger.config.js';
 
 type BadRequestExceptionResponse = {
@@ -35,30 +31,53 @@ export class HttpExceptionsFilter implements ExceptionFilter {
 
     @Inject(APP_LOGGER)
     private readonly logger: LoggerService,
-  ) {}
+  ) {
+    //
+  }
 
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response: Response = ctx.getResponse();
     const request: Request = ctx.getRequest();
-    this.logger.log('FILTER EXECUTED');
+    this.logger.log('FILTER_EXECUTED');
     this.logger.log(exception?.constructor?.name);
     this.logger.error(exception);
 
-    if (exception instanceof SequelizeValidationError) {
-      const errors = exception.errors.map((error) => {
-        return error.message;
-      });
+    if (
+      exception instanceof ForbiddenException ||
+      (exception instanceof HttpException && exception.getStatus() === HttpStatus.FORBIDDEN)
+    ) {
+      const ex = exception as HttpException;
+      const exResponse = ex.getResponse();
+      const rawMessage =
+        typeof exResponse === 'string'
+          ? exResponse
+          : typeof exResponse === 'object' && exResponse !== null && 'message' in exResponse
+            ? (exResponse as { message: string | string[] }).message
+            : ex.message;
+
+      const message = Array.isArray(rawMessage) ? rawMessage[0] : rawMessage;
+
+      const responseDto = new ResponseDto(
+        HttpStatus.FORBIDDEN,
+        message || 'You do not have permission to access or modify this resource',
+        null,
+      );
+      this.incrementHttpMetric(request, HttpStatus.FORBIDDEN);
+      return response.status(HttpStatus.FORBIDDEN).json(responseDto);
+    }
+
+    if (exception instanceof QueryFailedError) {
       const responseDto = new ResponseDto(
         HttpStatus.BAD_REQUEST,
-        errors?.at(0) ?? '',
-        errors,
+        exception.message,
+        [exception.message],
       );
       this.incrementHttpMetric(request, HttpStatus.BAD_REQUEST);
       return response.status(HttpStatus.BAD_REQUEST).json(responseDto);
     }
 
-    if (exception instanceof SequelizeEmptyResultError) {
+    if (exception instanceof EntityNotFoundError) {
       this.incrementHttpMetric(request, HttpStatus.NOT_FOUND);
       return response.status(HttpStatus.NOT_FOUND).json({
         code: HttpStatus.NOT_FOUND,

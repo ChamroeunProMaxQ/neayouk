@@ -1,53 +1,26 @@
-import { DataTypes, Sequelize } from 'sequelize';
+import type { DataSource } from 'typeorm';
 import type { MigrationFn } from 'umzug';
 
-export const up: MigrationFn<Sequelize> = async ({ context }) => {
-  await context.getQueryInterface().createTable('users', {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    uuid: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      allowNull: false,
-    },
-    // Add your columns here
-    username: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    user_type: {
-      type: DataTypes.STRING(26),
-      allowNull: false,
-    },
-    status: {
-      type: DataTypes.STRING(26),
-      allowNull: false,
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-    deleted_at: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-  });
+export const up: MigrationFn<DataSource> = async ({ context }) => {
+  const dataSource = await (typeof context === 'function' ? (context as () => Promise<DataSource>)() : context);
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      uuid VARCHAR(36) NOT NULL,
+      username VARCHAR(255) NOT NULL UNIQUE,
+      password VARCHAR(255) NOT NULL,
+      user_type VARCHAR(26) NOT NULL,
+      status VARCHAR(26) NOT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      deleted_at DATETIME NULL
+    ) ENGINE=InnoDB;
+  `);
 };
 
-export const down: MigrationFn<Sequelize> = async ({ context }) => {
-  await context.getQueryInterface().dropTable('users');
+export const down: MigrationFn<DataSource> = async ({ context }) => {
+  const dataSource = await (typeof context === 'function' ? (context as () => Promise<DataSource>)() : context);
+  await dataSource.query(`SET FOREIGN_KEY_CHECKS = 0;`);
+  await dataSource.query(`DROP TABLE IF EXISTS users;`);
+  await dataSource.query(`SET FOREIGN_KEY_CHECKS = 1;`);
 };

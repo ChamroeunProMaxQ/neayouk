@@ -4,67 +4,59 @@ import {
   type UserTokenAttribute,
 } from '@repo/shared';
 import {
-  DataTypes,
-  type BelongsToGetAssociationMixin,
-  type CreationOptional,
-  type NonAttribute,
-} from 'sequelize';
-import { BelongsTo, Column, ForeignKey, Table } from 'sequelize-typescript';
-import { BaseModel } from '../../common/model/base.model.js';
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { User } from '../../user/model/user.model.js';
 
-@Table({
-  tableName: 'user_tokens',
-  timestamps: true,
-  underscored: true,
-})
-export class UserToken
-  extends BaseModel<UserToken>
-  implements UserTokenAttribute
-{
-  @Column({
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-    allowNull: false,
-  })
-  declare id: CreationOptional<number>;
+@Entity({ name: 'user_tokens' })
+export class UserToken implements UserTokenAttribute {
+  @PrimaryGeneratedColumn()
+  id!: number;
+
+  @Column({ type: 'text' })
+  token!: string;
 
   @Column({
-    type: DataTypes.STRING,
-    allowNull: false,
+    name: 'token_type',
+    type: 'enum',
+    enum: TokenTypeEnum,
+    default: TokenTypeEnum.REFRESH_TOKEN,
   })
-  declare token: string;
+  tokenType!: TokenTypeEnum;
+
+  @Column({ name: 'exp_date', type: 'datetime' })
+  expDate!: Date;
 
   @Column({
-    type: DataTypes.ENUM(...Object.values(TokenTypeEnum)),
-    allowNull: false,
-    defaultValue: TokenTypeEnum.REFRESH_TOKEN,
+    type: 'enum',
+    enum: TokenStatusEnum,
+    default: TokenStatusEnum.ACTIVE,
   })
-  declare tokenType: CreationOptional<TokenTypeEnum>;
+  status!: TokenStatusEnum;
 
-  @Column({
-    type: DataTypes.DATE,
-    allowNull: false,
+  @Column({ name: 'user_id' })
+  userId!: number;
+
+  @ManyToOne(() => User, (user) => user.tokens, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
   })
-  declare expDate: Date;
+  @JoinColumn({ name: 'user_id' })
+  user!: User;
 
-  @Column({
-    type: DataTypes.ENUM(...Object.values(TokenStatusEnum)),
-    allowNull: false,
-    defaultValue: TokenStatusEnum.ACTIVE,
-  })
-  declare status: CreationOptional<TokenStatusEnum>;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt!: Date;
 
-  @ForeignKey(() => User)
-  @Column({
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  })
-  declare userId: number;
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt!: Date;
 
-  @BelongsTo(() => User)
-  declare user: NonAttribute<User>;
-
-  declare getUser: BelongsToGetAssociationMixin<User>;
+  getUser(): Promise<User> {
+    return Promise.resolve(this.user);
+  }
 }

@@ -24,7 +24,11 @@ export interface CreateUserAttribute extends Omit<
   "id" | "userType" | "uuid" | "computedNameId" | "status"
 > {}
 
-export const CreateUserSchema: z.ZodType<CreateUserAttribute> = z.object({
+export interface UpdateUserAttribute extends Partial<
+  Omit<UserAttribute, "id" | "computedNameId">
+> {}
+
+export const CreateUserSchema = z.object({
   username: z.string({
     error: "username is requried",
   }),
@@ -35,7 +39,25 @@ export const CreateUserSchema: z.ZodType<CreateUserAttribute> = z.object({
     .min(6, {
       error: "password must be more than 6 charectors",
     }),
-});
+}) satisfies z.ZodType<CreateUserAttribute>;
+
+export const UpdateUserSchema = z.object({
+  username: z
+    .string({
+      error: "username is requried",
+    })
+    .optional(),
+  password: z
+    .string({
+      error: "password is required",
+    })
+    .min(6, {
+      error: "password must be more than 6 charectors",
+    })
+    .optional(),
+  status: z.enum(UserStatusEnum).optional(),
+  userType: z.enum(UserTypeEnum),
+}) satisfies z.ZodType<UpdateUserAttribute>;
 
 export const FindUsersSchema = PaginationSchema.extend({
   name: z.string().optional(),

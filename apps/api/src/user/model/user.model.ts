@@ -1,71 +1,87 @@
 import { UserStatusEnum, UserTypeEnum, type UserAttribute } from '@repo/shared';
 import { randomUUID } from 'node:crypto';
-import { DataTypes, type CreationOptional } from 'sequelize';
-import { Column, Table } from 'sequelize-typescript';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { hashPassword } from '../../common/helper/password.helper.js';
-import { BaseModel } from '../../common/model/base.model.js';
+import { UserToken } from '../../user-token/model/user-token.model.js';
 
-@Table({
-  tableName: 'users',
-  timestamps: true,
-  paranoid: true,
-  underscored: true,
-})
-export class User extends BaseModel<User> implements UserAttribute {
-  @Column({
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-    allowNull: false,
-  })
-  declare id: CreationOptional<number>;
+@Entity({ name: 'users' })
+export class User implements UserAttribute {
+  @PrimaryGeneratedColumn()
+  id!: number;
 
-  @Column({
-    type: DataTypes.UUID,
-    defaultValue: randomUUID(),
-    allowNull: false,
-  })
-  declare uuid: CreationOptional<string>;
+  @Column({ type: 'varchar', length: 36 })
+  uuid!: string;
+
+  @Column({ type: 'varchar', unique: true })
+  username!: string;
+
+  @Column({ type: 'varchar' })
+  password!: string;
 
   @Column({
-    type: DataTypes.STRING,
-    unique: true,
-    allowNull: false,
+    name: 'user_type',
+    type: 'enum',
+    enum: UserTypeEnum,
+    default: UserTypeEnum.CUSTOMER,
   })
-  declare username: string;
+  userType!: UserTypeEnum;
 
   @Column({
-    type: DataTypes.STRING,
-    allowNull: false,
-    set(value: string) {
-      // Hash the password before storing it in the database
-      this.setDataValue('password', hashPassword(value));
-    },
-    get() {
-      return ''; // Hide the password field when retrieving user data
-    },
+    type: 'enum',
+    enum: UserStatusEnum,
+    default: UserStatusEnum.ACTIVE,
+    nullable: true,
   })
-  declare password: CreationOptional<string>;
+  status!: UserStatusEnum;
 
-  @Column({
-    type: DataTypes.ENUM(...Object.values(UserTypeEnum)),
-    allowNull: false,
-    defaultValue: UserTypeEnum.CUSTOMER,
-  })
-  declare userType: CreationOptional<UserTypeEnum>;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt!: Date;
 
-  @Column({
-    type: DataTypes.ENUM(...Object.values(UserStatusEnum)),
-    allowNull: true,
-    defaultValue: UserStatusEnum.ACTIVE,
-  })
-  declare status: CreationOptional<UserStatusEnum>;
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt!: Date;
 
-  @Column({
-    type: DataTypes.VIRTUAL,
-    get(this: User) {
-      return `user-${this.id}`;
-    },
-  })
-  declare computedNameId: CreationOptional<string>;
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
+  deletedAt!: Date | null;
+
+  @OneToMany(() => UserToken, (token) => token.user)
+  tokens!: UserToken[];
+
+  get computedNameId(): string {
+    return `user-${this.id}`;
+  }
+
+  @BeforeInsert()
+  generateUuidAndHashPassword() {
+    if (!this.uuid) {
+      this.uuid = randomUUID();
+    }
+    if (this.password && !this.password.includes(':')) {
+      this.password = hashPassword(this.password);
+    }
+  }
+
+  @BeforeUpdate()
+  hashPasswordOnUpdate() {
+    if (this.password && !this.password.includes(':')) {
+      this.password = hashPassword(this.password);
+    }
+  }
+
+  toJSON() {
+    return {
+      ...this,
+      password: '',
+      computedNameId: this.computedNameId,
+    };
+  }
 }

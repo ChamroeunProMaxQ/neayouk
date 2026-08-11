@@ -16,7 +16,7 @@ export class AuthService {
     const user = await this.userServer.findByUsername(dto.username);
     const isMatch = comparePassword(
       dto.password,
-      user.getDataValue('password'),
+      user.password,
     );
     if (!isMatch) throw new UnauthorizedException();
 

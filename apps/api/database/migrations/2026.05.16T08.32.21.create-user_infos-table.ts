@@ -1,71 +1,30 @@
-import { DataTypes, Sequelize } from 'sequelize';
+import type { DataSource } from 'typeorm';
 import type { MigrationFn } from 'umzug';
 
-export const up: MigrationFn<Sequelize> = async ({ context }) => {
-  await context.getQueryInterface().createTable('user_infos', {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-      allowNull: false,
-    },
-    user_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
-      onUpdate: 'CASCADE',
-      onDelete: 'CASCADE',
-    },
-    image_url: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    thumbnail_url: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    phone: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      //unique: true,
-    },
-    firstname: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    lastname: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    dob: {
-      type: DataTypes.DATEONLY,
-      allowNull: true,
-    },
-    gender: {
-      type: DataTypes.STRING(12),
-      allowNull: true,
-    },
-    // Additional audit columns
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-  });
+export const up: MigrationFn<DataSource> = async ({ context }) => {
+  const dataSource = await (typeof context === 'function' ? (context as () => Promise<DataSource>)() : context);
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS user_infos (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      image_url VARCHAR(255) NULL,
+      thumbnail_url VARCHAR(255) NULL,
+      phone VARCHAR(255) NULL,
+      email VARCHAR(255) NULL,
+      firstname VARCHAR(255) NULL,
+      lastname VARCHAR(255) NULL,
+      dob DATE NULL,
+      gender VARCHAR(12) NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      CONSTRAINT fk_user_infos_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
+    ) ENGINE=InnoDB;
+  `);
 };
 
-export const down: MigrationFn<Sequelize> = async ({ context }) => {
-  await context.getQueryInterface().dropTable('user_infos');
+export const down: MigrationFn<DataSource> = async ({ context }) => {
+  const dataSource = await (typeof context === 'function' ? (context as () => Promise<DataSource>)() : context);
+  await dataSource.query(`SET FOREIGN_KEY_CHECKS = 0;`);
+  await dataSource.query(`DROP TABLE IF EXISTS user_infos;`);
+  await dataSource.query(`SET FOREIGN_KEY_CHECKS = 1;`);
 };

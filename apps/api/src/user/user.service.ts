@@ -1,54 +1,53 @@
 import type { LoggerService } from '@nestjs/common';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
-import type { FindOptions } from 'sequelize';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { APP_LOGGER } from '../common/config/logger.config.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { FindUsersDto } from './dto/find-users.dto.js';
+import type { UpdateUserDto } from './dto/update-user.dto.js';
 import { User } from './model/user.model.js';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(User)
-    private readonly userRepo: typeof User,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
 
-    // private readonly userInfoRepo: type userInfo;
     @Inject(APP_LOGGER)
     private readonly logger: LoggerService,
   ) {}
 
-  findAll(dto: FindUsersDto) {
-    const findOptions: FindOptions<User> = {};
-    return this.userRepo.findAndCountAll({
-      limit: dto.pageSize,
-      offset: dto.pageSize * (dto.page - 1),
+  async findAll(dto: FindUsersDto) {
+    const [rows, count] = await this.userRepo.findAndCount({
+      take: dto.pageSize,
+      skip: dto.pageSize * (dto.page - 1),
     });
+    return { count, rows };
   }
 
   async findOne(userId: number) {
-    //const span = this.traceService.getTracer().startSpan('find-user');
-    const user = await this.userRepo.findByPk(userId);
-    this.logger.log({
-      user,
-    });
-    //span.end();
-    return user;
+    return await this.userRepo.findOneBy({ id: userId });
   }
 
   async findByUsername(username: string) {
-    return this.userRepo.findOne({
-      where: {
-        username,
-      },
-      rejectOnEmpty: new NotFoundException('user not found'),
-    });
+    const user = await this.userRepo.findOneBy({ username });
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+    return user;
   }
 
-  async createUser(dto: CreateUserDto, userId: number) {
-    return await this.userRepo.create({
+  async createUser(dto: CreateUserDto, userId?: number) {
+    const user = this.userRepo.create({
       password: dto.password,
       username: dto.username,
     });
+    return await this.userRepo.save(user);
+  }
+
+  async updateUser(id: number, dto: UpdateUserDto, userId: number) {
+    await this.userRepo.update({ id: userId }, dto);
+    return await this.findOne(userId);
   }
 }

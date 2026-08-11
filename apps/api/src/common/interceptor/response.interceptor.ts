@@ -20,7 +20,7 @@ type RawResponseDataType =
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
-  constructor(private reflector: Reflector) {}
+  constructor(private reflector: Reflector) { }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const ctx = context.switchToHttp();
@@ -29,6 +29,7 @@ export class ResponseInterceptor implements NestInterceptor {
 
     // exclude metrics routes
     if (request.path.includes('/metrics')) return next.handle();
+    if (request.path.includes('nestlens')) return next.handle();
 
     const statusCode = response.statusCode;
     const { page, pageSize } = (request.query ??

@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectModel } from '@nestjs/sequelize';
+import { InjectRepository } from '@nestjs/typeorm';
 import {
   TokenStatusEnum,
   TokenTypeEnum,
   type CreateUserTokenDto,
 } from '@repo/shared';
-import { Op } from 'sequelize';
+import type { FindOptionsWhere } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import type { JwtPayload } from '../auth/dto/jwt-payload.dto.js';
 import type { User } from '../user/model/user.model.js';
 import { UserToken } from './model/user-token.model.js';
@@ -15,12 +16,13 @@ import { UserToken } from './model/user-token.model.js';
 export class UserTokenService {
   constructor(
     private readonly jwtService: JwtService,
-    @InjectModel(UserToken)
-    private readonly userTokenRepo: typeof UserToken,
+    @InjectRepository(UserToken)
+    private readonly userTokenRepo: Repository<UserToken>,
   ) {}
 
-  create(dto: CreateUserTokenDto) {
-    return this.userTokenRepo.create(dto);
+  async create(dto: CreateUserTokenDto) {
+    const userToken = this.userTokenRepo.create(dto);
+    return await this.userTokenRepo.save(userToken);
   }
 
   findOne(token: string) {
@@ -28,30 +30,31 @@ export class UserTokenService {
       where: {
         token,
         status: TokenStatusEnum.ACTIVE,
-        expDate: { [Op.gt]: new Date() },
+        expDate: MoreThan(new Date()),
       },
+      relations: ['user'],
     });
   }
 
   async revoke({ token, userId }: { token?: string; userId?: number }) {
     if (!token && !userId) return;
-    await this.userTokenRepo.update(
-      {
-        status: TokenStatusEnum.REVOKED,
-      },
-      {
-        where: {
-          [Op.or]: [{ token: token ?? '' }, { userId: userId ?? 0 }],
-          status: TokenStatusEnum.ACTIVE,
-        },
-      },
-    );
+    const conditions: FindOptionsWhere<UserToken>[] = [];
+    if (token) {
+      conditions.push({ token, status: TokenStatusEnum.ACTIVE });
+    }
+    if (userId) {
+      conditions.push({ userId, status: TokenStatusEnum.ACTIVE });
+    }
+    await this.userTokenRepo.update(conditions, {
+      status: TokenStatusEnum.REVOKED,
+    });
   }
 
   async generateAccessToken(user: User) {
     const payload: JwtPayload = {
       username: user.username,
       sub: user.id,
+      type: user.userType,
     };
     const token = this.jwtService.sign(payload);
     await this.create({

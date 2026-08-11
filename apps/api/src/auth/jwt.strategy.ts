@@ -18,6 +18,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   // Runs automatically after the token is verified.
   // The object returned here is injected into the Request object as 'req.user'
   async validate(payload: JwtPayload) {
-    return { sub: payload.sub, username: payload.username };
+    return { sub: payload.sub, username: payload.username, type: payload.type, id: payload.sub };
   }
 }

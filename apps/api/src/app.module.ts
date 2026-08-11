@@ -25,50 +25,19 @@ import { CaslModule, type AuthorizableUser } from 'nest-casl';
 import { UserTypeEnum } from '@repo/shared';
 import type { JwtPayload } from './auth/dto/jwt-payload.dto.js';
 import type { Request } from 'express';
+import { caslConfig } from './common/config/casl.config.js';
+import { envModuelConfig } from './common/config/env.config.js';
+import { nestlenConfig } from './common/config/nestlen.config.js';
+import { typeOrmConfig } from './common/config/orm.config.js';
 
 @Module({
   imports: [
-    CaslModule.forRoot<UserTypeEnum, AuthorizableUser<UserTypeEnum, number>>({
-      superuserRole: UserTypeEnum.ADMIN,
-      getUserFromRequest: (request) => {
-        const user = (request as unknown as Request).user as JwtPayload | undefined;
-        if (!user) return undefined;
-        return {
-          id: Number(user.sub),
-          roles: [user.type as UserTypeEnum],
-        };
-      },
-    }),
-    NestLensModule.forRoot({
-      enabled: true,
-      authorization: {
-        allowedEnvironments: ['dev', 'stg', 'prod'],
-      },
-    }),
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: ['.env', '.env.stg', '.env.prod', '.env.test'],
-      load: [],
-      cache: true,
-      expandVariables: true,
-      validationSchema: null,
-    }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'mysql',
-        host: configService.getOrThrow<string>('DB_HOST'),
-        port: configService.getOrThrow<number>('DB_PORT'),
-        username: configService.getOrThrow<string>('DB_USER'),
-        password: configService.getOrThrow<string>('DB_PASSWORD'),
-        database: configService.getOrThrow<string>('DB_NAME'),
-        autoLoadEntities: true,
-        synchronize: false,
-      }),
-    }),
+    envModuelConfig,
+    caslConfig,
+    typeOrmConfig,
     UserModule,
     LoggerModule,
+    nestlenConfig,
     ...oberservableConfig,
     AuthModule,
   ],
@@ -100,11 +69,7 @@ import type { Request } from 'express';
     {
       provide: APP_GUARD,
       useClass: UserTypesGuard,
-    },
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: AccessGuard,
-    // },
+    }
   ],
 })
 export class AppModule implements NestModule {

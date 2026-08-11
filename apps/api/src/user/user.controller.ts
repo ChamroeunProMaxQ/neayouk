@@ -43,7 +43,6 @@ export class UserController {
   @UseAbility(DefaultActions.read, User, UserHook)
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
-    throw new NotFoundException('not found')
     return this.userService.findOne(id);
   }
 

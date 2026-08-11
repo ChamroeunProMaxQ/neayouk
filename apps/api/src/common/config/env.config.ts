@@ -1,3 +1,4 @@
+import { ConfigModule } from '@nestjs/config';
 import * as dotenv from 'dotenv';
 
 console.log('node env', process.env.NODE_ENV);
@@ -39,3 +40,12 @@ export const envConfig = {
   JWT_SECRET: resolveEnv<string>('JWT_SECRET'),
   JWT_EXPIRES_IN: resolveEnv<number>('JWT_EXPIRES_IN'),
 };
+
+export const envModuelConfig = ConfigModule.forRoot({
+  isGlobal: true,
+  envFilePath: ['.env', '.env.stg', '.env.prod', '.env.test'],
+  load: [],
+  cache: true,
+  expandVariables: true,
+  validationSchema: null,
+});

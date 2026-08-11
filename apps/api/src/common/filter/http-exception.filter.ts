@@ -10,10 +10,12 @@ import {
   HttpException,
   HttpStatus,
   Inject,
+  Optional,
 } from '@nestjs/common';
 import { ResponseDto } from '@repo/shared';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import type { Request, Response } from 'express';
+import { CollectorService } from 'nestlens';
 import { ZodValidationException } from 'nestjs-zod';
 import { Counter } from 'prom-client';
 import { EntityNotFoundError, QueryFailedError } from 'typeorm';
@@ -31,6 +33,10 @@ export class HttpExceptionsFilter implements ExceptionFilter {
 
     @Inject(APP_LOGGER)
     private readonly logger: LoggerService,
+
+    @Optional()
+    @Inject(CollectorService)
+    private readonly collectorService?: CollectorService,
   ) {
     //
   }
@@ -39,9 +45,26 @@ export class HttpExceptionsFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response: Response = ctx.getResponse();
     const request: Request = ctx.getRequest();
+
+    const url = request.originalUrl || request.url || request.path || '';
+    if (url.includes('nestlens')) {
+      throw exception;
+    }
+
     this.logger.log('FILTER_EXECUTED');
     this.logger.log(exception?.constructor?.name);
     this.logger.error(exception);
+
+    const calculatedStatus =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : exception instanceof EntityNotFoundError
+          ? HttpStatus.NOT_FOUND
+          : exception instanceof QueryFailedError
+            ? HttpStatus.BAD_REQUEST
+            : HttpStatus.INTERNAL_SERVER_ERROR;
+
+    this.logToNestLens(exception, request, calculatedStatus);
 
     if (
       exception instanceof ForbiddenException ||
@@ -141,5 +164,29 @@ export class HttpExceptionsFilter implements ExceptionFilter {
       route: request.route?.path ?? request.url,
       status: status.toString(),
     });
+  }
+
+  private logToNestLens(exception: unknown, request: Request, status: number) {
+    if (!this.collectorService) return;
+    try {
+      const ex =
+        exception instanceof Error ? exception : new Error(String(exception));
+      const payload = {
+        name: ex.name || 'Error',
+        message: ex.message || String(exception),
+        stack: ex.stack,
+        code: status,
+        context: 'HTTP',
+        request: {
+          method: request?.method,
+          url: request?.originalUrl || request?.url,
+          body: request?.body,
+        },
+      };
+      const requestId = (request as any)?.nestlensRequestId;
+      this.collectorService.collectImmediate('exception', payload, requestId);
+    } catch {
+      // Ignore if nestlens collector is unavailable
+    }
   }
 }

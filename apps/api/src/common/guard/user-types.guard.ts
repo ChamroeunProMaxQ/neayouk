@@ -9,14 +9,30 @@ export class UserTypesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
+    if (context.getType() === 'http') {
+      const request = context.switchToHttp().getRequest();
+      const url = request?.originalUrl || request?.url || '';
+      if (url.includes('nestlens')) {
+        return true;
+      }
+    }
+
+    const handler = context.getHandler();
+    if (!handler) {
+      return true;
+    }
+
     const requireUserTypes = this.reflector.getAllAndOverride<UserTypeEnum[]>(
       USER_TYPES_KEY,
-      [context.getHandler(), context.getClass()],
+      [handler, context.getClass()],
     );
     if (!requireUserTypes) {
       return true;
     }
     const { user } = context.switchToHttp().getRequest();
+    if (!user || !user.type) {
+      return false;
+    }
     return requireUserTypes.some((type) => user.type?.includes(type));
   }
 }

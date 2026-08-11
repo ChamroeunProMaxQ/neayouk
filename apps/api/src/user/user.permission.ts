@@ -17,6 +17,7 @@ export const permissions: Permissions<
         console.log('user in permission:', user);
         can(Actions.read, User, { id: user?.id });
         can(Actions.update, User, { id: user?.id });
+        cannot(Actions.read, User);
         cannot(Actions.create, User);
         cannot(Actions.delete, User);
     },

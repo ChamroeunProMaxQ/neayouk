@@ -27,9 +27,9 @@ export class ResponseInterceptor implements NestInterceptor {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    // exclude metrics routes
-    if (request.path.includes('/metrics')) return next.handle();
-    if (request.path.includes('nestlens')) return next.handle();
+    const url = request.originalUrl || request.url || request.path || '';
+    // exclude metrics and nestlens routes
+    if (url.includes('metrics') || url.includes('nestlens')) return next.handle();
 
     const statusCode = response.statusCode;
     const { page, pageSize } = (request.query ??

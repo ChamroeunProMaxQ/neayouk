@@ -23,8 +23,9 @@ export class HttpMetricsInterceptor implements NestInterceptor {
     const response = context.switchToHttp().getResponse();
     const start = process.hrtime();
 
-    // bypass metrics
-    if (request.path.includes('metrics')) return next.handle();
+    const url = request.originalUrl || request.url || request.path || '';
+    // bypass metrics and nestlens
+    if (url.includes('metrics') || url.includes('nestlens')) return next.handle();
 
     return next.handle().pipe(
       tap(() => {

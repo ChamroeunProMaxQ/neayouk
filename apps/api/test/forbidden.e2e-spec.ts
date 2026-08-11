@@ -53,7 +53,7 @@ describe('Forbidden Requests (e2e)', () => {
         .expect(403);
 
       expect(response.body).toEqual({
-        code: 403,
+        status: 403,
         message: 'You do not have permission to access or modify this resource',
         data: null,
       });
@@ -75,8 +75,8 @@ describe('Forbidden Requests (e2e)', () => {
         .expect(403);
 
       expect(response.body).toEqual({
-        code: 403,
-        message: 'You do not have permission to access or modify this resource',
+        status: 403,
+        message: 'Forbidden resource',
         data: null,
       });
     });

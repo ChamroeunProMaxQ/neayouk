@@ -29,6 +29,8 @@ import { caslConfig } from './common/config/casl.config.js';
 import { envModuelConfig } from './common/config/env.config.js';
 import { nestlenConfig } from './common/config/nestlen.config.js';
 import { typeOrmConfig } from './common/config/orm.config.js';
+import { NestLensGateModule } from './common/provider/nestlens-gate.module.js';
+import { NestLensModelSubscriberModule } from './common/provider/nestlens-model-subscriber.module.js';
 
 @Module({
   imports: [
@@ -36,9 +38,11 @@ import { typeOrmConfig } from './common/config/orm.config.js';
     caslConfig,
     typeOrmConfig,
     UserModule,
-    LoggerModule,
+    NestLensModelSubscriberModule,
+    NestLensGateModule,
     nestlenConfig,
     ...oberservableConfig,
+    LoggerModule,
     AuthModule,
   ],
   controllers: [AppController],

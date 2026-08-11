@@ -25,7 +25,7 @@ import { UserHook } from './user.hook.js';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiBearerAuth()
-@Controller('/api/v1/users')
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {
     //
@@ -39,7 +39,7 @@ export class UserController {
     return this.userService.findAll(dto);
   }
 
-  @UseGuards(JwtAuthGuard, AccessGuard)
+  @UseGuards(JwtAuthGuard, CaslAccessGuard)
   @UseAbility(DefaultActions.read, User, UserHook)
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {

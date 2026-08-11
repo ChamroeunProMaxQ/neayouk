@@ -15,7 +15,7 @@ export class HttpLoggerMiddleware implements NestMiddleware {
   ) {}
 
   use(req: Request, res: Response, next: NextFunction) {
-    if (req.originalUrl.includes('metrics')) return next();
+    if (req.originalUrl.includes('metrics') || req.originalUrl.includes('nestlens')) return next();
 
     const start = Date.now();
 

@@ -16,9 +16,12 @@ export class UserService {
 
     @Inject(APP_LOGGER)
     private readonly logger: LoggerService,
-  ) {}
+  ) {
+    //
+  }
 
   async findAll(dto: FindUsersDto) {
+    this.logger.log('this is find all');
     const [rows, count] = await this.userRepo.findAndCount({
       take: dto.pageSize,
       skip: dto.pageSize * (dto.page - 1),

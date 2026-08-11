@@ -18,4 +18,10 @@ async function bootstrap() {
   await app.listen(3000);
 }
 
-void bootstrap();
+bootstrap()
+  .then(() => {
+    console.log('application start in port: 3000');
+  })
+  .catch((err) => {
+    console.error('Failed to start application:', err);
+  });

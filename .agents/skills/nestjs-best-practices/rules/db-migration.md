@@ -68,6 +68,22 @@ export const down: Migration = async ({ context: dataSource }) => {
 };
 ```
 
+### CLI Entrypoints & Connection Teardown
+
+CLI entrypoints (`database/migrator.ts` and `database/seeder.ts`) MUST wrap `runAsCLI()` in a `try...finally` block to call `dataSource.destroy()`. Failing to destroy the connection pool causes the CLI command process to hang indefinitely.
+
+```typescript
+import { migrator, dataSource } from './umzug.js';
+
+try {
+  await migrator.runAsCLI();
+} finally {
+  if (dataSource.isInitialized) {
+    await dataSource.destroy();
+  }
+}
+```
+
 ### CLI Command Flow
 
 ```bash
@@ -77,12 +93,15 @@ pnpm --filter api migrate:create --name create-orders-table.ts
 # 2. Add column migration template
 pnpm --filter api migrate:create --name add-status-to-orders.ts
 
-# 3. Apply pending migrations
+# 3. Apply pending migrations (SWC automatically builds database/ to dist-db/ via premigrate hook)
 pnpm --filter api migrate up
 
 # 4. Check pending or revert last migration
 pnpm --filter api migrate pending
 pnpm --filter api migrate down
+
+# 5. Run seeders
+pnpm --filter api seed up
 ```
 
 Reference: [Umzug Documentation](https://github.com/sequelize/umzug)

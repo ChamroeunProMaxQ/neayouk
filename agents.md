@@ -135,9 +135,10 @@ pnpm --filter api exec vitest run -t "user controller"
 ### 7. Database & Migrations
 - Migration engine: **Umzug** with TypeORM + MySQL, compiled via **SWC**.
 - Database directory is located at `apps/api/database` (at the same level as `src/`).
-- Migration entrypoint: `apps/api/database/migrator.ts` (compiled via SWC to `dist-db/migrator.js`).
-- Seeder entrypoint: `apps/api/database/seeder.ts` (compiled via SWC to `dist-db/seeder.js`).
-- Run `pnpm --filter api migrate up` or `pnpm --filter api seed up` directly; SWC pre-compiles `database/` into `dist-db/` automatically before execution.
+- Build strategy: SWC compiles `database/` to `apps/api/dist-db/` (separate from `nest build`'s `dist/`).
+- CLI commands: `pnpm --filter api migrate up` and `pnpm --filter api seed up` automatically run SWC pre-hooks before execution.
+- CLI Entrypoints (`migrator.ts` and `seeder.ts`) MUST destroy `dataSource` in a `finally` block after `runAsCLI()` to prevent hanging connection pools.
+- Seeders MUST be idempotent (`INSERT IGNORE`) and disable foreign key checks (`SET FOREIGN_KEY_CHECKS = 0`) during rollback.
 
 ---
 

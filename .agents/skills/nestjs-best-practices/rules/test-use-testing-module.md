@@ -1,21 +1,23 @@
 ---
-title: Use Testing Module for Unit Tests
+title: Use Vitest for Unit Tests
 impact: HIGH
-impactDescription: Enables proper isolated testing with mocked dependencies
-tags: testing, unit-tests, mocking, jest
+impactDescription: Enables fast, isolated testing of pure logic and NestJS services with Vitest
+tags: testing, unit-tests, mocking, vitest
 ---
 
-## Use Testing Module for Unit Tests
+## Use Vitest for Unit Tests
 
-Use `@nestjs/testing` module to create isolated test environments with mocked dependencies. This ensures your tests run fast, don't depend on external services, and properly test your business logic in isolation.
+Prefer **Vitest** over Jest for fast, native ESM unit testing. Separate pure unit tests (e.g., utility & helper functions) from framework services:
 
-**Incorrect (manual instantiation bypassing DI):**
+1. **Helper & Utility Functions**: Test directly without creating NestJS `@nestjs/testing` modules for ultra-fast execution (<10ms).
+2. **NestJS Services & Controllers**: Use `@nestjs/testing` module with `Test.createTestingModule` to inject mocked dependencies via Vitest primitives (`vi.fn()`, `vi.Mocked<T>`).
+
+**Incorrect (manual instantiation bypassing DI for complex Nest services or using real DB):**
 
 ```typescript
-// Instantiate services manually without DI
+// Manual instantiation of services requiring DB repositories hits real database!
 describe('UsersService', () => {
   it('should create user', async () => {
-    // Manual instantiation bypasses DI
     const repo = new UserRepository(); // Real repo!
     const service = new UsersService(repo);
 
@@ -23,29 +25,32 @@ describe('UsersService', () => {
     // This hits the real database!
   });
 });
+```
 
-// Test implementation details
-describe('UsersController', () => {
-  it('should call service', async () => {
-    const service = { create: jest.fn() };
-    const controller = new UsersController(service as any);
+**Correct (Pure Helper Unit Testing):**
 
-    await controller.create({ name: 'Test' });
+```typescript
+import { describe, it, expect } from 'vitest';
+import { hashPassword, comparePassword } from './password.helper.js';
 
-    expect(service.create).toHaveBeenCalled(); // Tests implementation, not behavior
+describe('password.helper', () => {
+  it('should hash and compare passwords correctly', () => {
+    const hash = hashPassword('myPassword123');
+    expect(comparePassword('myPassword123', hash)).toBe(true);
+    expect(comparePassword('wrongPassword', hash)).toBe(false);
   });
 });
 ```
 
-**Correct (use Test.createTestingModule with mocked dependencies):**
+**Correct (NestJS Service Unit Testing with Vitest mocks):**
 
 ```typescript
-// Use Test.createTestingModule for proper DI
+import { describe, it, expect, beforeEach, afterEach, vi, type Mocked } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 
 describe('UsersService', () => {
   let service: UsersService;
-  let repo: jest.Mocked<UserRepository>;
+  let repo: Mocked<UserRepository>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -54,9 +59,9 @@ describe('UsersService', () => {
         {
           provide: UserRepository,
           useValue: {
-            save: jest.fn(),
-            findOne: jest.fn(),
-            find: jest.fn(),
+            save: vi.fn(),
+            findOne: vi.fn(),
+            find: vi.fn(),
           },
         },
       ],
@@ -67,7 +72,7 @@ describe('UsersService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('create', () => {
@@ -91,26 +96,9 @@ describe('UsersService', () => {
       ).rejects.toThrow(ConflictException);
     });
   });
-
-  describe('findById', () => {
-    it('should return user when found', async () => {
-      const user = { id: '1', name: 'John' };
-      repo.findOne.mockResolvedValue(user);
-
-      const result = await service.findById('1');
-
-      expect(result).toEqual(user);
-    });
-
-    it('should throw NotFoundException when not found', async () => {
-      repo.findOne.mockResolvedValue(null);
-
-      await expect(service.findById('999')).rejects.toThrow(NotFoundException);
-    });
-  });
 });
 
-// Testing guards and interceptors
+// Testing guards and interceptors with Vitest mocks
 describe('RolesGuard', () => {
   let guard: RolesGuard;
   let reflector: Reflector;
@@ -126,14 +114,7 @@ describe('RolesGuard', () => {
 
   it('should allow when no roles required', () => {
     const context = createMockExecutionContext({ user: { roles: [] } });
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(undefined);
-
-    expect(guard.canActivate(context)).toBe(true);
-  });
-
-  it('should allow admin for admin-only route', () => {
-    const context = createMockExecutionContext({ user: { roles: ['admin'] } });
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['admin']);
+    vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue(undefined);
 
     expect(guard.canActivate(context)).toBe(true);
   });
@@ -144,10 +125,10 @@ function createMockExecutionContext(request: Partial<Request>): ExecutionContext
     switchToHttp: () => ({
       getRequest: () => request,
     }),
-    getHandler: () => jest.fn(),
-    getClass: () => jest.fn(),
+    getHandler: () => vi.fn(),
+    getClass: () => vi.fn(),
   } as ExecutionContext;
 }
 ```
 
-Reference: [NestJS Testing](https://docs.nestjs.com/fundamentals/testing)
+Reference: [Vitest Guide](https://vitest.dev/guide/) | [NestJS Testing](https://docs.nestjs.com/fundamentals/testing)

@@ -1,178 +1,105 @@
 ---
-title: Use Supertest for E2E Testing
+title: Use Supertest with Vitest Global Setup for E2E Testing
 impact: HIGH
-impactDescription: Validates the full request/response cycle
-tags: testing, e2e, supertest, integration
+impactDescription: Validates full request/response cycle with fast global database lifecycle
+tags: testing, e2e, supertest, vitest, integration
 ---
 
-## Use Supertest for E2E Testing
+## Use Supertest with Vitest for E2E Testing
 
-End-to-end tests use Supertest to make real HTTP requests against your NestJS application. They test the full stack including middleware, guards, pipes, and interceptors. E2E tests catch integration issues that unit tests miss.
+End-to-end (E2E) tests use Supertest to execute real HTTP requests against your NestJS application. To keep E2E tests fast and reliable:
 
-**Incorrect (no proper E2E setup or teardown):**
+1. **Global Database Lifecycle (`vitest.global-setup.ts`)**: Execute schema migrations (`migrator.up()`) and initial seeders (`seeder.up()`) **ONCE** at the start of the entire test run via Vitest `globalSetup`, and teardown **ONCE** at the end. Do NOT drop and recreate table schemas per test file.
+2. **Single-Fork Sequential Runner**: Configure `vitest.config.e2e.ts` with `pool: 'forks'` and `singleFork: true` (or `fileParallelism: false`) to run E2E test files sequentially and prevent database migration collisions.
+3. **Reusable E2E Setup Helper (`e2e-test.utils.ts`)**: Abstract `setupE2eApp()` and `teardownE2eApp()` to eliminate setup boilerplate across test suites.
 
-```typescript
-// Only unit test controllers
-describe('UsersController', () => {
-  it('should return users', async () => {
-    const service = { findAll: jest.fn().mockResolvedValue([]) };
-    const controller = new UsersController(service as any);
-
-    const result = await controller.findAll();
-
-    expect(result).toEqual([]);
-    // Doesn't test: routes, guards, pipes, serialization
-  });
-});
-
-// E2E tests without proper setup/teardown
-describe('Users API', () => {
-  it('should create user', async () => {
-    const app = await NestFactory.create(AppModule);
-    // No proper initialization
-    // No cleanup after test
-    // Hits real database
-  });
-});
-```
-
-**Correct (proper E2E setup with Supertest):**
+**Incorrect (Re-migrating & dropping schema per test file):**
 
 ```typescript
-// Proper E2E test setup
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import * as request from 'supertest';
-import { AppModule } from '../src/app.module';
-
+// BAD: Re-migrating and dropping entire schema in every test file causes 20s+ slowdowns!
 describe('UsersController (e2e)', () => {
-  let app: INestApplication;
-
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-
-    // Apply same config as production
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        transform: true,
-        forbidNonWhitelisted: true,
-      }),
-    );
-
-    await app.init();
+    await migrator.up(); // Re-runs DDL per file!
+    await seeder.up();
   });
 
   afterAll(async () => {
-    await app.close();
-  });
-
-  describe('/users (POST)', () => {
-    it('should create a user', () => {
-      return request(app.getHttpServer())
-        .post('/users')
-        .send({ name: 'John', email: 'john@test.com' })
-        .expect(201)
-        .expect((res) => {
-          expect(res.body).toHaveProperty('id');
-          expect(res.body.name).toBe('John');
-          expect(res.body.email).toBe('john@test.com');
-        });
-    });
-
-    it('should return 400 for invalid email', () => {
-      return request(app.getHttpServer())
-        .post('/users')
-        .send({ name: 'John', email: 'invalid-email' })
-        .expect(400)
-        .expect((res) => {
-          expect(res.body.message).toContain('email');
-        });
-    });
-  });
-
-  describe('/users/:id (GET)', () => {
-    it('should return 404 for non-existent user', () => {
-      return request(app.getHttpServer())
-        .get('/users/non-existent-id')
-        .expect(404);
-    });
-  });
-});
-
-// Testing with authentication
-describe('Protected Routes (e2e)', () => {
-  let app: INestApplication;
-  let authToken: string;
-
-  beforeAll(async () => {
-    const moduleFixture = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
-    await app.init();
-
-    // Get auth token
-    const loginResponse = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: 'test@test.com', password: 'password' });
-
-    authToken = loginResponse.body.accessToken;
-  });
-
-  it('should return 401 without token', () => {
-    return request(app.getHttpServer())
-      .get('/users/me')
-      .expect(401);
-  });
-
-  it('should return user profile with valid token', () => {
-    return request(app.getHttpServer())
-      .get('/users/me')
-      .set('Authorization', `Bearer ${authToken}`)
-      .expect(200)
-      .expect((res) => {
-        expect(res.body.email).toBe('test@test.com');
-      });
-  });
-});
-
-// Database isolation for E2E tests
-describe('Orders API (e2e)', () => {
-  let app: INestApplication;
-  let dataSource: DataSource;
-
-  beforeAll(async () => {
-    const moduleFixture = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({
-          envFilePath: '.env.test', // Test database config
-        }),
-        AppModule,
-      ],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    dataSource = moduleFixture.get(DataSource);
-    await app.init();
-  });
-
-  beforeEach(async () => {
-    // Clean database between tests
-    await dataSource.synchronize(true);
-  });
-
-  afterAll(async () => {
-    await dataSource.destroy();
-    await app.close();
+    await seeder.down({ to: 0 });
+    await migrator.down({ to: 0 }); // Drops tables per file!
   });
 });
 ```
 
-Reference: [NestJS E2E Testing](https://docs.nestjs.com/fundamentals/testing#end-to-end-testing)
+**Correct (Vitest Global Setup + Reusable Helper):**
+
+```typescript
+// 1. vitest.global-setup.ts (Runs ONCE per test run)
+import { migrator, seeder, dataSource } from '../database/umzug.js';
+
+export async function setup() {
+  await migrator.up();
+  await seeder.up();
+}
+
+export async function teardown() {
+  await seeder.down({ to: 0 });
+  await migrator.down({ to: 0 });
+  if (dataSource.isInitialized) {
+    await dataSource.destroy();
+  }
+}
+```
+
+```typescript
+// 2. vitest.config.e2e.ts
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+    pool: 'forks',
+    poolOptions: { forks: { singleFork: true } },
+    include: ['test/**/*.e2e-spec.ts'],
+    globalSetup: ['./test/vitest.global-setup.ts'],
+  },
+});
+```
+
+```typescript
+// 3. E2E Test Suite (Clean & Concise)
+import type { INestApplication } from '@nestjs/common';
+import request from 'supertest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { setupE2eApp, teardownE2eApp } from './utils/e2e-test.utils.js';
+
+describe('UserController (e2e)', () => {
+  let app: INestApplication;
+  let server: any;
+  let adminToken: string;
+
+  beforeAll(async () => {
+    const ctx = await setupE2eApp();
+    app = ctx.app;
+    server = ctx.server;
+    adminToken = ctx.createToken({ type: UserTypeEnum.ADMIN });
+  });
+
+  afterAll(async () => {
+    await teardownE2eApp(app);
+  });
+
+  describe('/api/v1/users (GET)', () => {
+    it('should return users', async () => {
+      const response = await request(server)
+        .get('/api/v1/users')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      expect(response.body.data).toBeDefined();
+    });
+  });
+});
+```
+
+Reference: [Vitest Global Setup](https://vitest.dev/config/#globalsetup) | [NestJS E2E Testing](https://docs.nestjs.com/fundamentals/testing#end-to-end-testing)

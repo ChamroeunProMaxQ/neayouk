@@ -12,5 +12,6 @@
 - New Dependencies: [None / List packages]
 
 ## 4. Acceptance Criteria
-- [ ] Unit tests pass via `npm run test`
+- [ ] Unit tests pass via `pnpm test`
+- [ ] E2s tests pas via `pnpm test:e2e`
 - [ ] Browser verification passes via `/browser`

@@ -17,6 +17,7 @@ export default defineConfig({
     maxConcurrency: 1,
     pool: 'forks',
     include: ['test/**/*.e2e-spec.ts'],
+    globalSetup: ['./test/vitest.global-setup.ts'],
     setupFiles: ['./test/setup.ts'],
   },
 });

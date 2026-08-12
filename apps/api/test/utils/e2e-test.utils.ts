@@ -3,8 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { UserTypeEnum } from '@repo/contracts';
 import { ZodValidationPipe } from 'nestjs-zod';
-import request from 'supertest';
-import { migrator, seeder } from '@database/umzug.js';
+import { seeder } from '@database/umzug.js';
 import { AppModule } from '@src/app.module.js';
 
 export interface SetupE2eOptions {
@@ -24,7 +23,7 @@ export interface E2eTestContext {
 }
 
 /**
- * Initializes NestJS application for E2E testing along with DB migrations and seeders.
+ * Initializes NestJS application for E2E testing using the globally migrated database.
  */
 export async function setupE2eApp(
   options: SetupE2eOptions = {},
@@ -35,7 +34,7 @@ export async function setupE2eApp(
     imports: [AppModule],
   }).compile();
 
-  const app = moduleFixture.createNestApplication()
+  const app = moduleFixture.createNestApplication();
 
   if (globalPrefix !== false) {
     app.setGlobalPrefix(globalPrefix);
@@ -47,9 +46,6 @@ export async function setupE2eApp(
       defaultVersion: version,
     });
   }
-
-  await migrator.up();
-  await seeder.up();
 
   app.useGlobalPipes(new ZodValidationPipe());
 
@@ -78,12 +74,18 @@ export async function setupE2eApp(
 }
 
 /**
- * Cleanly teardown database migrations and close NestJS app after E2E tests.
+ * Rapidly reseeds test data without dropping database tables.
+ */
+export async function resetTestData(): Promise<void> {
+  await seeder.down({ to: 0 });
+  await seeder.up();
+}
+
+/**
+ * Gracefully closes NestJS application after E2E tests.
  */
 export async function teardownE2eApp(app: INestApplication): Promise<void> {
   if (app) {
-    await seeder.down({ to: 0 });
-    await migrator.down({ to: 0 });
     await app.close();
   }
 }

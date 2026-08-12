@@ -133,10 +133,11 @@ pnpm --filter api exec vitest run -t "user controller"
 - Vite proxies `/api` requests to `http://localhost:3000` (`apps/web/vite.config.ts`), enabling relative `/api/v1/...` calls from frontend code.
 
 ### 7. Database & Migrations
-- Migration engine: **Umzug** with TypeORM + MySQL.
-- Migration script: `apps/api/database/migrator.ts` (compiled to `dist/database/migrator.js`).
-- Seeder script: `apps/api/database/seeder.ts` (compiled to `dist/database/seeder.js`).
-- Run `pnpm build` before running `pnpm --filter api migrate` or `pnpm --filter api seed`.
+- Migration engine: **Umzug** with TypeORM + MySQL, compiled via **SWC**.
+- Database directory is located at `apps/api/database` (at the same level as `src/`).
+- Migration entrypoint: `apps/api/database/migrator.ts` (compiled via SWC to `dist-db/migrator.js`).
+- Seeder entrypoint: `apps/api/database/seeder.ts` (compiled via SWC to `dist-db/seeder.js`).
+- Run `pnpm --filter api migrate up` or `pnpm --filter api seed up` directly; SWC pre-compiles `database/` into `dist-db/` automatically before execution.
 
 ---
 

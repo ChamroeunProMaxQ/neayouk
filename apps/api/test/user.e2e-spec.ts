@@ -85,5 +85,25 @@ describe('UserController (e2e)', () => {
       expect(response.body).toBeDefined();
       expect(response.body.data).toHaveLength(10);
     });
+
+    it('should return filtered users when name parameter is provided', async () => {
+      const response = await request(server)
+        .get('/api/v1/users')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .query({
+          page: 1,
+          pageSize: 10,
+          name: 'john',
+        })
+        .expect(200);
+
+      expect(response.body).toBeDefined();
+      expect(Array.isArray(response.body.data)).toBe(true);
+      expect(
+        response.body.data.every((user: any) =>
+          user.username.toLowerCase().includes('john'),
+        ),
+      ).toBe(true);
+    });
   });
 });

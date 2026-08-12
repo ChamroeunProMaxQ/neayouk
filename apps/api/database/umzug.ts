@@ -1,22 +1,35 @@
+import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import { fileURLToPath } from 'node:url';
 import * as path from 'path';
 import type { Promisable, UmzugStorage } from 'umzug';
 import { Umzug } from 'umzug';
 import { DataSource } from 'typeorm';
-import { envConfig } from '@src/common/config/env.config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const nodeEnv = process.env.NODE_ENV;
+dotenv.config({
+  path: nodeEnv === 'test' ? '.env.test' : '.env',
+});
+
+const DB_HOST = process.env.DB_HOST ?? 'localhost';
+const DB_PORT = process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306;
+const DB_NAME = process.env.DB_NAME;
+const DB_USER = process.env.DB_USER;
+const DB_PASSWORD = process.env.DB_PASSWORD?.toString();
+
 export const dataSource = new DataSource({
   type: 'mysql',
-  host: envConfig.DB_HOST ?? 'localhost',
-  port: envConfig.DB_PORT ? +envConfig.DB_PORT : 3306,
-  database: envConfig.DB_NAME,
-  username: envConfig.DB_USER,
-  password: envConfig.DB_PASSWORD?.toString(),
+  host: DB_HOST,
+  port: DB_PORT,
+  database: DB_NAME,
+  username: DB_USER,
+  password: DB_PASSWORD,
 });
+
+console.log('running in env: ', nodeEnv ?? 'development');
 
 const migrationsPath = path.join(__dirname, 'migrations');
 const seederPath = path.join(__dirname, 'seeds');

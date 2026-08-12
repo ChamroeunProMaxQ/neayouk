@@ -7,6 +7,9 @@ import { CreateUserDto } from './dto/create-user.dto.js';
 import { FindUsersDto } from './dto/find-users.dto.js';
 import type { UpdateUserDto } from './dto/update-user.dto.js';
 import { User } from './entity/user.entity.js';
+import { getSkipLimit } from '@src/common/helper/pagination.helper.js';
+import { UserScopeBuilder } from './user.scope.js';
+import { UserToken } from '@src/user-token/entity/user-token.entity.js';
 
 @Injectable()
 export class UserService {
@@ -20,13 +23,19 @@ export class UserService {
     //
   }
 
-  async findAll(dto: FindUsersDto) {
-    this.logger.log('this is find all');
-    const [rows, count] = await this.userRepo.findAndCount({
-      take: dto.pageSize,
-      skip: dto.pageSize * (dto.page - 1),
-    });
-    return { count, rows };
+  async findAll({ name, ...dto }: FindUsersDto) {
+    const query = this.userRepo
+      .createQueryBuilder('user')
+      // .innerJoinAndSelect('user.tokens', 'tokens');
+
+    if (name) {
+      query.andWhere('user.username like :name', { name: `%${name}%` });
+    }
+
+    const { skip, take } = getSkipLimit(dto);
+    query.skip(skip).take(take);
+
+    return await query.getManyAndCount();
   }
 
   async findOne(userId: number) {

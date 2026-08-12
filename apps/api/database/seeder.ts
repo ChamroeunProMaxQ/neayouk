@@ -1,14 +1,9 @@
-import { access } from 'node:fs/promises';
+import { seeder, dataSource } from './umzug.js';
 
-const modulePath = await (async () => {
-  try {
-    await access(new URL('./umzug.js', import.meta.url));
-    return './umzug.js';
-  } catch {
-    return './umzug.ts';
+try {
+  await seeder.runAsCLI();
+} finally {
+  if (dataSource.isInitialized) {
+    await dataSource.destroy();
   }
-})();
-
-const { seeder } = await import(modulePath);
-
-await seeder.runAsCLI();
+}

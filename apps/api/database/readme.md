@@ -1,20 +1,49 @@
-This example shows how migrations can be written in typescript and run with the help of `ts-node`.
+# Database Migrations & Seeders
 
-Note:
+Database schema migrations and data seeders are managed using **Umzug** with TypeORM & MySQL, transpiled via **SWC**.
 
-- The entrypoint, `migrate.js`, calls `require('ts-node/register')` before requiring the `umzug.ts` module. This enables loading of typescript modules directly, and avoids the complexity of having a separate compilation target folder.
-- `umzug.ts` exports a migration type with `export type Migration = typeof migrator._types.migration;`. This allows typescript migration files to get strongly typed parameters by importing it.
-- Need to build the project before running the migration commands, because the migrator is located in the `dist` folder after build.
+## Available Commands
+
+Run these commands from the root directory or inside `apps/api`:
+
+### Migrations
 
 ```bash
-node migrate --help # show CLI help
+# Apply pending migrations
+pnpm --filter api migrate up
 
-node .\dist\database\migrator pending # show pending migrations
-node .\dist\database\migrator up # apply migrations
-node .\dist\database\migrator down # revert the last migration
-node .\dist\database\migrator down --to 0 # revert all migrations
-node .\dist\database\migrator up --step 2 # run only two migrations
+# Revert last migration
+pnpm --filter api migrate down
 
-# use ts-node to run create command, which needs to load the migration template file
-ts-node .\database\migrator create --name new-migration.ts # create a new migration file
+# Revert all migrations
+pnpm --filter api migrate down --to 0
+
+# Check pending migrations
+pnpm --filter api migrate pending
+
+# Check executed migrations
+pnpm --filter api migrate executed
+
+# Create a new migration file
+pnpm --filter api migrate:create --name create-orders-table.ts
+pnpm --filter api migrate:create --name add-status-to-orders.ts
 ```
+
+### Seeders
+
+```bash
+# Execute seeders
+pnpm --filter api seed up
+
+# Rollback seeders
+pnpm --filter api seed down
+
+# Create a new seed file
+pnpm --filter api seed:create --name user-seeder.ts
+```
+
+## How It Works
+
+- `database/` sits at the same level as `src/` inside `apps/api/`.
+- `pnpm migrate` and `pnpm seed` automatically compile `database/` into `dist-db/` via SWC before running.
+- `umzug.ts` exports `migrator`, `seeder`, and `dataSource` for both CLI usage and global test lifecycle hooks (`vitest.global-setup.ts`).

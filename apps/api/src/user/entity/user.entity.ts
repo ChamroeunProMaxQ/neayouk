@@ -54,7 +54,7 @@ export class User implements UserAttribute {
   deletedAt!: Date | null;
 
   @OneToMany(() => UserToken, (token) => token.user)
-  tokens!: UserToken[];
+  declare tokens: UserToken[];
 
   get computedNameId(): string {
     return `user-${this.id}`;

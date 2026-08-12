@@ -72,20 +72,17 @@ export const down: Migration = async ({ context: dataSource }) => {
 
 ```bash
 # 1. Create a new table migration template
-pnpm --filter api exec ts-node database/migrator.ts create --name create-orders-table.ts
+pnpm --filter api migrate:create --name create-orders-table.ts
 
 # 2. Add column migration template
-pnpm --filter api exec ts-node database/migrator.ts create --name add-status-to-orders.ts
+pnpm --filter api migrate:create --name add-status-to-orders.ts
 
-# 3. Build project before executing migrations in dist
-pnpm --filter api build
+# 3. Apply pending migrations
+pnpm --filter api migrate up
 
-# 4. Apply pending migrations
-pnpm --filter api migrate
-
-# 5. Check pending or revert last migration
-node .\dist\database\migrator pending
-node .\dist\database\migrator down
+# 4. Check pending or revert last migration
+pnpm --filter api migrate pending
+pnpm --filter api migrate down
 ```
 
 Reference: [Umzug Documentation](https://github.com/sequelize/umzug)

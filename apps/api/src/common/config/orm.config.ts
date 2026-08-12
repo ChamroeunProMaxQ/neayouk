@@ -13,5 +13,6 @@ export const typeOrmConfig = TypeOrmModule.forRootAsync({
         database: configService.getOrThrow<string>('DB_NAME'),
         autoLoadEntities: true,
         synchronize: false,
+        logging: ["query"],
     }),
 });

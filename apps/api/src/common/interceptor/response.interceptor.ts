@@ -16,7 +16,7 @@ import { map } from 'rxjs/operators';
 import { HTTP_MESSAGE_KEY } from '@src/common/decorator/message.decorator.js';
 
 type RawResponseDataType =
-  { count: number; rows: Record<string, any>[] } | Record<string, any>;
+  [Record<string, any>[], number] | Record<string, any>;
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
@@ -40,14 +40,13 @@ export class ResponseInterceptor implements NestInterceptor {
     return next.handle().pipe(
       map((_data: RawResponseDataType) => {
         // if (!_data) return new ResponseDto(statusCode, message, null);
+        const isPaginated = this.isPaginate(_data);
         const pagination =
-          page && pageSize && typeof _data?.count == 'number'
-            ? new PaginationResponseDto(+page, +pageSize, _data?.count)
+          page && pageSize && isPaginated
+            ? new PaginationResponseDto(+page, +pageSize, _data[1])
             : undefined;
-        const data =
-          typeof _data?.count == 'number'
-            ? (_data.rows as Record<string, any>[])
-            : _data;
+        const data = isPaginated ? _data[0] : _data;
+
         return new ResponseDto(statusCode, message, data, pagination);
       }),
     );
@@ -66,5 +65,12 @@ export class ResponseInterceptor implements NestInterceptor {
     const contentType = response.getHeader('content-type');
     if (contentType === undefined) return true;
     return contentType.toString().includes('application/json');
+  }
+
+  private isPaginate(_data: unknown): boolean {
+    return Array.isArray(_data) &&
+      _data.length === 2 &&
+      Array.isArray(_data[0]) &&
+      typeof _data[1] === 'number';
   }
 }

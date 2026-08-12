@@ -1,5 +1,9 @@
-//require('ts-node/register');
+import { migrator, dataSource } from './umzug.js';
 
-import { migrator } from './umzug.js';
-
-await migrator.runAsCLI();
+try {
+  await migrator.runAsCLI();
+} finally {
+  if (dataSource.isInitialized) {
+    await dataSource.destroy();
+  }
+}

@@ -25,12 +25,9 @@ export class UserTypesGuard implements CanActivate {
 
     const { user } = context.switchToHttp().getRequest();
 
-    console.log('require role', requireUserTypes, user);
     if (!user || !user.type) {
       return false;
     }
-
-    console.log("user types is ", user.type)
 
     return requireUserTypes.some((type) => user.type?.includes(type));
   }

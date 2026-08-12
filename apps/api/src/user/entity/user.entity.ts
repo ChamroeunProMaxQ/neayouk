@@ -44,14 +44,6 @@ export class User implements UserAttribute {
   })
   status!: UserStatusEnum;
 
-  @Column({
-    name: 'avatar_url',
-    type: 'varchar',
-    length: 512,
-    nullable: true,
-  })
-  avatarUrl!: string | null;
-
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
@@ -89,7 +81,6 @@ export class User implements UserAttribute {
     return {
       ...this,
       password: '',
-      avatarUrl: this.avatarUrl ?? null,
       computedNameId: this.computedNameId,
     };
   }

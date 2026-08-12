@@ -13,7 +13,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['src/**/*.spec.ts', 'src/**/*.test.ts'],
-    exclude: ['node_modules', 'dist', 'test'],
+    fileParallelism: false,
+    maxConcurrency: 1,
+    pool: 'forks',
+    include: ['test/**/*.e2e-spec.ts'],
+    setupFiles: ['./test/setup.ts'],
   },
 });

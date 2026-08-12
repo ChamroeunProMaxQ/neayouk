@@ -48,7 +48,6 @@
     "nest-casl": "^1.9.15",
     "nest-winston": "^1.10.2",
     "nestjs-zod": "^5.4.0",
-    "nestlens": "^0.4.2",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "prom-client": "^15.1.3",

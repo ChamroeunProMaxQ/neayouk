@@ -24,7 +24,7 @@ Production-grade full-stack TypeScript monorepo template built with **pnpm**, **
 ## ✨ Features
 
 - ⚡ **Turborepo & pnpm Workspaces**: Lightning-fast incremental builds and cached task execution.
-- 🛡️ **NestJS 12 API (`apps/api`)**: Node.js ESM REST API with TypeORM + MySQL, Passport JWT auth, CASL access control, and NestLens devtools.
+- 🛡️ **NestJS 12 API (`apps/api`)**: Node.js ESM REST API with TypeORM + MySQL, Passport JWT auth, and CASL access control.
 - 🎨 **React 19 + Vite 8 Web (`apps/web`)**: Modern, high-performance SPA frontend configured with Vite dev proxy.
 - 📐 **Single Source of Truth (`packages/shared`)**: Shared Zod schemas converted to NestJS DTOs via `nestjs-zod`.
 - 📊 **Complete Observability (`infra/log-explorer`)**: Pre-configured Docker Compose stack with Grafana dashboard, Loki log aggregation, OpenTelemetry traces via Tempo, and Prometheus metrics.
@@ -63,7 +63,7 @@ d1-monorepo-template/
 - **Database & ORM**: MySQL, TypeORM, Umzug (Migrations/Seeders)
 - **Validation**: Zod, `nestjs-zod`
 - **Auth & Authorization**: Passport JWT, CASL (`@casl/ability`, `nest-casl`)
-- **Observability**: OpenTelemetry, Prometheus, Winston + Loki, Grafana, NestLens
+- **Observability**: OpenTelemetry, Prometheus, Winston + Loki, Grafana
 - **Linting & Testing**: Oxlint, Vitest
 
 ---

@@ -25,7 +25,7 @@ d1-monorepo-template/
 
 | Workspace Path | Package Name | Description | Tech Stack |
 | :--- | :--- | :--- | :--- |
-| `apps/api` | `api` | Backend REST API | NestJS 12 (alpha), Node ESM, TypeORM + MySQL, Passport JWT, CASL, Winston/Loki, OpenTelemetry, NestLens |
+| `apps/api` | `api` | Backend REST API | NestJS 12 (alpha), Node ESM, TypeORM + MySQL, Passport JWT, CASL, Winston/Loki, OpenTelemetry |
 | `apps/web` | `web` | Frontend SPA | React 19, Vite 8 |
 | `packages/contracts` | `@repo/contracts` | Shared Source of Truth | Zod schemas, inferred DTO types, Enums, Route constants |
 | `infra/log-explorer` | N/A | Observability Stack | Grafana (`:13000`), Loki (`:3100`), Prometheus (`:9090`), Tempo (`:3200`) |

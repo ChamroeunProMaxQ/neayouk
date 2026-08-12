@@ -15,7 +15,7 @@ export const swaggerConfig = (app: INestApplication) => {
     });
 
     for (const path of Object.keys(document.paths)) {
-      if (path.includes('nestlens') || path.includes('metrics')) {
+      if (path.includes('metrics')) {
         delete document.paths[path];
       }
     }

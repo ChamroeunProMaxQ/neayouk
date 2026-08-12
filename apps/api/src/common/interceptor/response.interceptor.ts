@@ -14,7 +14,6 @@ import type { Request, Response } from 'express';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { HTTP_MESSAGE_KEY } from '@src/common/decorator/message.decorator.js';
-import { isNestLensRequest } from '@src/common/helper/nestlens.helper.js';
 
 type RawResponseDataType =
   { count: number; rows: Record<string, any>[] } | Record<string, any>;
@@ -29,8 +28,8 @@ export class ResponseInterceptor implements NestInterceptor {
     const request = ctx.getRequest<Request>();
 
     const url = request.originalUrl || request.url || request.path || '';
-    // exclude metrics and nestlens routes
-    if (url.includes('metrics') || isNestLensRequest(context)) return next.handle();
+    // exclude metrics routes
+    if (url.includes('metrics')) return next.handle();
 
     const statusCode = response.statusCode;
     const { page, pageSize } = (request.query ??

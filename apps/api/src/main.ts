@@ -19,10 +19,6 @@ async function bootstrap() {
       'api/docs/*path',
       'metrics',
       'metrics/*path',
-      'nestlens',
-      'nestlens/*path',
-      '__nestlens__',
-      '__nestlens__/*path',
     ],
   });
 

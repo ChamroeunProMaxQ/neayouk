@@ -7,7 +7,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
-import { NestLensModule } from 'nestlens';
 import { AppController } from '@src/app.controller.js';
 import { AppService } from '@src/app.service.js';
 import { AuthModule } from '@src/auth/auth.module.js';
@@ -26,9 +25,7 @@ import type { JwtPayload } from '@src/auth/dto/jwt-payload.dto.js';
 import type { Request } from 'express';
 import { caslConfig } from '@src/common/config/casl.config.js';
 import { envModuelConfig } from '@src/common/config/env.config.js';
-import { nestlenConfig } from '@src/common/config/nestlen.config.js';
 import { typeOrmConfig } from './common/config/orm.config.js';
-import { NestLensModelSubscriberModule } from './common/provider/nestlens-model-subscriber.module.js';
 
 @Module({
   imports: [
@@ -36,8 +33,6 @@ import { NestLensModelSubscriberModule } from './common/provider/nestlens-model-
     caslConfig,
     typeOrmConfig,
     UserModule,
-    NestLensModelSubscriberModule,
-    nestlenConfig,
     ...oberservableConfig,
     LoggerModule,
     AuthModule,

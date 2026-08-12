@@ -13,7 +13,6 @@ A progressive, scalable NestJS server-side application built with Node.js ESM (`
   - **Tracing**: OpenTelemetry auto-instrumentation exportable via OTLP HTTP.
   - **Metrics**: Prometheus metrics exposed via `@willsoto/nestjs-prometheus` and `prom-client`.
   - **Logs**: Structured logging powered by `winston` and `winston-loki`.
-  - **Devtools**: `nestlens` for real-time application graph & subscriber debugging.
 - **Testing**: Fast e2e and unit testing using Vitest.
 
 ---

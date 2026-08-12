@@ -292,9 +292,6 @@ importers:
       nestjs-zod:
         specifier: ^5.4.0
         version: 5.4.0(@nestjs/common@12.0.0-alpha.5(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/swagger@12.0.0-alpha.2(@nestjs/common@12.0.0-alpha.5(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@12.0.0-alpha.5)(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2))(rxjs@7.8.2)(zod@4.4.3)
-      nestlens:
-        specifier: ^0.4.2
-        version: 0.4.2(@nestjs/common@12.0.0-alpha.5(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@12.0.0-alpha.5)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       passport:
         specifier: ^0.7.0
         version: 0.7.0
@@ -5022,34 +5019,6 @@ packages:
       '@nestjs/swagger':
         optional: true
 
-  nestlens@0.4.2:
-    resolution: {integrity: sha512-y2xL0WSzK/6sPmfSkrxHiuF93hov4cf7+nTH14QOT2xhQu0vsTg4zCdLj+fMu25eNTUDSQJ7P3Z4xj1E+iGJ3g==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      '@apollo/server': '*'
-      '@nestjs/apollo': '*'
-      '@nestjs/common': ^9.0.0 || ^10.0.0 || ^11.0.0
-      '@nestjs/core': ^9.0.0 || ^10.0.0 || ^11.0.0
-      '@nestjs/graphql': '*'
-      '@nestjs/mercurius': '*'
-      ioredis: ^5.0.0
-      mercurius: '*'
-      reflect-metadata: ^0.1.13 || ^0.2.0
-      rxjs: ^7.0.0
-    peerDependenciesMeta:
-      '@apollo/server':
-        optional: true
-      '@nestjs/apollo':
-        optional: true
-      '@nestjs/graphql':
-        optional: true
-      '@nestjs/mercurius':
-        optional: true
-      ioredis:
-        optional: true
-      mercurius:
-        optional: true
-
   node-abi@3.94.0:
     resolution: {integrity: sha512-W5ZNO5KRPB5TkYmGVD9F6YqhsglXJzE6etpbmT+f6EQElhiX/UTG551cnsRGvLG3fyZEg9HwaDmNmj5nwJ4z9g==}
     engines: {node: '>=10'}
@@ -9269,7 +9238,8 @@ snapshots:
 
   '@types/triple-beam@1.3.5': {}
 
-  '@types/validator@13.15.10': {}
+  '@types/validator@13.15.10':
+    optional: true
 
   '@typescript-eslint/eslint-plugin@8.63.0(@typescript-eslint/parser@8.63.0(eslint@9.39.4)(typescript@5.9.3))(eslint@9.39.4)(typescript@5.9.3)':
     dependencies:
@@ -9920,13 +9890,15 @@ snapshots:
 
   cjs-module-lexer@2.2.0: {}
 
-  class-transformer@0.5.1: {}
+  class-transformer@0.5.1:
+    optional: true
 
   class-validator@0.14.4:
     dependencies:
       '@types/validator': 13.15.10
       libphonenumber-js: 1.13.10
       validator: 13.15.35
+    optional: true
 
   cli-cursor@3.1.0:
     dependencies:
@@ -10946,7 +10918,8 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  libphonenumber-js@1.13.10: {}
+  libphonenumber-js@1.13.10:
+    optional: true
 
   lightningcss-android-arm64@1.32.0:
     optional: true
@@ -11234,18 +11207,6 @@ snapshots:
       zod: 4.4.3
     optionalDependencies:
       '@nestjs/swagger': 12.0.0-alpha.2(@nestjs/common@12.0.0-alpha.5(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@12.0.0-alpha.5)(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)
-
-  nestlens@0.4.2(@nestjs/common@12.0.0-alpha.5(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@12.0.0-alpha.5)(reflect-metadata@0.2.2)(rxjs@7.8.2):
-    dependencies:
-      '@nestjs/common': 12.0.0-alpha.5(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@nestjs/core': 12.0.0-alpha.5(@nestjs/common@12.0.0-alpha.5(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@12.0.0-alpha.5)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      class-transformer: 0.5.1
-      class-validator: 0.14.4
-      reflect-metadata: 0.2.2
-      rxjs: 7.8.2
-      uuid: 11.1.1
-    optionalDependencies:
-      better-sqlite3: 11.10.0
 
   node-abi@3.94.0:
     dependencies:

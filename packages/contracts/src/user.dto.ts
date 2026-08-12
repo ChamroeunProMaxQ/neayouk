@@ -10,6 +10,7 @@ export const UserSchema = z.object({
   password: z.string(),
   userType: z.nativeEnum(UserTypeEnum),
   status: z.nativeEnum(UserStatusEnum),
+  avatarUrl: z.string().nullable().optional(),
   computedNameId: z.string(),
 });
 
@@ -28,6 +29,7 @@ export const UpdateUserSchema = z.object({
   password: z.string().min(6, "password must be at least 6 characters").optional(),
   status: z.nativeEnum(UserStatusEnum).optional(),
   userType: z.nativeEnum(UserTypeEnum).optional(),
+  avatarUrl: z.string().optional(),
 });
 
 export type UpdateUserAttribute = z.infer<typeof UpdateUserSchema>;

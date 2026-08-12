@@ -1,4 +1,4 @@
-import { UserStatusEnum, UserTypeEnum, type UserAttribute } from '@repo/shared';
+import { UserStatusEnum, UserTypeEnum, type UserAttribute } from '@repo/contracts';
 import { randomUUID } from 'node:crypto';
 import {
   BeforeInsert,

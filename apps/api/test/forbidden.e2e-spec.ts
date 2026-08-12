@@ -1,7 +1,7 @@
-import { type INestApplication } from '@nestjs/common';
+import { VersioningType, type INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
-import { UserTypeEnum } from '@repo/shared';
+import { UserTypeEnum } from '@repo/contracts';
 import request from 'supertest';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { ZodValidationPipe } from 'nestjs-zod';
@@ -19,6 +19,12 @@ describe('Forbidden Requests (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+
+    app.setGlobalPrefix('api');
+    app.enableVersioning({
+      type: VersioningType.URI,
+      defaultVersion: '1',
+    });
 
     await migrator.up();
     await seeder.up();
@@ -54,7 +60,7 @@ describe('Forbidden Requests (e2e)', () => {
 
       expect(response.body).toEqual({
         status: 403,
-        message: 'You do not have permission to access or modify this resource',
+        message: 'Forbidden resource',
         data: null,
       });
     });

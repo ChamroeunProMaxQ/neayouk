@@ -1,5 +1,5 @@
 import type { JwtPayload } from "@src/auth/dto/jwt-payload.dto.js";
-import { UserTypeEnum } from "@repo/shared";
+import { UserTypeEnum } from "@repo/contracts";
 import type { Request } from "express";
 import { CaslModule, type AuthorizableUser } from "nest-casl";
 
@@ -7,6 +7,7 @@ export const caslConfig = CaslModule.forRoot<UserTypeEnum, AuthorizableUser<User
     superuserRole: UserTypeEnum.ADMIN,
     getUserFromRequest: (request) => {
         const user = (request as unknown as Request).user as JwtPayload | undefined;
+        console.log('user in casl config', user);
         if (!user) return undefined;
         return {
             id: Number(user.sub),

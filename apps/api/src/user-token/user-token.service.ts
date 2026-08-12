@@ -5,7 +5,7 @@ import {
   TokenStatusEnum,
   TokenTypeEnum,
   type CreateUserTokenDto,
-} from '@repo/shared';
+} from '@repo/contracts';
 import type { FindOptionsWhere } from 'typeorm';
 import { MoreThan, Repository } from 'typeorm';
 import type { JwtPayload } from '@src/auth/dto/jwt-payload.dto.js';

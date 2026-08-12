@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { UserStatusEnum, UserTypeEnum } from '@repo/shared';
+import { UserStatusEnum, UserTypeEnum } from '@repo/contracts';
 import { randomBytes, randomUUID, scryptSync } from 'node:crypto';
 import type { DataSource } from 'typeorm';
 

@@ -1,4 +1,4 @@
-import type { UserTypeEnum } from '@repo/shared';
+import type { UserTypeEnum } from '@repo/contracts';
 
 export interface JwtPayload {
   sub: number;

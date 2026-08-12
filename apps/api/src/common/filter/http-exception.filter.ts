@@ -12,7 +12,7 @@ import {
   Inject,
   Optional,
 } from '@nestjs/common';
-import { ResponseDto } from '@repo/shared';
+import { ResponseDto } from '@repo/contracts';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import type { Request, Response } from 'express';
 import { CollectorService } from 'nestlens';

@@ -24,7 +24,8 @@ import { User } from './entity/user.entity.js';
 import { UserHook } from './user.hook.js';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { UserTypes } from '@src/common/decorator/user-type.decorator.js';
-import { UserTypeEnum } from '@repo/shared';
+import { UserTypeEnum } from '@repo/contracts';
+import { UserTypesGuard } from '@src/common/guard/user-types.guard.js';
 
 @ApiBearerAuth()
 @Controller('users')
@@ -33,7 +34,7 @@ export class UserController {
     //
   }
 
-  @UseGuards(JwtAuthGuard, CaslAccessGuard)
+  @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
   @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
   @UseAbility(DefaultActions.read, User)
   @Get()

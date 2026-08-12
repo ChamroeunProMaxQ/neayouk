@@ -1,32 +1,44 @@
-# React + TypeScript + Vite
+# Web Frontend (`apps/web`)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Modern React 19 web application built with Vite 8, featuring Fast Refresh (HMR), TypeScript integration, dev server proxying, and shared type safety from `@repo/contracts`.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **React 19 & Vite 8**: Next-gen frontend stack with sub-second startup times and instant HMR.
+- **Shared Validation & Types**: Imports DTO schemas, inferred types, enums, and route paths directly from `@repo/contracts`.
+- **API Dev Proxy**: Vite dev server proxies all `/api` requests automatically to the NestJS API backend (`http://localhost:3000`).
+- **High-Speed Linting**: Configured with `oxlint` for fast static analysis.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Scripts & Usage
 
-## Expanding the Oxlint configuration
+From the project root or inside `apps/web`:
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+| Command | Description |
+| :--- | :--- |
+| `pnpm dev:web` | Start Vite dev server at `http://localhost:5173` |
+| `pnpm build` | Compile TypeScript and build production bundle (`tsc -b && vite build`) |
+| `pnpm preview` | Preview production build output locally |
+| `pnpm lint` | Lint frontend source code using `oxlint` |
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
+---
+
+## 🌐 API Proxy Configuration
+
+The dev server in `vite.config.ts` proxies requests starting with `/api` to the backend:
+
+```ts
+export default defineConfig({
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
   },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+});
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Web components can fetch relative endpoints (e.g. `fetch('/api/user')`) without hardcoding API hosts or dealing with CORS in development.

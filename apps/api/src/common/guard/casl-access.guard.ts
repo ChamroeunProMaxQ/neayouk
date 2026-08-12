@@ -7,7 +7,7 @@ import { isNestLensRequest } from '@src/common/helper/nestlens.helper.js';
 @Injectable()
 export class CaslAccessGuard extends AccessGuard {
   constructor(
-    private readonly reflectorService: Reflector,
+    reflectorService: Reflector,
     accessService: AccessService,
     moduleRef: ModuleRef,
   ) {

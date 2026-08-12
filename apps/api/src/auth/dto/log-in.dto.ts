@@ -1,4 +1,4 @@
-import { LogInSchema } from '@repo/shared';
+import { LogInSchema } from '@repo/contracts';
 import { createZodDto } from 'nestjs-zod';
 
 export class LogInDto extends createZodDto(LogInSchema) {}

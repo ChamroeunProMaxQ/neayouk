@@ -2,7 +2,7 @@ import {
   TokenStatusEnum,
   TokenTypeEnum,
   type UserTokenAttribute,
-} from '@repo/shared';
+} from '@repo/contracts';
 import {
   Column,
   CreateDateColumn,

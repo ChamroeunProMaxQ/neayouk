@@ -14,7 +14,6 @@ import { AuthModule } from '@src/auth/auth.module.js';
 import { LoggerModule } from '@src/common/config/logger.config.js';
 import { oberservableConfig } from '@src/common/config/oberservable.config.js';
 import { HttpExceptionsFilter } from '@src/common/filter/http-exception.filter.js';
-import { UserTypesGuard } from '@src/common/guard/user-types.guard.js';
 import { HttpMetricsInterceptor } from '@src/common/interceptor/http-metrics.interceptor .js';
 import { ResponseInterceptor } from '@src/common/interceptor/response.interceptor.js';
 import { HttpLoggerMiddleware } from '@src/common/middleware/http-logger.middleware.js';
@@ -22,7 +21,7 @@ import { HttpRequestDurationProvider } from '@src/common/provider/http-request-d
 import { HttpRequestsCounterProvider } from '@src/common/provider/http-requests-counter.provider .js';
 import { UserModule } from '@src/user/user.module.js';
 import { CaslModule, type AuthorizableUser } from 'nest-casl';
-import { UserTypeEnum } from '@repo/shared';
+import { UserTypeEnum } from '@repo/contracts';
 import type { JwtPayload } from '@src/auth/dto/jwt-payload.dto.js';
 import type { Request } from 'express';
 import { caslConfig } from '@src/common/config/casl.config.js';
@@ -68,10 +67,6 @@ import { NestLensModelSubscriberModule } from './common/provider/nestlens-model-
       provide: APP_INTERCEPTOR,
       useClass: HttpMetricsInterceptor,
     },
-    {
-      provide: APP_GUARD,
-      useClass: UserTypesGuard,
-    }
   ],
 })
 export class AppModule implements NestModule {

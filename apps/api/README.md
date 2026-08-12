@@ -1,98 +1,90 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# NestJS API (`apps/api`)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A progressive, scalable NestJS server-side application built with Node.js ESM (`"type": "module"`), TypeORM, Zod validation, CASL authorization, and full observability integration.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Features
 
-## Description
+- **NestJS 12 & Node ESM**: Uses modern ECMAScript Modules with NodeNext module resolution.
+- **Shared Zod Validation**: Consumes DTO schemas from `@repo/contracts` via `nestjs-zod` for single-source-of-truth validation across API and Web client.
+- **Unified API Response Shape**: All endpoint responses and errors are intercepted and normalized into a consistent envelope `{ status, message, data, pagination }`.
+- **Database & Migrations**: TypeORM with MySQL support, alongside Umzug for database migrations and data seeding.
+- **Auth & Authorization**: Passport JWT authentication coupled with CASL (`nest-casl`) for fine-grained role/attribute-based access control.
+- **Full Observability Suite**:
+  - **Tracing**: OpenTelemetry auto-instrumentation exportable via OTLP HTTP.
+  - **Metrics**: Prometheus metrics exposed via `@willsoto/nestjs-prometheus` and `prom-client`.
+  - **Logs**: Structured logging powered by `winston` and `winston-loki`.
+  - **Devtools**: `nestlens` for real-time application graph & subscriber debugging.
+- **Testing**: Fast e2e and unit testing using Vitest.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## 🛠️ Scripts & Usage
 
+From the project root or inside `apps/api`:
+
+| Command | Description |
+| :--- | :--- |
+| `pnpm dev` | Start API in watch mode (`nest start --watch --preserveWatchOutput`) |
+| `pnpm build` | Build production output using Nest CLI (`nest build`) |
+| `pnpm start:prod` | Run built API from `dist/main.js` |
+| `pnpm migrate` | Run database migrations via Umzug (`dist/database/migrator.js`) |
+| `pnpm seed` | Execute database seeders (`dist/database/seeder.js`) |
+| `pnpm lint` | Lint code using `oxlint` |
+| `pnpm test` | Run e2e tests using Vitest |
+| `pnpm test:watch` | Run Vitest in watch mode |
+| `pnpm test:coverage` | Run Vitest coverage report |
+
+### Running E2E Tests via Turbo
 ```bash
-$ pnpm install
+# Run tests across the workspace
+pnpm test
+
+# Run specific API e2e test with Vitest
+pnpm --filter api exec vitest run test/app.e2e-spec.ts
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ pnpm run start
+## 📐 Architecture & Conventions
 
-# watch mode
-$ pnpm run start:dev
+### 1. Shared DTOs & Validation
+- Zod schemas live in `packages/shared/src/*.dto.ts` (e.g., `CreateUserSchema`).
+- API DTO classes extend `createZodDto`:
+  ```ts
+  import { createZodDto } from 'nestjs-zod';
+  import { CreateUserSchema } from '@repo/contracts';
 
-# production mode
-$ pnpm run start:prod
+  export class CreateUserDto extends createZodDto(CreateUserSchema) {}
+  ```
+- `ZodValidationPipe` is registered globally in `AppModule`, automatically validating all body/query payloads against these schemas.
+
+### 2. Standardized Response Envelope
+All responses are formatted as:
+```json
+{
+  "status": 200,
+  "message": "success",
+  "data": { ... },
+  "pagination": {
+    "page": 1,
+    "pageSize": 10,
+    "total": 50,
+    "totalPages": 5
+  }
+}
+```
+- Custom response messages can be set on controllers using the `@HttpMessage('...')` decorator.
+- `HttpExceptionsFilter` catches all exceptions (including Zod validation errors) and formats them into this exact response shape.
+
+### 3. ESM Import Convention (`.js` Extension)
+Because this package operates under NodeNext ESM resolution, **all relative imports in `.ts` files must include explicit `.js` extensions**:
+```ts
+import { AppModule } from './app.module.js'; // Correct
+import { AppModule } from './app.module';    // Will throw ERR_MODULE_NOT_FOUND at runtime
 ```
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ pnpm run test
+## 🧪 Manual API Testing
 
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+A ready-to-use REST client request file is located at [`apps/api/http/user.http`](file:///e:/work/d1-monorepo-template/apps/api/http/user.http). You can execute these endpoints directly using VS Code / WebStorm REST Client plugins.

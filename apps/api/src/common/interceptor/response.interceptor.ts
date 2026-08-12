@@ -9,7 +9,7 @@ import {
   PaginationResponseDto,
   ResponseDto,
   type PaginationDto,
-} from '@repo/shared';
+} from '@repo/contracts';
 import type { Request, Response } from 'express';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';

@@ -1,33 +1,20 @@
 import type { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-
-import { ZodValidationPipe } from 'nestjs-zod';
-import { migrator, seeder } from '@database/umzug.js';
-import { AppModule } from '@src/app.module.js';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { setupE2eApp, teardownE2eApp } from './utils/e2e-test.utils.js';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
+  let server: any;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-
-    await migrator.up();
-    await seeder.up();
-
-    app.useGlobalPipes(new ZodValidationPipe());
-
-    await app.init();
+    const ctx = await setupE2eApp({ globalPrefix: false, version: false });
+    app = ctx.app;
+    server = ctx.server;
   });
 
   afterAll(async () => {
-    await seeder.down({ to: 0 });
-    await migrator.down({ to: 0 });
-    await app.close();
+    await teardownE2eApp(app);
   });
 
   let accessToken: string;
@@ -39,7 +26,7 @@ describe('AuthController (e2e)', () => {
 
   describe('POST /auth/login', () => {
     it('should login successfully', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(server)
         .post('/auth/login')
         .send(user)
         .expect(201);
@@ -58,7 +45,7 @@ describe('AuthController (e2e)', () => {
 
   describe('GET /auth/profile', () => {
     it('should return current user', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(server)
         .get('/auth/profile')
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(200);
@@ -70,13 +57,13 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should reject without token', async () => {
-      await request(app.getHttpServer()).get('/auth/profile').expect(401);
+      await request(server).get('/auth/profile').expect(401);
     });
   });
 
   describe('POST /auth/refresh-token', () => {
     it('should refresh token successfully', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(server)
         .post('/auth/refresh-token')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({
@@ -98,7 +85,7 @@ describe('AuthController (e2e)', () => {
 
   describe('POST /auth/logout', () => {
     it('should logout successfully', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(server)
         .post('/auth/logout')
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(201);

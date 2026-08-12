@@ -1,6 +1,8 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from '@src/app.controller.js';
 import { AppService } from '@src/app.service.js';
+
 describe('AppController', () => {
   let appController: AppController;
 
@@ -14,7 +16,7 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello"', () => {
+    it('should return "hello"', () => {
       expect(appController.getHello()).toBe('hello');
     });
   });

@@ -66,6 +66,7 @@ Reference these guidelines when:
 ### 4. Security (HIGH)
 
 - `security-auth-jwt` - Secure JWT authentication
+- `security-casl-rbac` - Declarative Role and Attribute-Based Access Control (RBAC/ABAC) using CASL
 - `security-validate-all-input` - Validate with class-validator
 - `security-use-guards` - Authentication and authorization guards
 - `security-sanitize-output` - Prevent XSS attacks

@@ -1,39 +1,19 @@
-import { VersioningType, type INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
-import { JwtService } from '@nestjs/jwt';
+import type { INestApplication } from '@nestjs/common';
 import { UserTypeEnum } from '@repo/contracts';
 import request from 'supertest';
-
-import { ZodValidationPipe } from 'nestjs-zod';
-import { migrator, seeder } from '@database/umzug.js';
-import { AppModule } from '@src/app.module.js';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { setupE2eApp, teardownE2eApp } from './utils/e2e-test.utils.js';
 
 describe('UserController (e2e)', () => {
   let app: INestApplication;
-  let jwtService: JwtService;
+  let server: any;
   let adminToken: string;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-
-    app.setGlobalPrefix('api');
-    app.enableVersioning({
-      type: VersioningType.URI,
-      defaultVersion: '1',
-    });
-
-    await migrator.up();
-    await seeder.up();
-
-    app.useGlobalPipes(new ZodValidationPipe());
-
-    await app.init();
-    jwtService = app.get(JwtService);
-    adminToken = jwtService.sign({
+    const ctx = await setupE2eApp();
+    app = ctx.app;
+    server = ctx.server;
+    adminToken = ctx.createToken({
       sub: 11,
       username: 'string',
       type: UserTypeEnum.ADMIN,
@@ -41,14 +21,12 @@ describe('UserController (e2e)', () => {
   });
 
   afterAll(async () => {
-    await seeder.down({ to: 0 });
-    await migrator.down({ to: 0 });
-    await app.close();
+    await teardownE2eApp(app);
   });
 
   describe('/api/v1/users (POST)', () => {
     it('should create user', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(server)
         .post('/api/v1/users')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
@@ -63,8 +41,9 @@ describe('UserController (e2e)', () => {
         }),
       );
     });
+
     it('should return empty password', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(server)
         .post('/api/v1/users')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
@@ -83,7 +62,7 @@ describe('UserController (e2e)', () => {
 
   describe('/api/v1/users/:id (GET)', () => {
     it('should return user by id', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(server)
         .get('/api/v1/users/1')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
@@ -94,7 +73,7 @@ describe('UserController (e2e)', () => {
 
   describe('/api/v1/users (GET)', () => {
     it('should return users', async () => {
-      const response = await request(app.getHttpServer())
+      const response = await request(server)
         .get('/api/v1/users')
         .set('Authorization', `Bearer ${adminToken}`)
         .query({

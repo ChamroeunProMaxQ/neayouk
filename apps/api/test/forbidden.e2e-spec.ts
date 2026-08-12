@@ -1,55 +1,34 @@
-import { VersioningType, type INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
-import { JwtService } from '@nestjs/jwt';
+import type { INestApplication } from '@nestjs/common';
 import { UserTypeEnum } from '@repo/contracts';
 import request from 'supertest';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { ZodValidationPipe } from 'nestjs-zod';
-import { migrator, seeder } from '@database/umzug.js';
-import { HttpExceptionsFilter } from '@src/common/filter/http-exception.filter.js';
-import { AppModule } from '@src/app.module.js';
+import { setupE2eApp, teardownE2eApp, type E2eTestContext } from './utils/e2e-test.utils.js';
 
 describe('Forbidden Requests (e2e)', () => {
   let app: INestApplication;
-  let jwtService: JwtService;
+  let server: any;
+  let createToken: E2eTestContext['createToken'];
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-
-    app.setGlobalPrefix('api');
-    app.enableVersioning({
-      type: VersioningType.URI,
-      defaultVersion: '1',
-    });
-
-    await migrator.up();
-    await seeder.up();
-
-    app.useGlobalPipes(new ZodValidationPipe());
-
-    await app.init();
-    jwtService = app.get(JwtService);
+    const ctx = await setupE2eApp();
+    app = ctx.app;
+    server = ctx.server;
+    createToken = ctx.createToken;
   });
 
   afterAll(async () => {
-    await seeder.down({ to: 0 });
-    await migrator.down({ to: 0 });
-    await app.close();
+    await teardownE2eApp(app);
   });
 
   describe('POST /api/v1/users (Forbidden for CUSTOMER)', () => {
     it('should return 403 formatted response when customer attempts to create user', async () => {
-      const customerToken = jwtService.sign({
+      const customerToken = createToken({
         sub: 1,
         username: 'customer1',
         type: UserTypeEnum.CUSTOMER,
       });
 
-      const response = await request(app.getHttpServer())
+      const response = await request(server)
         .post('/api/v1/users')
         .set('Authorization', `Bearer ${customerToken}`)
         .send({
@@ -68,14 +47,13 @@ describe('Forbidden Requests (e2e)', () => {
 
   describe('GET /api/v1/users/:id (Forbidden for other CUSTOMER profile)', () => {
     it('should return 403 formatted response when customer accesses another profile', async () => {
-      // Customer ID 1 attempting to access user ID 2
-      const customerToken = jwtService.sign({
+      const customerToken = createToken({
         sub: 1,
         username: 'customer1',
         type: UserTypeEnum.CUSTOMER,
       });
 
-      const response = await request(app.getHttpServer())
+      const response = await request(server)
         .get('/api/v1/users/2')
         .set('Authorization', `Bearer ${customerToken}`)
         .expect(403);

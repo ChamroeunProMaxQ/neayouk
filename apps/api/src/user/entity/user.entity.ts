@@ -65,6 +65,12 @@ export class User implements UserAttribute {
     if (!this.uuid) {
       this.uuid = randomUUID();
     }
+    if (!this.userType) {
+      this.userType = UserTypeEnum.CUSTOMER;
+    }
+    if (!this.status) {
+      this.status = UserStatusEnum.ACTIVE;
+    }
     if (this.password && !this.password.includes(':')) {
       this.password = hashPassword(this.password);
     }

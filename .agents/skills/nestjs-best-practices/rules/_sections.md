@@ -8,7 +8,7 @@ The section ID (in parentheses) is the filename prefix used to group rules.
 ## 1. Architecture (arch)
 
 **Impact:** CRITICAL
-**Description:** Proper module organization and dependency management are the foundation of maintainable NestJS applications. Circular dependencies and god services are the #1 architecture killer.
+**Description:** Proper module organization, dependency management, and consuming shared monorepo `@repo/contracts` DTOs/schemas are the foundation of maintainable NestJS applications.
 
 ## 2. Dependency Injection (di)
 
@@ -23,7 +23,7 @@ The section ID (in parentheses) is the filename prefix used to group rules.
 ## 4. Security (security)
 
 **Impact:** HIGH
-**Description:** Security vulnerabilities can be catastrophic. Input validation, authentication, authorization, and data protection are non-negotiable.
+**Description:** Security vulnerabilities can be catastrophic. Input validation with `@repo/contracts` Zod schemas, authentication, authorization, and data protection are non-negotiable.
 
 ## 5. Performance (perf)
 
@@ -43,7 +43,7 @@ The section ID (in parentheses) is the filename prefix used to group rules.
 ## 8. API Design (api)
 
 **Impact:** MEDIUM
-**Description:** RESTful conventions, versioning, DTOs, and consistent response formats improve API usability and maintainability.
+**Description:** RESTful conventions, versioning, DTOs, `@repo/contracts` serialization, and consistent response formats improve API usability and maintainability.
 
 ## 9. Microservices (micro)
 

@@ -4,7 +4,7 @@
 - Focus: System design, requirements, and user stories.
 - Actions: Generates `Implementation_Plan.md` artifacts. Asks for human sign-off before coding begins.
 
-## @engineer (Full-Stack Engineer)
+## @engineer (NestJS Backend Engineer)
 - Focus: Code generation, refactoring, and local build compliance.
 - Actions: Reads approved plans and writes clean code adhering to root `AGENTS.md`.
 

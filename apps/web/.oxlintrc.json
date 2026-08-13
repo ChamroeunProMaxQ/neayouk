@@ -1,8 +1,14 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
+  "plugins": ["react", "jsx-a11y", "typescript"],
+  "categories": {
+    "correctness": "warn"
+  },
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
+    "react/jsx-no-target-blank": "error",
+    "react/jsx-key": "error",
+    "typescript/no-explicit-any": "error"
+  },
+  "ignorePatterns": ["dist", "node_modules", ".turbo"]
 }

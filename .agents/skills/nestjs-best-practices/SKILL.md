@@ -1,20 +1,21 @@
 ---
 name: nestjs-best-practices
-description: NestJS best practices and architecture patterns for building production-ready applications. This skill should be used when writing, reviewing, or refactoring NestJS code to ensure proper patterns for modules, dependency injection, security, and performance.
+description: NestJS best practices and architecture patterns for building production-ready applications. Includes monorepo @repo/contracts integration, modules, dependency injection, security, and performance.
 license: MIT
 metadata:
   author: Kadajett
-  version: "1.2.0"
+  version: "1.3.0"
 ---
 
 # NestJS Best Practices
 
-Comprehensive best practices guide for NestJS applications. Contains 40 rules across 10 categories, prioritized by impact to guide automated refactoring and code generation.
+Comprehensive best practices guide for NestJS applications. Contains 41 rules across 10 categories, prioritized by impact to guide automated refactoring, code generation, and monorepo contract synchronization.
 
 ## When to Apply
 
 Reference these guidelines when:
 
+- Consuming shared `@repo/contracts` schemas (`packages/contracts/src/*.ts`), DTOs, and route path constants
 - Writing new NestJS modules, controllers, or services
 - Implementing authentication and authorization
 - Reviewing code for architecture and security issues
@@ -41,6 +42,7 @@ Reference these guidelines when:
 
 ### 1. Architecture (CRITICAL)
 
+- `arch-shared-contract-package` - Consume shared monorepo `@repo/contracts` for DTOs, schemas, and routes
 - `arch-avoid-circular-deps` - Avoid circular module dependencies
 - `arch-feature-modules` - Organize by feature, not technical layer
 - `arch-module-sharing` - Proper module exports/imports, avoid duplicate providers
@@ -67,7 +69,7 @@ Reference these guidelines when:
 
 - `security-auth-jwt` - Secure JWT authentication
 - `security-casl-rbac` - Declarative Role and Attribute-Based Access Control (RBAC/ABAC) using CASL
-- `security-validate-all-input` - Validate with class-validator
+- `security-validate-all-input` - Validate with Zod validation pipe and `@repo/contracts` schemas
 - `security-use-guards` - Authentication and authorization guards
 - `security-sanitize-output` - Prevent XSS attacks
 - `security-rate-limiting` - Implement rate limiting
@@ -93,7 +95,7 @@ Reference these guidelines when:
 
 ### 8. API Design (MEDIUM)
 
-- `api-use-dto-serialization` - DTO and response serialization
+- `api-use-dto-serialization` - DTO and response serialization with `@repo/contracts`
 - `api-use-interceptors` - Cross-cutting concerns
 - `api-versioning` - API versioning strategies
 - `api-use-pipes` - Input transformation with pipes
@@ -115,18 +117,8 @@ Reference these guidelines when:
 Read individual rule files for detailed explanations and code examples:
 
 ```
+rules/arch-shared-contract-package.md
 rules/arch-avoid-circular-deps.md
 rules/security-validate-all-input.md
 rules/_sections.md
 ```
-
-Each rule file contains:
-- Brief explanation of why it matters
-- Incorrect code example with explanation
-- Correct code example with explanation
-- Additional context and references
-
-## Full Compiled Document
-
-For the complete guide with all rules expanded in a single document, see
-[AGENTS.md in the repository](https://github.com/Kadajett/agent-nestjs-skills/blob/main/AGENTS.md).

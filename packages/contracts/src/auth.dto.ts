@@ -9,6 +9,13 @@ export const RefreshTokenSchema = z.object({
   refreshToken: z.string().min(1, "refreshToken is required"),
 });
 
+export const LogInResponseSchema = z.object({
+  accessToken: z.string(),
+  refreshToken: z.string(),
+});
+
 export type LogInAttribute = z.infer<typeof LogInSchema>;
 export type LogInDto = z.infer<typeof LogInSchema>;
 export type RefreshTokenDto = z.infer<typeof RefreshTokenSchema>;
+export type LogInResponseDto = z.infer<typeof LogInResponseSchema>;
+

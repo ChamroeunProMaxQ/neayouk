@@ -1,13 +1,22 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { UserDto } from "@repo/contracts";
+
+export interface AuthUser {
+  id?: number;
+  sub?: number;
+  username: string;
+  userType?: string;
+  type?: string;
+}
 
 export interface AuthState {
-  user: UserDto | null;
+  user: AuthUser | null;
   token: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
-  setUser: (user: UserDto | null) => void;
+  setUser: (user: AuthUser | null) => void;
   setToken: (token: string | null) => void;
+  setTokens: (tokens: { accessToken: string; refreshToken: string }) => void;
   logout: () => void;
 }
 
@@ -16,10 +25,13 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       token: null,
+      refreshToken: null,
       isAuthenticated: false,
       setUser: (user) => set({ user, isAuthenticated: Boolean(user) }),
-      setToken: (token) => set({ token }),
-      logout: () => set({ user: null, token: null, isAuthenticated: false }),
+      setToken: (token) => set({ token, isAuthenticated: Boolean(token) }),
+      setTokens: ({ accessToken, refreshToken }) =>
+        set({ token: accessToken, refreshToken, isAuthenticated: Boolean(accessToken) }),
+      logout: () => set({ user: null, token: null, refreshToken: null, isAuthenticated: false }),
     }),
     {
       name: "auth-storage-v1",
@@ -27,6 +39,7 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         token: state.token,
+        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
     }
@@ -39,3 +52,5 @@ export const useAuthStore = create<AuthState>()(
 export const useAuthUser = () => useAuthStore((state) => state.user);
 export const useIsAuthenticated = () =>
   useAuthStore((state) => state.isAuthenticated);
+export const useAuthToken = () => useAuthStore((state) => state.token);
+

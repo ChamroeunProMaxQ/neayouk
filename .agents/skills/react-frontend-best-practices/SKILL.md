@@ -9,7 +9,7 @@ metadata:
 
 # React Frontend Best Practices
 
-Comprehensive best practices guide for building scalable, production-ready React web applications. Contains 40 rules across 10 categories, prioritized by impact to guide automated refactoring, code generation, and team alignment.
+Comprehensive best practices guide for building scalable, production-ready React web applications. Contains 41 rules across 10 categories, prioritized by impact to guide automated refactoring, code generation, and team alignment.
 
 ## Selected Stack Architecture
 
@@ -105,6 +105,7 @@ Reference these guidelines when:
 - `route-code-splitting-lazy` - Code-split route segments using `React.lazy` and Suspense
 - `route-search-params-state` - Sync filterable/searchable UI states with URL query params
 - `route-guards-layout-nesting` - Use layout routes for authentication guards and shared view shells
+- `route-fast-refresh-component-exports` - Ensure pure React component exports in `.tsx` files for Vite Fast Refresh
 
 ### 8. Performance Optimization (MEDIUM-HIGH)
 

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import { LayoutShell } from "@/shared/components/layout-shell";
 import { ProtectedLayout } from "./protected-layout";
 
@@ -13,45 +13,46 @@ const DashboardPage = lazy(() =>
 function PageFallback() {
   return (
     <div className="flex h-[50vh] w-full items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#F05A4A] border-t-transparent" />
     </div>
   );
 }
 
-export const router = createBrowserRouter([
+const router = createBrowserRouter([
   {
     path: "/",
-    element: <LayoutShell />,
+    element: <Navigate to="/dashboard" replace />,
+  },
+  {
+    path: "/login",
+    element: (
+      <LayoutShell>
+        <Suspense fallback={<PageFallback />}>
+          <LoginPage />
+        </Suspense>
+      </LayoutShell>
+    ),
+  },
+  {
+    element: <ProtectedLayout />,
     children: [
       {
-        index: true,
-        element: <Navigate to="/dashboard" replace />,
-      },
-      {
-        path: "login",
+        path: "/dashboard",
         element: (
           <Suspense fallback={<PageFallback />}>
-            <LoginPage />
+            <DashboardPage />
           </Suspense>
         ),
       },
-      {
-        element: <ProtectedLayout />,
-        children: [
-          {
-            path: "dashboard",
-            element: (
-              <Suspense fallback={<PageFallback />}>
-                <DashboardPage />
-              </Suspense>
-            ),
-          },
-        ],
-      },
-      {
-        path: "*",
-        element: <Navigate to="/" replace />,
-      },
     ],
   },
+  {
+    path: "*",
+    element: <Navigate to="/" replace />,
+  },
 ]);
+
+export function AppRouter() {
+  return <RouterProvider router={router} />;
+}
+

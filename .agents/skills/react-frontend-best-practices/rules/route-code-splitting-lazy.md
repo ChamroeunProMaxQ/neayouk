@@ -32,7 +32,7 @@ export const router = createBrowserRouter([
 
 ```tsx
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 // ✅ Good: Dynamic imports loaded only when user navigates to route
 const AdminDashboard = lazy(() =>
@@ -50,7 +50,7 @@ function SuspenseFallback() {
   );
 }
 
-export const router = createBrowserRouter([
+const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
@@ -74,6 +74,10 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+
+export function AppRouter() {
+  return <RouterProvider router={router} />;
+}
 ```
 
 Reference: [React Router - Lazy Loading Routes](https://reactrouter.com/en/main/route/lazy)

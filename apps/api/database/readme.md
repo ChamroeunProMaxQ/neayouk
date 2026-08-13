@@ -42,8 +42,25 @@ pnpm --filter api seed down
 pnpm --filter api seed:create --name user-seeder.ts
 ```
 
+## Production Execution (Pure JS)
+
+In production environments (e.g., Docker containers where devDependencies like TypeScript and SWC are omitted):
+
+1. **Build Phase (CI/CD)**: `pnpm --filter api build` compiles `src/` -> `dist/` and `database/` -> `dist-db/`.
+2. **Runtime Phase**: Run pure compiled JavaScript with standard Node.js:
+
+```bash
+# Run pending migrations in production
+node dist-db/migrator.js up
+
+# Run seeders in production
+node dist-db/seeder.js up
+# (or via package scripts: pnpm migrate:prod up / pnpm seed:prod up)
+```
+
 ## How It Works
 
 - `database/` sits at the same level as `src/` inside `apps/api/`.
 - `pnpm migrate` and `pnpm seed` automatically compile `database/` into `dist-db/` via SWC before running.
+- In production, `dist-db/umzug.js` detects `.js` extension at runtime and loads compiled `.js` migrations and seeders directly with zero build overhead.
 - `umzug.ts` exports `migrator`, `seeder`, and `dataSource` for both CLI usage and global test lifecycle hooks (`vitest.global-setup.ts`).

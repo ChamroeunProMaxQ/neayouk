@@ -9,8 +9,6 @@ import type { UpdateUserDto } from './dto/update-user.dto.js';
 import { User } from './entity/user.entity.js';
 import { TokenTypeEnum } from '@repo/contracts';
 import { getSkipLimit } from '@src/common/helper/pagination.helper.js';
-import { UserScopeBuilder } from './user.scope.js';
-import { UserToken } from '@src/user-token/entity/user-token.entity.js';
 
 @Injectable()
 export class UserService {

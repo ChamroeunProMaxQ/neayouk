@@ -8,7 +8,7 @@
 - [ ] Requirement 2
 
 ## 3. Tech Design & File Scope
-- Target Files: `@src/...`
+- Target Files: `@repo/contracts/...` `@repo/api/...` `@repo/web/...`
 - New Dependencies: [None / List packages]
 
 ## 4. Acceptance Criteria

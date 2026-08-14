@@ -140,6 +140,10 @@ pnpm --filter api exec vitest run -t "user controller"
 - CLI Entrypoints (`migrator.ts` and `seeder.ts`) MUST destroy `dataSource` in a `finally` block after `runAsCLI()` to prevent hanging connection pools.
 - Seeders MUST be idempotent (`INSERT IGNORE`) and disable foreign key checks (`SET FOREIGN_KEY_CHECKS = 0`) during rollback.
 
+### 8. Data Tables: Always Use TanStack Table + shadcn Primitives
+- **Rule**: Whenever creating, refactoring, or displaying tabular data in `apps/web`, ALWAYS use **TanStack Table** (`@tanstack/react-table` v8) for state/logic management, paired with **shadcn UI Table primitives** (`@/components/ui/table`) for markup and styling.
+- Do NOT write raw HTML `<table>` elements or custom manual filtering loops. Reference `.agents/skills/tanstack-table-best-practices/SKILL.md` for full component patterns.
+
 ---
 
 ## 🤖 Recommended Workflow for Task Execution

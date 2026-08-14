@@ -1,9 +1,8 @@
 import {
   Body,
   Controller,
-  ForbiddenException,
+  Delete,
   Get,
-  NotFoundException,
   Param,
   ParseIntPipe,
   Patch,
@@ -17,7 +16,7 @@ import { CreateUserDto } from './dto/create-user.dto.js';
 import { FindUsersDto } from './dto/find-users.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
 import { UserService } from './user.service.js';
-import { AccessGuard, DefaultActions, UseAbility } from 'nest-casl';
+import { DefaultActions, UseAbility } from 'nest-casl';
 import { JwtAuthGuard } from '@src/auth/jwt-auth.guard.js';
 import { CaslAccessGuard } from '@src/common/guard/casl-access.guard.js';
 import { User } from './entity/user.entity.js';
@@ -64,6 +63,13 @@ export class UserController {
     @Body() dto: UpdateUserDto,
     @Req() req: Request,
   ) {
-    return this.userService.updateUser(id, dto, req.user?.sub!);
+    return this.userService.updateUser(id, dto, req.user!.sub);
+  }
+
+  @UseGuards(JwtAuthGuard, CaslAccessGuard)
+  @UseAbility(DefaultActions.delete, User, UserHook)
+  @Delete(':id')
+  async delete(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.deleteUser(id);
   }
 }

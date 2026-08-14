@@ -6,8 +6,11 @@ export const API_ROUTE = {
     PROFILE: '/api/v1/auth/profile',
   },
   USER: {
+    LIST: '/api/v1/users',
     CREATE: '/api/v1/users',
     GET: '/api/v1/users/:id',
+    UPDATE: '/api/v1/users/:id',
+    DELETE: '/api/v1/users/:id',
   },
 };
 

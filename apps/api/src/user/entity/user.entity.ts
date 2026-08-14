@@ -86,7 +86,15 @@ export class User implements UserAttribute {
   toJSON() {
     return {
       ...this,
+      id: this.id,
+      uuid: this.uuid,
+      username: this.username,
       password: '',
+      userType: this.userType,
+      status: this.status,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      deletedAt: this.deletedAt,
       computedNameId: this.computedNameId,
     };
   }

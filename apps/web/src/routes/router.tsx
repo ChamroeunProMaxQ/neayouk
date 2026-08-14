@@ -6,8 +6,14 @@ import { ProtectedLayout } from "./protected-layout";
 const LoginPage = lazy(() =>
   import("./login-page").then((m) => ({ default: m.LoginPage }))
 );
+const AdminLayout = lazy(() =>
+  import("@/features/admin").then((m) => ({ default: m.AdminLayout }))
+);
 const DashboardPage = lazy(() =>
   import("./dashboard-page").then((m) => ({ default: m.DashboardPage }))
+);
+const UsersPage = lazy(() =>
+  import("./users-page").then((m) => ({ default: m.UsersPage }))
 );
 
 function PageFallback() {
@@ -37,12 +43,29 @@ const router = createBrowserRouter([
     element: <ProtectedLayout />,
     children: [
       {
-        path: "/dashboard",
         element: (
           <Suspense fallback={<PageFallback />}>
-            <DashboardPage />
+            <AdminLayout />
           </Suspense>
         ),
+        children: [
+          {
+            path: "/dashboard",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <DashboardPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/users",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <UsersPage />
+              </Suspense>
+            ),
+          },
+        ],
       },
     ],
   },
@@ -55,4 +78,3 @@ const router = createBrowserRouter([
 export function AppRouter() {
   return <RouterProvider router={router} />;
 }
-

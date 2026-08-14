@@ -7,8 +7,7 @@ import { CreateUserDto } from './dto/create-user.dto.js';
 import { FindUsersDto } from './dto/find-users.dto.js';
 import type { UpdateUserDto } from './dto/update-user.dto.js';
 import { User } from './entity/user.entity.js';
-import { TokenTypeEnum } from '@repo/contracts';
-import { getSkipLimit } from '@src/common/helper/pagination.helper.js';
+import { getSkipTake } from '@src/common/helper/pagination.helper.js';
 
 @Injectable()
 export class UserService {
@@ -22,22 +21,36 @@ export class UserService {
     //
   }
 
-  async findAll({ name, ...dto }: FindUsersDto) {
+  async findAll({
+    search,
+    userType,
+    includeDeleted,
+    onlyDeleted,
+    sortBy,
+    sortOrder,
+    ...dto
+  }: FindUsersDto) {
     const query = this.userRepo
-      .createQueryBuilder('user')
-      .leftJoinAndSelect(
-        'user.tokens',
-        'token',
-        'token.tokenType = :tokenType',
-        { tokenType: TokenTypeEnum.REFRESH_TOKEN },
-      );
+      .createQueryBuilder('user');
 
-    if (name) {
-      query.andWhere('user.username like :name', { name: `%${name}%` });
+    if (onlyDeleted) {
+      query.withDeleted().andWhere('user.deleted_at IS NOT NULL');
+    } else if (includeDeleted) {
+      query.withDeleted();
     }
 
-    const { skip, take } = getSkipLimit(dto);
+    if (userType) {
+      query.andWhere('user.userType = :userType', { userType });
+    }
+
+    if (search) {
+      query.andWhere('user.username like :search', { search: `%${search}%` });
+    }
+    query.orderBy(sortBy, sortOrder);
+
+    const { skip, take } = getSkipTake(dto);
     query.skip(skip).take(take);
+
 
     return await query.getManyAndCount();
   }
@@ -58,13 +71,23 @@ export class UserService {
     const user = this.userRepo.create({
       password: dto.password,
       username: dto.username,
+      userType: dto.userType,
+      status: dto.status,
     });
     return await this.userRepo.save(user);
   }
 
   async updateUser(id: number, dto: UpdateUserDto, userId: number) {
-    await this.userRepo.update({ id: userId }, dto);
-    return await this.findOne(userId);
+    await this.userRepo.update({ id }, dto);
+    return await this.findOne(id);
   }
 
+  async deleteUser(id: number) {
+    const user = await this.findOne(id);
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+    await this.userRepo.softDelete(id);
+    return { id, success: true };
+  }
 }

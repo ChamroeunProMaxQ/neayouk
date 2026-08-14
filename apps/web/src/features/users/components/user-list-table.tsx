@@ -1,0 +1,545 @@
+import React, { useState, useMemo, useEffect, useCallback } from "react";
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  type ColumnDef,
+} from "@tanstack/react-table";
+import {
+  Search,
+  UserPlus,
+  Edit3,
+  Trash2,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
+import {
+  FindUsersSchema,
+  UserStatusEnum,
+  UserTypeEnum,
+  type UserAttribute,
+} from "@repo/contracts";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+import { useUsersQuery } from "../hooks/use-users-query";
+import {
+  useCreateUserMutation,
+  useUpdateUserMutation,
+  useDeleteUserMutation,
+} from "../hooks/use-user-mutations";
+import { UserFormDialog } from "./user-form-dialog";
+import { DeleteUserDialog } from "./delete-user-dialog";
+import { useUrlFilters } from "@/hooks/use-url-filters";
+import { useInfiniteScroll } from "@/hooks/use-intersection-observer";
+import { useDebounce } from "@/hooks/use-debounce";
+
+export const UserListTable: React.FC = () => {
+  const {
+    values,
+    setValue,
+    setValues,
+  } = useUrlFilters(FindUsersSchema);
+  const {
+    search,
+    userType,
+    sortBy,
+    sortOrder,
+  } = values;
+
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(20);
+
+  // debounce search
+  const debouncedSearch = useDebounce(search, 800);
+
+  // build query params from search params
+  const queryParams = useMemo(() => ({
+    ...values,
+    search: debouncedSearch,
+    page,
+    pageSize,
+  }), [debouncedSearch, page, pageSize, values]);
+
+  const { data, isLoading, isFetching, isError, error } =
+    useUsersQuery(queryParams);
+
+  // Accumulated users for infinite scroll
+  const [accumulatedUsers, setAccumulatedUsers] = useState<UserAttribute[]>([]);
+
+  // Dialog states
+  const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
+  const [userToEdit, setUserToEdit] = useState<UserAttribute | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserAttribute | null>(null);
+
+  // Handle userType filter change
+  const handleUserTypeChange = (userType: UserTypeEnum) => {
+    setValue("userType", userType);
+    setPage(1);
+  };
+
+  // Handle search change
+  const handleSearchChange = (search: string) => {
+    setPage(1);
+    setValue("search", search);
+  };
+
+  // Toggle sorting handler
+  const handleSort = (field: "username" | "updatedAt") => {
+    const nextOrder =
+      sortBy === field && sortOrder === "ASC"
+        ? "DESC"
+        : "ASC";
+
+    setValues({
+      sortBy: field,
+      sortOrder: nextOrder,
+    });
+    setPage(1);
+  };
+
+  // Accumulate users when new page data arrives
+  useEffect(() => {
+    const users = data?.data;
+    if (!users) return;
+
+    setAccumulatedUsers((prev) => {
+      if (page == 1) {
+        return users;
+      }
+      const existingIds = new Set(prev.map((user) => user.id));
+      const newUsers = users.filter((user) => !existingIds.has(user.id));
+      return [...prev, ...newUsers];
+    });
+  }, [data, page]);
+
+  // Mutations
+  const createMutation = useCreateUserMutation();
+  const updateMutation = useUpdateUserMutation();
+  const deleteMutation = useDeleteUserMutation();
+
+  const pagination = data?.pagination;
+  const totalCount = pagination?.totalCount ?? accumulatedUsers.length;
+  const totalPages = pagination?.totalPage ?? Math.max(1, Math.ceil(totalCount / pageSize));
+  const hasMore = page < totalPages;
+
+  // Infinite Scroll IntersectionObserver
+  const loadNextPage = useCallback(() => {
+    if (!hasMore) return;
+    setPage((prev) => prev + 1);
+  }, [hasMore, setPage]);
+
+  const sentinelRef = useInfiniteScroll({
+    hasMore,
+    isLoading,
+    isFetching,
+    onLoadMore: loadNextPage,
+  });
+
+  // Form submission handler
+  const handleFormSubmit = async (values: {
+    username: string;
+    password?: string;
+    userType: UserTypeEnum;
+    status: UserStatusEnum;
+  }) => {
+    if (userToEdit) {
+      const res = await updateMutation.mutateAsync({
+        id: userToEdit.id,
+        dto: {
+          username: values.username,
+          userType: values.userType,
+          status: values.status,
+          ...(values.password ? { password: values.password } : {}),
+        },
+      });
+      if (res?.data) {
+        setAccumulatedUsers((prev) =>
+          prev.map((u) => (u.id === res.data!.id ? { ...u, ...res.data } : u))
+        );
+      }
+    } else {
+      const res = await createMutation.mutateAsync({
+        username: values.username,
+        password: values.password || "password123",
+        userType: values.userType,
+        status: values.status,
+      });
+      if (res?.data) {
+        setAccumulatedUsers((prev) => [
+          res.data!,
+          ...prev.filter((u) => u.id !== res.data!.id),
+        ]);
+      }
+    }
+    setIsFormDialogOpen(false);
+    setUserToEdit(null);
+  };
+
+  // Delete confirmation handler
+  const handleDeleteConfirm = async () => {
+    if (userToDelete) {
+      await deleteMutation.mutateAsync(userToDelete.id);
+      setAccumulatedUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
+      setIsDeleteDialogOpen(false);
+      setUserToDelete(null);
+    }
+  };
+
+  // Columns definition
+  const columns = useMemo<ColumnDef<UserAttribute>[]>(
+    () => [
+      {
+        id: "photo",
+        header: "Avatar",
+        cell: ({ row }) => {
+          const user = row.original;
+          const initial = user.username.charAt(0).toUpperCase();
+          return (
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-[#F05A4A] font-bold text-xs border border-slate-200">
+              <span>{initial || "U"}</span>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: "computedNameId",
+        header: "User ID",
+        cell: ({ getValue }) => (
+          <span className="text-slate-600 text-xs font-mono font-medium">
+            {getValue<string>() || "N/A"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "username",
+        header: () => (
+          <button
+            onClick={() => handleSort("username")}
+            className="inline-flex items-center gap-1 hover:text-[#F05A4A] transition-colors font-bold cursor-pointer"
+          >
+            <span>Username</span>
+            {sortBy === "username" ? (
+              sortOrder === "ASC" ? (
+                <ArrowUp className="w-3.5 h-3.5 text-[#F05A4A]" />
+              ) : (
+                <ArrowDown className="w-3.5 h-3.5 text-[#F05A4A]" />
+              )
+            ) : (
+              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+            )}
+          </button>
+        ),
+        cell: ({ getValue }) => (
+          <span className="text-slate-900 font-semibold text-xs">
+            {getValue<string>()}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "userType",
+        header: "userType",
+        cell: ({ getValue }) => {
+          const userType = getValue<UserTypeEnum>();
+          let badgeStyle = "bg-slate-100 text-slate-700 border-slate-200";
+          if (userType === UserTypeEnum.ADMIN) {
+            badgeStyle = "bg-[#FFF0EE] text-[#F05A4A] border-[#F05A4A]/30";
+          } else if (userType === UserTypeEnum.CMS) {
+            badgeStyle = "bg-indigo-50 text-indigo-700 border-indigo-200";
+          }
+
+          return (
+            <span
+              className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border ${badgeStyle}`}
+            >
+              {userType || "CUSTOMER"}
+            </span>
+          );
+        },
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => {
+          const user = row.original;
+          const isDeleted = Boolean(user.deletedAt);
+
+          if (isDeleted) {
+            return (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                Deleted
+              </span>
+            );
+          }
+
+          const status = user.status;
+          const isActive = status === UserStatusEnum.ACTIVE;
+
+          return (
+            <span
+              className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border ${isActive
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                : "bg-amber-50 text-amber-700 border-amber-200"
+                }`}
+            >
+              {status || "ACTIVE"}
+            </span>
+          );
+        },
+      },
+      {
+        accessorKey: "updatedAt",
+        header: () => (
+          <button
+            onClick={() => handleSort("updatedAt")}
+            className="inline-flex items-center gap-1 hover:text-[#F05A4A] transition-colors font-bold cursor-pointer"
+          >
+            <span>Updated At</span>
+            {sortBy === "updatedAt" ? (
+              sortOrder === "ASC" ? (
+                <ArrowUp className="w-3.5 h-3.5 text-[#F05A4A]" />
+              ) : (
+                <ArrowDown className="w-3.5 h-3.5 text-[#F05A4A]" />
+              )
+            ) : (
+              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+            )}
+          </button>
+        ),
+        cell: ({ getValue }) => {
+          const val = getValue<Date | string | undefined>();
+          if (!val) return <span className="text-slate-400 text-xs">-</span>;
+          const d = new Date(val);
+          return (
+            <span className="text-slate-600 text-xs font-mono">
+              {d.toLocaleDateString()} {d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          );
+        },
+      },
+      {
+        id: "actions",
+        header: () => <div className="text-center">Actions</div>,
+        cell: ({ row }) => {
+          const user = row.original;
+          const isDeleted = Boolean(user.deletedAt);
+
+          return (
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={() => {
+                  setUserToEdit(user);
+                  setIsFormDialogOpen(true);
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-md transition-colors cursor-pointer"
+                aria-label={`Edit ${user.username}`}
+              >
+                <Edit3 className="w-3.5 h-3.5 text-slate-600" />
+                <span>Edit</span>
+              </button>
+
+              {!isDeleted && (
+                <button
+                  onClick={() => {
+                    setUserToDelete(user);
+                    setIsDeleteDialogOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#F05A4A] bg-[#FFF0EE] hover:bg-[#FFE0DC] border border-[#F05A4A]/20 rounded-md transition-colors cursor-pointer"
+                  aria-label={`Delete ${user.username}`}
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-[#F05A4A]" />
+                  <span>Delete</span>
+                </button>
+              )}
+            </div>
+          );
+        },
+      },
+    ],
+    [sortBy, sortOrder]
+  );
+
+  const table = useReactTable({
+    data: accumulatedUsers,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    manualSorting: true,
+  });
+
+  return (
+    <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-xs border border-slate-100 space-y-6 font-sans">
+      {/* Top Controls & Filter Bar */}
+      <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4">
+        {/* Left Side: Search & Filter Selectors */}
+        <div className="flex flex-wrap items-center gap-3 flex-1">
+          {/* Search Input */}
+          <div className="relative min-w-[220px] max-w-sm flex-1">
+            <input
+              type="text"
+              placeholder="Search user name..."
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full pl-3 pr-10 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F05A4A]/20 focus:border-[#F05A4A] transition-colors placeholder:text-slate-400"
+            />
+            <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+
+          {/* User Role Filter */}
+          <div className="flex items-center gap-2">
+            <label htmlFor="role-filter" className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+              Role:
+            </label>
+            <select
+              id="role-filter"
+              aria-label="Filter by User Role"
+              value={userType}
+              onChange={(e) => handleUserTypeChange(e.target.value as UserTypeEnum)}
+              className="px-3 py-2 text-xs font-semibold border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#F05A4A]/20 focus:border-[#F05A4A] text-slate-700"
+            >
+              <option value="">All Roles</option>
+              <option value={UserTypeEnum.ADMIN}>Admin</option>
+              <option value={UserTypeEnum.CMS}>CMS Editor</option>
+              <option value={UserTypeEnum.CUSTOMER}>Customer</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Right Side: Action Buttons & Record Counter */}
+        <div className="flex flex-wrap items-center justify-between xl:justify-end gap-3">
+          {/* Add User Button */}
+          <button
+            onClick={() => {
+              setUserToEdit(null);
+              setIsFormDialogOpen(true);
+            }}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-[#F05A4A] hover:bg-[#D94738] rounded-lg transition-colors shadow-2xs cursor-pointer"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            <span>Add User</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Error state */}
+      {isError && (
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 flex items-center gap-3 text-xs">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{error?.message || "Failed to load users."}</span>
+        </div>
+      )}
+
+      {/* User Data Table rendered via TanStack Table + shadcn primitives */}
+      <div className="overflow-x-auto rounded-lg border border-slate-100">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow
+                key={headerGroup.id}
+                className="bg-slate-50/70 border-b border-slate-100 text-xs font-bold text-slate-800"
+              >
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className="py-3 px-4 text-slate-800 font-bold"
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody className="divide-y divide-slate-100 text-sm">
+            {accumulatedUsers.length === 0 && isLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="py-12 text-center text-slate-400 text-xs font-medium"
+                >
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin text-[#F05A4A]" />
+                    <span>Loading users...</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : accumulatedUsers.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="py-8 text-center text-slate-400 text-xs font-medium"
+                >
+                  No users found matching your filter criteria.
+                </TableCell>
+              </TableRow>
+            ) : (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  className="hover:bg-slate-50/50 transition-colors text-slate-700 font-medium"
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className="py-3.5 px-4">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Infinite Scroll Sentinel & Bottom Loading Indicator */}
+      <div ref={sentinelRef} className="py-2 text-center text-xs text-slate-400 font-medium">
+        {isFetching && page! > 1 ? (
+          <div className="flex items-center justify-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin text-[#F05A4A]" />
+            <span>Loading more users...</span>
+          </div>
+        ) : !hasMore && accumulatedUsers.length > 0 ? (
+          <span>All {totalCount} users loaded</span>
+        ) : null}
+      </div>
+
+      {/* User Form Dialog (Create & Edit) */}
+      <UserFormDialog
+        isOpen={isFormDialogOpen}
+        onClose={() => {
+          setIsFormDialogOpen(false);
+          setUserToEdit(null);
+        }}
+        onSubmit={handleFormSubmit}
+        userToEdit={userToEdit}
+        isLoading={createMutation.isPending || updateMutation.isPending}
+      />
+
+      {/* Delete User Dialog */}
+      <DeleteUserDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => {
+          setIsDeleteDialogOpen(false);
+          setUserToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        userToDelete={userToDelete}
+        isLoading={deleteMutation.isPending}
+      />
+    </div>
+  );
+};

@@ -1,11 +1,28 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { AdminLayout } from "./admin-layout";
 import { useAuthStore } from "@/features/auth";
 
+function createWrapper(initialEntries = ["/dashboard"]) {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+  return ({ children }: { children: React.ReactNode }) => (
+    <MemoryRouter initialEntries={initialEntries}>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </MemoryRouter>
+  );
+}
+
 describe("AdminLayout", () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     useAuthStore.setState({
       user: { id: 1, username: "admin", userType: "ADMIN" },
       token: "test-token",
@@ -15,31 +32,28 @@ describe("AdminLayout", () => {
   });
 
   it("renders D1 header logo, CMS_ADMIN badge, and user session", () => {
-    render(<AdminLayout />);
+    render(<AdminLayout><div>Child Content</div></AdminLayout>, { wrapper: createWrapper() });
 
     expect(screen.getByText("D1")).toBeInTheDocument();
     expect(screen.getByText("CMS_ADMIN")).toBeInTheDocument();
     expect(screen.getByText("Open Orders")).toBeInTheDocument();
     expect(screen.getByText("admin")).toBeInTheDocument();
+    expect(screen.getByText("Child Content")).toBeInTheDocument();
   });
 
-  it("renders sidebar navigation items and sets Customer List as active tab", () => {
-    render(<AdminLayout />);
+  it("renders sidebar navigation items", () => {
+    render(<AdminLayout><div>Layout Content</div></AdminLayout>, { wrapper: createWrapper() });
 
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
     expect(screen.getByText("Customer Orders")).toBeInTheDocument();
-    expect(screen.getByText("Customer List")).toBeInTheDocument();
+    expect(screen.getByText("User List")).toBeInTheDocument();
     expect(screen.getByText("Store Managements")).toBeInTheDocument();
     expect(screen.getByText("System Management")).toBeInTheDocument();
-
-    // Table header proves Customer List view is rendered
-    expect(screen.getByText("Upload Bulk Users")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/search\.\.\./i)).toBeInTheDocument();
   });
 
   it("allows expanding and collapsing sidebar navigation sections", async () => {
     const user = userEvent.setup();
-    render(<AdminLayout />);
+    render(<AdminLayout><div>Content</div></AdminLayout>, { wrapper: createWrapper() });
 
     const promoButton = screen.getByRole("button", { name: /promo and campaign/i });
     expect(screen.queryByText("Campaign List")).not.toBeInTheDocument();
@@ -49,14 +63,24 @@ describe("AdminLayout", () => {
     expect(screen.getByText("Promotions")).toBeInTheDocument();
   });
 
-  it("switches view when clicking a different navigation item", async () => {
-    const user = userEvent.setup();
-    render(<AdminLayout />);
+  it("renders nested route content via Outlet", () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
 
-    const dashboardButton = screen.getByRole("button", { name: /dashboard/i });
-    await user.click(dashboardButton);
+    render(
+      <MemoryRouter initialEntries={["/dashboard"]}>
+        <QueryClientProvider client={queryClient}>
+          <Routes>
+            <Route element={<AdminLayout />}>
+              <Route path="/dashboard" element={<div>Dashboard Outlet Content</div>} />
+              <Route path="/users" element={<div>Users Outlet Content</div>} />
+            </Route>
+          </Routes>
+        </QueryClientProvider>
+      </MemoryRouter>
+    );
 
-    expect(screen.getByText(/dashboard view/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /back to customer list/i })).toBeInTheDocument();
+    expect(screen.getByText("Dashboard Outlet Content")).toBeInTheDocument();
   });
 });

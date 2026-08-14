@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -22,6 +23,7 @@ export interface NavItem {
   id: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  path?: string;
   isCollapsible?: boolean;
   subItems?: string[];
 }
@@ -40,9 +42,9 @@ interface AdminSidebarProps {
 const adminNavGroups: NavGroup[] = [
   {
     items: [
-      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
       { id: "customer-orders", label: "Customer Orders", icon: ShoppingBag },
-      { id: "customer-list", label: "Customer List", icon: UserCheck },
+      { id: "user-list", label: "User List", icon: UserCheck, path: "/users" },
     ],
   },
   {
@@ -87,14 +89,26 @@ const adminNavGroups: NavGroup[] = [
 ];
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({
-  activeTab = "customer-list",
+  activeTab,
   onSelectTab,
   className = "",
 }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
 
   const toggleSection = (id: string) => {
     setExpandedSections((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleItemClick = (item: NavItem) => {
+    if (item.isCollapsible) {
+      toggleSection(item.id);
+    }
+    if (item.path) {
+      navigate(item.path);
+    }
+    onSelectTab?.(item.id);
   };
 
   return (
@@ -111,18 +125,14 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           <nav className="space-y-1">
             {group.items.map((item) => {
               const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              const isExpanded = !!expandedSections[item.id];
+              const isPathActive = Boolean(item.path && location.pathname.startsWith(item.path));
+              const isActive = activeTab !== undefined ? activeTab === item.id : isPathActive;
+              const isExpanded = Boolean(expandedSections[item.id]);
 
               return (
                 <div key={item.id}>
                   <button
-                    onClick={() => {
-                      if (item.isCollapsible) {
-                        toggleSection(item.id);
-                      }
-                      onSelectTab?.(item.id);
-                    }}
+                    onClick={() => handleItemClick(item)}
                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150 relative ${
                       isActive
                         ? "text-[#F05A4A] bg-[#FFF0EE] border-r-4 border-[#F05A4A]"

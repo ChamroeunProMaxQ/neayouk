@@ -95,6 +95,7 @@ Reference these guidelines when:
 ### 6. UI & Styling (Tailwind + shadcn/ui) (HIGH)
 
 - `ui-shadcn-primitives` - Extend shadcn/ui components without breaking accessible Radix primitives
+- `ui-tanstack-table-primitives` - Always use TanStack Table (v8) with shadcn UI primitive components for data tables
 - `ui-cn-cva-variants` - Create type-safe component variants using `cva` and `cn` utilities
 - `ui-responsive-fluid-layouts` - Build mobile-first responsive layouts with semantic Tailwind utilities
 - `ui-theme-tokens-design-system` - Manage dark mode and color palettes via design tokens

@@ -36,7 +36,7 @@ describe("AdminLayout", () => {
 
     expect(screen.getByText("D1")).toBeInTheDocument();
     expect(screen.getByText("CMS_ADMIN")).toBeInTheDocument();
-    expect(screen.getByText("Open Orders")).toBeInTheDocument();
+    expect(screen.getByText("Online")).toBeInTheDocument();
     expect(screen.getByText("admin")).toBeInTheDocument();
     expect(screen.getByText("Child Content")).toBeInTheDocument();
   });

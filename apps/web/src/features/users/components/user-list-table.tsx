@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo, type FC } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -44,7 +44,7 @@ import { useUrlFilters } from "@/hooks/use-url-filters";
 import { useInfiniteScroll } from "@/hooks/use-intersection-observer";
 import { useDebounce } from "@/hooks/use-debounce";
 
-export const UserListTable: React.FC = () => {
+export const UserListTable: FC = () => {
   const { values, setValue, setValues } = useUrlFilters(FindUsersSchema);
   const { search, userType, sortBy, sortOrder } = values;
 

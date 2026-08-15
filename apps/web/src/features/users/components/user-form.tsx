@@ -1,6 +1,5 @@
-import React from "react";
-import { useForm, type Resolver } from "react-hook-form";
-import { z, type ZodSchema } from "zod";
+import { useState, useEffect, type FC } from "react";
+import { useForm } from "react-hook-form";
 import {
   CreateUserSchema,
   UpdateUserSchema,
@@ -26,7 +25,7 @@ export interface UserFormProps {
   submitButtonLabel?: string;
 }
 
-export const UserForm: React.FC<UserFormProps> = ({
+export const UserForm: FC<UserFormProps> = ({
   onSubmit,
   onCancel,
   userToEdit,
@@ -34,7 +33,7 @@ export const UserForm: React.FC<UserFormProps> = ({
   submitButtonLabel,
 }) => {
   const isEdit = Boolean(userToEdit);
-  const [serverError, setServerError] = React.useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const activeSchema = isEdit ? UpdateUserSchema : CreateUserSchema;
 
@@ -54,7 +53,7 @@ export const UserForm: React.FC<UserFormProps> = ({
     },
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     setServerError(null);
     reset({
       username: userToEdit?.username ?? "",

@@ -1,4 +1,4 @@
-import React from "react";
+import { type FC } from "react";
 import { type UserAttribute } from "@repo/contracts";
 import { X } from "lucide-react";
 import { UserForm, type UserFormValues } from "./user-form";
@@ -13,7 +13,7 @@ interface UserFormDialogProps {
   isLoading?: boolean;
 }
 
-export const UserFormDialog: React.FC<UserFormDialogProps> = ({
+export const UserFormDialog: FC<UserFormDialogProps> = ({
   isOpen,
   onClose,
   onSubmit,

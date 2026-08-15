@@ -1,27 +1,22 @@
 import React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useForm, type Resolver } from "react-hook-form";
+import { z, type ZodSchema } from "zod";
 import {
+  CreateUserSchema,
+  UpdateUserSchema,
   UserStatusEnum,
   UserTypeEnum,
+  type CreateUserDto,
+  type UpdateUserDto,
   type UserAttribute,
 } from "@repo/contracts";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/shared/lib/utils";
+import { zodResolver } from "@/shared/lib/zod-resolver";
 
-export const userFormSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  password: z
-    .string()
-    .optional()
-    .refine((val) => !val || val.length >= 6, {
-      message: "Password must be at least 6 characters",
-    }),
-  userType: z.nativeEnum(UserTypeEnum),
-  status: z.nativeEnum(UserStatusEnum),
-});
-
-export type UserFormValues = z.infer<typeof userFormSchema>;
+export type UserFormValues = CreateUserDto | UpdateUserDto;
 
 export interface UserFormProps {
   onSubmit: (values: UserFormValues) => Promise<void> | void;
@@ -39,6 +34,9 @@ export const UserForm: React.FC<UserFormProps> = ({
   submitButtonLabel,
 }) => {
   const isEdit = Boolean(userToEdit);
+  const [serverError, setServerError] = React.useState<string | null>(null);
+
+  const activeSchema = isEdit ? UpdateUserSchema : CreateUserSchema;
 
   const {
     register,
@@ -46,7 +44,8 @@ export const UserForm: React.FC<UserFormProps> = ({
     formState: { errors },
     reset,
   } = useForm<UserFormValues>({
-    resolver: zodResolver(userFormSchema),
+    resolver: zodResolver(activeSchema),
+    mode: "onChange",
     defaultValues: {
       username: userToEdit?.username ?? "",
       password: "",
@@ -56,6 +55,7 @@ export const UserForm: React.FC<UserFormProps> = ({
   });
 
   React.useEffect(() => {
+    setServerError(null);
     reset({
       username: userToEdit?.username ?? "",
       password: "",
@@ -64,32 +64,58 @@ export const UserForm: React.FC<UserFormProps> = ({
     });
   }, [userToEdit, reset]);
 
+  const handleFormSubmit = async (values: UserFormValues) => {
+    setServerError(null);
+    try {
+      await onSubmit(values);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to save user. Please check the values and try again.";
+      setServerError(message);
+    }
+  };
+
   return (
-    <form
-      onSubmit={handleSubmit((values) => {
-        return onSubmit(values);
-      })}
-      className="space-y-4"
-    >
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4" noValidate>
+      {/* Server / API Error Banner */}
+      {serverError && (
+        <div className="flex items-start gap-2 p-3 text-xs bg-red-50 border border-red-200 text-red-700 rounded-lg animate-in fade-in">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
+          <div className="flex-1 font-medium">{serverError}</div>
+        </div>
+      )}
+
       {/* Username */}
       <div className="space-y-1.5">
         <label
           htmlFor="username"
           className="block text-xs font-bold text-slate-700 uppercase tracking-wide"
         >
-          Username
+          Username <span className="text-red-500">*</span>
         </label>
-        <input
+        <Input
           id="username"
           type="text"
           placeholder="e.g. john_doe"
           {...register("username")}
-          className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F05A4A]/20 focus:border-[#F05A4A] transition-colors"
+          className={cn(
+            "bg-white transition-all",
+            errors.username
+              ? "border-red-500 ring-2 ring-red-500/20 text-red-900 focus-visible:border-red-500 focus-visible:ring-red-500/30"
+              : "border-slate-200 focus-visible:ring-[#F05A4A]/20 focus-visible:border-[#F05A4A]"
+          )}
+          aria-invalid={Boolean(errors.username)}
+          aria-describedby={errors.username ? "username-error" : undefined}
         />
-        {errors.username && (
-          <p className="text-xs text-rose-500 font-medium">
-            {errors.username.message}
+        {errors.username ? (
+          <p id="username-error" className="flex items-center gap-1.5 text-xs text-red-600 font-semibold mt-1">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0 text-red-600" />
+            <span>{errors.username.message}</span>
           </p>
+        ) : (
+          <p className="text-[11px] text-slate-500">Must be at least 1 character.</p>
         )}
       </div>
 
@@ -99,18 +125,32 @@ export const UserForm: React.FC<UserFormProps> = ({
           htmlFor="password"
           className="block text-xs font-bold text-slate-700 uppercase tracking-wide"
         >
-          {isEdit ? "Password (Leave blank to keep unchanged)" : "Password"}
+          {isEdit ? "Password (Optional)" : "Password"} {!isEdit && <span className="text-red-500">*</span>}
         </label>
-        <input
+        <Input
           id="password"
           type="password"
-          placeholder={isEdit ? "••••••••" : "At least 6 characters"}
+          placeholder={isEdit ? "•••••••• (leave blank to keep unchanged)" : "At least 6 characters"}
           {...register("password")}
-          className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F05A4A]/20 focus:border-[#F05A4A] transition-colors"
+          className={cn(
+            "bg-white transition-all",
+            errors.password
+              ? "border-red-500 ring-2 ring-red-500/20 text-red-900 focus-visible:border-red-500 focus-visible:ring-red-500/30"
+              : "border-slate-200 focus-visible:ring-[#F05A4A]/20 focus-visible:border-[#F05A4A]"
+          )}
+          aria-invalid={Boolean(errors.password)}
+          aria-describedby={errors.password ? "password-error" : undefined}
         />
-        {errors.password && (
-          <p className="text-xs text-rose-500 font-medium">
-            {errors.password.message}
+        {errors.password ? (
+          <p id="password-error" className="flex items-center gap-1.5 text-xs text-red-600 font-semibold mt-1">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0 text-red-600" />
+            <span>{errors.password.message}</span>
+          </p>
+        ) : (
+          <p className="text-[11px] text-slate-500">
+            {isEdit
+              ? "Leave blank to keep existing password, or enter at least 6 characters to change."
+              : "Password must be at least 6 characters."}
           </p>
         )}
       </div>
@@ -126,15 +166,21 @@ export const UserForm: React.FC<UserFormProps> = ({
         <select
           id="userType"
           {...register("userType")}
-          className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F05A4A]/20 focus:border-[#F05A4A] bg-white transition-colors text-slate-700"
+          className={cn(
+            "w-full px-3 py-2 text-sm border rounded-lg focus:outline-none bg-white transition-all text-slate-700",
+            errors.userType
+              ? "border-red-500 ring-2 ring-red-500/20 text-red-900 focus:border-red-500 focus:ring-red-500/30"
+              : "border-slate-200 focus:ring-2 focus:ring-[#F05A4A]/20 focus:border-[#F05A4A]"
+          )}
         >
           <option value={UserTypeEnum.CUSTOMER}>Customer</option>
           <option value={UserTypeEnum.CMS}>CMS Editor</option>
           <option value={UserTypeEnum.ADMIN}>Admin</option>
         </select>
         {errors.userType && (
-          <p className="text-xs text-rose-500 font-medium">
-            {errors.userType.message}
+          <p className="flex items-center gap-1.5 text-xs text-red-600 font-semibold mt-1">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0 text-red-600" />
+            <span>{errors.userType.message}</span>
           </p>
         )}
       </div>
@@ -150,14 +196,20 @@ export const UserForm: React.FC<UserFormProps> = ({
         <select
           id="status"
           {...register("status")}
-          className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F05A4A]/20 focus:border-[#F05A4A] bg-white transition-colors text-slate-700"
+          className={cn(
+            "w-full px-3 py-2 text-sm border rounded-lg focus:outline-none bg-white transition-all text-slate-700",
+            errors.status
+              ? "border-red-500 ring-2 ring-red-500/20 text-red-900 focus:border-red-500 focus:ring-red-500/30"
+              : "border-slate-200 focus:ring-2 focus:ring-[#F05A4A]/20 focus:border-[#F05A4A]"
+          )}
         >
           <option value={UserStatusEnum.ACTIVE}>Active</option>
           <option value={UserStatusEnum.INACTIVE}>Inactive</option>
         </select>
         {errors.status && (
-          <p className="text-xs text-rose-500 font-medium">
-            {errors.status.message}
+          <p className="flex items-center gap-1.5 text-xs text-red-600 font-semibold mt-1">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0 text-red-600" />
+            <span>{errors.status.message}</span>
           </p>
         )}
       </div>
@@ -165,22 +217,25 @@ export const UserForm: React.FC<UserFormProps> = ({
       {/* Action Buttons */}
       <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
         {onCancel && (
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={onCancel}
-            className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+            disabled={isLoading}
           >
             Cancel
-          </button>
+          </Button>
         )}
-        <button
+        <Button
           type="submit"
+          size="sm"
           disabled={isLoading}
-          className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-[#F05A4A] hover:bg-[#D94738] rounded-lg transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+          className="bg-[#F05A4A] hover:bg-[#D94738] text-white"
         >
           {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
           <span>{submitButtonLabel || (isEdit ? "Update User" : "Create User")}</span>
-        </button>
+        </Button>
       </div>
     </form>
   );

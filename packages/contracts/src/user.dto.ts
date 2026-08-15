@@ -8,8 +8,8 @@ export const UserSchema = z.object({
   uuid: z.string(),
   username: z.string(),
   password: z.string(),
-  userType: z.enum(UserTypeEnum),
-  status: z.enum(UserStatusEnum),
+  userType: z.nativeEnum(UserTypeEnum),
+  status: z.nativeEnum(UserStatusEnum),
   computedNameId: z.string(),
   createdAt: z.date().or(z.string()).optional(),
   updatedAt: z.date().or(z.string()).optional(),
@@ -21,8 +21,8 @@ export type UserAttribute = z.infer<typeof UserSchema>;
 export const CreateUserSchema = z.object({
   username: z.string().min(1, "username is required"),
   password: z.string().min(6, "password must be at least 6 characters"),
-  status: z.enum(UserStatusEnum).optional(),
-  userType: z.enum(UserTypeEnum).optional(),
+  status: z.nativeEnum(UserStatusEnum).optional(),
+  userType: z.nativeEnum(UserTypeEnum).optional(),
 });
 
 export type CreateUserAttribute = z.infer<typeof CreateUserSchema>;
@@ -30,9 +30,9 @@ export type CreateUserDto = z.infer<typeof CreateUserSchema>;
 
 export const UpdateUserSchema = z.object({
   username: z.string().min(1, "username is required").optional(),
-  password: z.string().min(6, "password must be at least 6 characters").optional(),
-  status: z.enum(UserStatusEnum).optional(),
-  userType: z.enum(UserTypeEnum).optional(),
+  password: z.string().min(6, "password must be at least 6 characters").or(z.literal("")).optional(),
+  status: z.nativeEnum(UserStatusEnum).optional(),
+  userType: z.nativeEnum(UserTypeEnum).optional(),
 });
 
 export type UpdateUserAttribute = z.infer<typeof UpdateUserSchema>;
@@ -51,7 +51,7 @@ const booleanParam = z
 export const FindUsersSchema = PaginationSchema.extend({
   ...createSortSchema(['id', 'updatedAt', 'username'], 'id'),
   search: z.string().optional(),
-  userType: z.enum(UserTypeEnum).optional(),
+  userType: z.nativeEnum(UserTypeEnum).optional(),
   includeDeleted: booleanParam,
   onlyDeleted: booleanParam
 });

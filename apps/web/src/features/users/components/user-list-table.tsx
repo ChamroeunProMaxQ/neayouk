@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -30,50 +30,55 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import { useUsersQuery } from "../hooks/use-users-query";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useUsersInfiniteQuery } from "../hooks/use-users-query";
 import {
   useCreateUserMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,
 } from "../hooks/use-user-mutations";
-import { UserFormDialog } from "./user-form-dialog";
+import { UserFormDialog, type UserFormValues } from "./user-form-dialog";
 import { DeleteUserDialog } from "./delete-user-dialog";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { useInfiniteScroll } from "@/hooks/use-intersection-observer";
 import { useDebounce } from "@/hooks/use-debounce";
 
 export const UserListTable: React.FC = () => {
-  const {
-    values,
-    setValue,
-    setValues,
-  } = useUrlFilters(FindUsersSchema);
-  const {
-    search,
-    userType,
-    sortBy,
-    sortOrder,
-  } = values;
+  const { values, setValue, setValues } = useUrlFilters(FindUsersSchema);
+  const { search, userType, sortBy, sortOrder } = values;
 
-  const [page, setPage] = useState(1);
-  const [pageSize] = useState(20);
+  const pageSize = 20;
 
-  // debounce search
+  // Debounce search input
   const debouncedSearch = useDebounce(search, 800);
 
-  // build query params from search params
-  const queryParams = useMemo(() => ({
-    ...values,
-    search: debouncedSearch,
-    page,
-    pageSize,
-  }), [debouncedSearch, page, pageSize, values]);
+  // Build query params from filters
+  const queryParams = useMemo(
+    () => ({
+      ...values,
+      search: debouncedSearch,
+      pageSize,
+    }),
+    [debouncedSearch, pageSize, values]
+  );
 
-  const { data, isLoading, isFetching, isError, error } =
-    useUsersQuery(queryParams);
+  // Fetch users via TanStack Query useInfiniteQuery
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    error,
+  } = useUsersInfiniteQuery(queryParams);
 
-  // Accumulated users for infinite scroll
-  const [accumulatedUsers, setAccumulatedUsers] = useState<UserAttribute[]>([]);
+  // Derive flattened array of users from infinite pages
+  const accumulatedUsers = useMemo<UserAttribute[]>(
+    () => data?.pages.flatMap((page) => page.data ?? []) ?? [],
+    [data]
+  );
 
   // Dialog states
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
@@ -81,105 +86,60 @@ export const UserListTable: React.FC = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserAttribute | null>(null);
 
-  // Handle userType filter change
-  const handleUserTypeChange = (userType: UserTypeEnum) => {
-    setValue("userType", userType);
-    setPage(1);
+  // Filter change handlers
+  const handleUserTypeChange = (selectedUserType: UserTypeEnum) => {
+    setValue("userType", selectedUserType);
   };
 
-  // Handle search change
-  const handleSearchChange = (search: string) => {
-    setPage(1);
-    setValue("search", search);
+  const handleSearchChange = (searchTerm: string) => {
+    setValue("search", searchTerm);
   };
 
   // Toggle sorting handler
   const handleSort = (field: "username" | "updatedAt") => {
-    const nextOrder =
-      sortBy === field && sortOrder === "ASC"
-        ? "DESC"
-        : "ASC";
-
+    const nextOrder = sortBy === field && sortOrder === "ASC" ? "DESC" : "ASC";
     setValues({
       sortBy: field,
       sortOrder: nextOrder,
     });
-    setPage(1);
   };
-
-  // Accumulate users when new page data arrives
-  useEffect(() => {
-    const users = data?.data;
-    if (!users) return;
-
-    setAccumulatedUsers((prev) => {
-      if (page == 1) {
-        return users;
-      }
-      const existingIds = new Set(prev.map((user) => user.id));
-      const newUsers = users.filter((user) => !existingIds.has(user.id));
-      return [...prev, ...newUsers];
-    });
-  }, [data, page]);
 
   // Mutations
   const createMutation = useCreateUserMutation();
   const updateMutation = useUpdateUserMutation();
   const deleteMutation = useDeleteUserMutation();
 
-  const pagination = data?.pagination;
-  const totalCount = pagination?.totalCount ?? accumulatedUsers.length;
-  const totalPages = pagination?.totalPage ?? Math.max(1, Math.ceil(totalCount / pageSize));
-  const hasMore = page < totalPages;
+  const totalCount =
+    data?.pages[0]?.pagination?.totalCount ?? accumulatedUsers.length;
 
-  // Infinite Scroll IntersectionObserver
-  const loadNextPage = useCallback(() => {
-    if (!hasMore) return;
-    setPage((prev) => prev + 1);
-  }, [hasMore, setPage]);
-
+  // Infinite Scroll IntersectionObserver hook
   const sentinelRef = useInfiniteScroll({
-    hasMore,
+    hasMore: !!hasNextPage,
     isLoading,
-    isFetching,
-    onLoadMore: loadNextPage,
+    isFetching: isFetchingNextPage,
+    onLoadMore: fetchNextPage,
   });
 
   // Form submission handler
-  const handleFormSubmit = async (values: {
-    username: string;
-    password?: string;
-    userType: UserTypeEnum;
-    status: UserStatusEnum;
-  }) => {
+  const handleFormSubmit = async (formValues: UserFormValues) => {
     if (userToEdit) {
-      const res = await updateMutation.mutateAsync({
+      await updateMutation.mutateAsync({
         id: userToEdit.id,
         dto: {
-          username: values.username,
-          userType: values.userType,
-          status: values.status,
-          ...(values.password ? { password: values.password } : {}),
+          username: formValues.username,
+          userType: formValues.userType,
+          status: formValues.status,
+          ...(formValues.password ? { password: formValues.password } : {}),
         },
       });
-      if (res?.data) {
-        setAccumulatedUsers((prev) =>
-          prev.map((u) => (u.id === res.data!.id ? { ...u, ...res.data } : u))
-        );
-      }
     } else {
-      const res = await createMutation.mutateAsync({
-        username: values.username,
-        password: values.password || "password123",
-        userType: values.userType,
-        status: values.status,
+      if (!formValues.username) return;
+      await createMutation.mutateAsync({
+        username: formValues.username,
+        password: formValues.password || "password123",
+        userType: formValues.userType,
+        status: formValues.status,
       });
-      if (res?.data) {
-        setAccumulatedUsers((prev) => [
-          res.data!,
-          ...prev.filter((u) => u.id !== res.data!.id),
-        ]);
-      }
     }
     setIsFormDialogOpen(false);
     setUserToEdit(null);
@@ -189,7 +149,6 @@ export const UserListTable: React.FC = () => {
   const handleDeleteConfirm = async () => {
     if (userToDelete) {
       await deleteMutation.mutateAsync(userToDelete.id);
-      setAccumulatedUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
       setIsDeleteDialogOpen(false);
       setUserToDelete(null);
     }
@@ -223,9 +182,11 @@ export const UserListTable: React.FC = () => {
       {
         accessorKey: "username",
         header: () => (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => handleSort("username")}
-            className="inline-flex items-center gap-1 hover:text-[#F05A4A] transition-colors font-bold cursor-pointer"
+            className="inline-flex items-center gap-1 hover:text-[#F05A4A] transition-colors font-bold cursor-pointer p-0 h-auto"
           >
             <span>Username</span>
             {sortBy === "username" ? (
@@ -237,7 +198,7 @@ export const UserListTable: React.FC = () => {
             ) : (
               <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
             )}
-          </button>
+          </Button>
         ),
         cell: ({ getValue }) => (
           <span className="text-slate-900 font-semibold text-xs">
@@ -249,11 +210,11 @@ export const UserListTable: React.FC = () => {
         accessorKey: "userType",
         header: "userType",
         cell: ({ getValue }) => {
-          const userType = getValue<UserTypeEnum>();
+          const role = getValue<UserTypeEnum>();
           let badgeStyle = "bg-slate-100 text-slate-700 border-slate-200";
-          if (userType === UserTypeEnum.ADMIN) {
+          if (role === UserTypeEnum.ADMIN) {
             badgeStyle = "bg-[#FFF0EE] text-[#F05A4A] border-[#F05A4A]/30";
-          } else if (userType === UserTypeEnum.CMS) {
+          } else if (role === UserTypeEnum.CMS) {
             badgeStyle = "bg-indigo-50 text-indigo-700 border-indigo-200";
           }
 
@@ -261,7 +222,7 @@ export const UserListTable: React.FC = () => {
             <span
               className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border ${badgeStyle}`}
             >
-              {userType || "CUSTOMER"}
+              {role || "CUSTOMER"}
             </span>
           );
         },
@@ -286,10 +247,11 @@ export const UserListTable: React.FC = () => {
 
           return (
             <span
-              className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border ${isActive
-                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                : "bg-amber-50 text-amber-700 border-amber-200"
-                }`}
+              className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border ${
+                isActive
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-amber-50 text-amber-700 border-amber-200"
+              }`}
             >
               {status || "ACTIVE"}
             </span>
@@ -299,9 +261,11 @@ export const UserListTable: React.FC = () => {
       {
         accessorKey: "updatedAt",
         header: () => (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => handleSort("updatedAt")}
-            className="inline-flex items-center gap-1 hover:text-[#F05A4A] transition-colors font-bold cursor-pointer"
+            className="inline-flex items-center gap-1 hover:text-[#F05A4A] transition-colors font-bold cursor-pointer p-0 h-auto"
           >
             <span>Updated At</span>
             {sortBy === "updatedAt" ? (
@@ -313,7 +277,7 @@ export const UserListTable: React.FC = () => {
             ) : (
               <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
             )}
-          </button>
+          </Button>
         ),
         cell: ({ getValue }) => {
           const val = getValue<Date | string | undefined>();
@@ -321,7 +285,8 @@ export const UserListTable: React.FC = () => {
           const d = new Date(val);
           return (
             <span className="text-slate-600 text-xs font-mono">
-              {d.toLocaleDateString()} {d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              {d.toLocaleDateString()}{" "}
+              {d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </span>
           );
         },
@@ -335,30 +300,34 @@ export const UserListTable: React.FC = () => {
 
           return (
             <div className="flex items-center justify-center gap-2">
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => {
                   setUserToEdit(user);
                   setIsFormDialogOpen(true);
                 }}
-                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-md transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-md transition-colors cursor-pointer h-auto"
                 aria-label={`Edit ${user.username}`}
               >
                 <Edit3 className="w-3.5 h-3.5 text-slate-600" />
                 <span>Edit</span>
-              </button>
+              </Button>
 
               {!isDeleted && (
-                <button
+                <Button
+                  variant="destructive"
+                  size="sm"
                   onClick={() => {
                     setUserToDelete(user);
                     setIsDeleteDialogOpen(true);
                   }}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#F05A4A] bg-[#FFF0EE] hover:bg-[#FFE0DC] border border-[#F05A4A]/20 rounded-md transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#F05A4A] bg-[#FFF0EE] hover:bg-[#FFE0DC] border border-[#F05A4A]/20 rounded-md transition-colors cursor-pointer h-auto"
                   aria-label={`Delete ${user.username}`}
                 >
                   <Trash2 className="w-3.5 h-3.5 text-[#F05A4A]" />
                   <span>Delete</span>
-                </button>
+                </Button>
               )}
             </div>
           );
@@ -381,9 +350,9 @@ export const UserListTable: React.FC = () => {
       <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4">
         {/* Left Side: Search & Filter Selectors */}
         <div className="flex flex-wrap items-center gap-3 flex-1">
-          {/* Search Input */}
+          {/* Search Input using shadcn Input primitive */}
           <div className="relative min-w-[220px] max-w-sm flex-1">
-            <input
+            <Input
               type="text"
               placeholder="Search user name..."
               value={search}
@@ -395,14 +364,19 @@ export const UserListTable: React.FC = () => {
 
           {/* User Role Filter */}
           <div className="flex items-center gap-2">
-            <label htmlFor="role-filter" className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+            <label
+              htmlFor="role-filter"
+              className="text-xs font-bold text-slate-600 uppercase tracking-wide"
+            >
               Role:
             </label>
             <select
               id="role-filter"
               aria-label="Filter by User Role"
               value={userType}
-              onChange={(e) => handleUserTypeChange(e.target.value as UserTypeEnum)}
+              onChange={(e) =>
+                handleUserTypeChange(e.target.value as UserTypeEnum)
+              }
               className="px-3 py-2 text-xs font-semibold border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#F05A4A]/20 focus:border-[#F05A4A] text-slate-700"
             >
               <option value="">All Roles</option>
@@ -413,10 +387,10 @@ export const UserListTable: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Side: Action Buttons & Record Counter */}
+        {/* Right Side: Action Buttons */}
         <div className="flex flex-wrap items-center justify-between xl:justify-end gap-3">
-          {/* Add User Button */}
-          <button
+          {/* Add User Button using shadcn Button primitive */}
+          <Button
             onClick={() => {
               setUserToEdit(null);
               setIsFormDialogOpen(true);
@@ -425,7 +399,7 @@ export const UserListTable: React.FC = () => {
           >
             <UserPlus className="w-3.5 h-3.5" />
             <span>Add User</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -454,9 +428,9 @@ export const UserListTable: React.FC = () => {
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -506,13 +480,16 @@ export const UserListTable: React.FC = () => {
       </div>
 
       {/* Infinite Scroll Sentinel & Bottom Loading Indicator */}
-      <div ref={sentinelRef} className="py-2 text-center text-xs text-slate-400 font-medium">
-        {isFetching && page! > 1 ? (
+      <div
+        ref={sentinelRef}
+        className="py-2 text-center text-xs text-slate-400 font-medium"
+      >
+        {isFetchingNextPage ? (
           <div className="flex items-center justify-center gap-2">
             <Loader2 className="w-4 h-4 animate-spin text-[#F05A4A]" />
             <span>Loading more users...</span>
           </div>
-        ) : !hasMore && accumulatedUsers.length > 0 ? (
+        ) : !hasNextPage && accumulatedUsers.length > 0 ? (
           <span>All {totalCount} users loaded</span>
         ) : null}
       </div>

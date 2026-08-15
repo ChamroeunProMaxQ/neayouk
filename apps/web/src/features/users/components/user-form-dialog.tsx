@@ -57,6 +57,7 @@ export const UserFormDialog: React.FC<UserFormDialogProps> = ({
 
         {/* Independent User Form */}
         <UserForm
+          key={userToEdit ? `edit-${userToEdit.id}` : "create-user"}
           onSubmit={onSubmit}
           onCancel={onClose}
           userToEdit={userToEdit}

@@ -87,7 +87,7 @@ Reference these guidelines when:
 
 ### 5. Forms & Validation (React Hook Form + Zod) (HIGH)
 
-- `form-zod-schema-validation` - Define schema-first validation importing Zod schemas from `@repo/contracts`
+- `form-zod-schema-validation` - Enforce contract-based Zod schema and DTO sharing from `@repo/contracts` with Zod v4 resolver compatibility (`result.error.issues`) across frontend forms and backend endpoints
 - `form-rhf-controller-integration` - Integrate custom shadcn/ui components using RHF `Controller`
 - `form-performance-uncontrolled` - Utilize uncontrolled inputs to avoid re-renders on keystrokes
 - `form-field-arrays-dynamic` - Manage dynamic field lists efficiently using `useFieldArray`

@@ -34,7 +34,7 @@ Update the existing Customer List interface into a dynamic, API-driven User Mana
     - [x] `hooks/use-users-query.ts`: `useUsersQuery` hook to fetch users list with pagination, search, filters, and sorting.
     - [x] `hooks/use-user-mutations.ts`: Mutation hooks for create, update, and soft delete.
     - [x] `components/user-list-table.tsx`: Modular table component with TanStack Table v8, filter controls, column sorting, and pagination.
-    - [x] `components/user-form.tsx`: Reusable user form component with React Hook Form and Zod validation.
+    - [x] `components/user-form.tsx`: Reusable user form component driven directly by `@repo/contracts` schemas (`CreateUserSchema` and `UpdateUserSchema`) with React Hook Form and Zod validation.
     - [x] `components/user-form-dialog.tsx`: Dialog wrapper for user form modal.
     - [x] `components/delete-user-dialog.tsx`: Confirmation modal for user soft deletion.
     - [x] `index.ts`: Barrel export for the users feature module.
@@ -50,7 +50,7 @@ Update the existing Customer List interface into a dynamic, API-driven User Mana
 
 ## 3. Tech Design & File Scope
 - Target Files:
-  - `packages/contracts/src/user.dto.ts` [MODIFY]
+  - `packages/contracts/src/user.dto.ts` [MODIFY] (includes `CreateUserSchema`, `UpdateUserSchema`, `FindUsersSchema`)
   - `packages/contracts/src/route.ts` [MODIFY]
   - `apps/api/src/user/user.service.ts` [MODIFY]
   - `apps/api/src/user/user.controller.ts` [MODIFY]
@@ -58,7 +58,7 @@ Update the existing Customer List interface into a dynamic, API-driven User Mana
   - `apps/web/src/features/users/hooks/use-users-query.ts` [NEW]
   - `apps/web/src/features/users/hooks/use-user-mutations.ts` [NEW]
   - `apps/web/src/features/users/components/user-list-table.tsx` [NEW]
-  - `apps/web/src/features/users/components/user-form.tsx` [NEW]
+  - `apps/web/src/features/users/components/user-form.tsx` [NEW] (uses `CreateUserSchema` & `UpdateUserSchema` from `@repo/contracts`)
   - `apps/web/src/features/users/components/user-form-dialog.tsx` [NEW]
   - `apps/web/src/features/users/components/delete-user-dialog.tsx` [NEW]
   - `apps/web/src/features/users/components/user-list-table.spec.tsx` [NEW]
@@ -78,6 +78,7 @@ Update the existing Customer List interface into a dynamic, API-driven User Mana
 - [x] Backend e2e tests pass for sorting on username and updated_at, user query filters, deleted user filtering, and soft delete (`pnpm --filter api test`).
 - [x] `AdminLayout` acts as a route layout with `<Outlet />`, containing fixed header and sticky/fixed sidebar.
 - [x] Sidebar remains fixed/sticky in view while scrolling through the user list or table contents.
+- [x] `UserForm` validation is driven by `@repo/contracts` schemas (`CreateUserSchema` / `UpdateUserSchema`).
 - [x] `UsersPage` is mounted at route `/users` as an independent page under `AdminLayout`.
 - [x] User management logic is fully encapsulated in its own feature module (`apps/web/src/features/users`).
 - [x] Sidebar active states reflect the current URL pathname and trigger client-side route navigation.

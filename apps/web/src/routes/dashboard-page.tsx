@@ -18,7 +18,7 @@ export function DashboardPage() {
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                 User Management
               </span>
-              <div className="p-2 bg-[#FFF0EE] rounded-lg text-[#F05A4A]">
+              <div className="p-2 bg-[#EBF6EE] rounded-lg text-[#45AC5E]">
                 <Users className="w-4 h-4" />
               </div>
             </div>
@@ -28,7 +28,7 @@ export function DashboardPage() {
           </div>
           <Link
             to="/users"
-            className="inline-block mt-4 text-xs font-bold text-[#F05A4A] hover:underline"
+            className="inline-block mt-4 text-xs font-bold text-[#45AC5E] hover:underline"
           >
             Go to User List →
           </Link>

@@ -601,7 +601,7 @@
                                         "group": "mysql",
                                         "kind": "DataQuery",
                                         "spec": {
-                                            "dataset": "d1_monorepo",
+                                            "dataset": "neayouk_monorepo",
                                             "editorMode": "code",
                                             "format": "time_series",
                                             "rawQuery": true,

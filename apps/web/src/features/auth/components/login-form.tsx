@@ -77,6 +77,11 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         <CardDescription className="text-xs text-muted-foreground max-w-xs mx-auto">
           Enter your credentials to log in. Supports Admin, CMS & Customer accounts.
         </CardDescription>
+        <div className="flex items-center justify-center gap-1.5 pt-1">
+          <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">ADMIN</span>
+          <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300">CMS</span>
+          <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">CUSTOMER</span>
+        </div>
       </CardHeader>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>

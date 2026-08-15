@@ -103,7 +103,7 @@ export const UserForm: FC<UserFormProps> = ({
             "bg-white transition-all",
             errors.username
               ? "border-red-500 ring-2 ring-red-500/20 text-red-900 focus-visible:border-red-500 focus-visible:ring-red-500/30"
-              : "border-slate-200 focus-visible:ring-[#F05A4A]/20 focus-visible:border-[#F05A4A]"
+              : "border-slate-200 focus-visible:ring-[#45AC5E]/20 focus-visible:border-[#45AC5E]"
           )}
           aria-invalid={Boolean(errors.username)}
           aria-describedby={errors.username ? "username-error" : undefined}
@@ -135,7 +135,7 @@ export const UserForm: FC<UserFormProps> = ({
             "bg-white transition-all",
             errors.password
               ? "border-red-500 ring-2 ring-red-500/20 text-red-900 focus-visible:border-red-500 focus-visible:ring-red-500/30"
-              : "border-slate-200 focus-visible:ring-[#F05A4A]/20 focus-visible:border-[#F05A4A]"
+              : "border-slate-200 focus-visible:ring-[#45AC5E]/20 focus-visible:border-[#45AC5E]"
           )}
           aria-invalid={Boolean(errors.password)}
           aria-describedby={errors.password ? "password-error" : undefined}
@@ -169,7 +169,7 @@ export const UserForm: FC<UserFormProps> = ({
             "w-full px-3 py-2 text-sm border rounded-lg focus:outline-none bg-white transition-all text-slate-700",
             errors.userType
               ? "border-red-500 ring-2 ring-red-500/20 text-red-900 focus:border-red-500 focus:ring-red-500/30"
-              : "border-slate-200 focus:ring-2 focus:ring-[#F05A4A]/20 focus:border-[#F05A4A]"
+              : "border-slate-200 focus:ring-2 focus:ring-[#45AC5E]/20 focus:border-[#45AC5E]"
           )}
         >
           <option value={UserTypeEnum.CUSTOMER}>Customer</option>
@@ -199,7 +199,7 @@ export const UserForm: FC<UserFormProps> = ({
             "w-full px-3 py-2 text-sm border rounded-lg focus:outline-none bg-white transition-all text-slate-700",
             errors.status
               ? "border-red-500 ring-2 ring-red-500/20 text-red-900 focus:border-red-500 focus:ring-red-500/30"
-              : "border-slate-200 focus:ring-2 focus:ring-[#F05A4A]/20 focus:border-[#F05A4A]"
+              : "border-slate-200 focus:ring-2 focus:ring-[#45AC5E]/20 focus:border-[#45AC5E]"
           )}
         >
           <option value={UserStatusEnum.ACTIVE}>Active</option>
@@ -230,7 +230,7 @@ export const UserForm: FC<UserFormProps> = ({
           type="submit"
           size="sm"
           disabled={isLoading}
-          className="bg-[#F05A4A] hover:bg-[#D94738] text-white"
+          className="bg-[#45AC5E] hover:bg-[#389350] text-white"
         >
           {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
           <span>{submitButtonLabel || (isEdit ? "Update User" : "Create User")}</span>

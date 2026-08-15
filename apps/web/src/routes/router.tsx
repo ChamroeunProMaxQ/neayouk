@@ -15,11 +15,14 @@ const DashboardPage = lazy(() =>
 const UsersPage = lazy(() =>
   import("./users-page").then((m) => ({ default: m.UsersPage }))
 );
+const DummyPage = lazy(() =>
+  import("./dummy-page").then((m) => ({ default: m.DummyPage }))
+);
 
 function PageFallback() {
   return (
     <div className="flex h-[50vh] w-full items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#F05A4A] border-t-transparent" />
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#45AC5E] border-t-transparent" />
     </div>
   );
 }
@@ -62,6 +65,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageFallback />}>
                 <UsersPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "*",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <DummyPage />
               </Suspense>
             ),
           },

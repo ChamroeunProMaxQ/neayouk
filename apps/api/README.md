@@ -86,4 +86,4 @@ import { AppModule } from './app.module';    // Will throw ERR_MODULE_NOT_FOUND 
 
 ## 🧪 Manual API Testing
 
-A ready-to-use REST client request file is located at [`apps/api/http/user.http`](file:///e:/work/d1-monorepo-template/apps/api/http/user.http). You can execute these endpoints directly using VS Code / WebStorm REST Client plugins.
+A ready-to-use REST client request file is located at [`apps/api/http/user.http`](file:///e:/work/neayouk/apps/api/http/user.http). You can execute these endpoints directly using VS Code / WebStorm REST Client plugins.

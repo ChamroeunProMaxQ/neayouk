@@ -164,7 +164,7 @@ export const UserListTable: FC = () => {
           const user = row.original;
           const initial = user.username.charAt(0).toUpperCase();
           return (
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-[#F05A4A] font-bold text-xs border border-slate-200">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-[#45AC5E] font-bold text-xs border border-slate-200">
               <span>{initial || "U"}</span>
             </div>
           );
@@ -186,14 +186,14 @@ export const UserListTable: FC = () => {
             variant="ghost"
             size="sm"
             onClick={() => handleSort("username")}
-            className="inline-flex items-center gap-1 hover:text-[#F05A4A] transition-colors font-bold cursor-pointer p-0 h-auto"
+            className="inline-flex items-center gap-1 hover:text-[#45AC5E] transition-colors font-bold cursor-pointer p-0 h-auto"
           >
             <span>Username</span>
             {sortBy === "username" ? (
               sortOrder === "ASC" ? (
-                <ArrowUp className="w-3.5 h-3.5 text-[#F05A4A]" />
+                <ArrowUp className="w-3.5 h-3.5 text-[#45AC5E]" />
               ) : (
-                <ArrowDown className="w-3.5 h-3.5 text-[#F05A4A]" />
+                <ArrowDown className="w-3.5 h-3.5 text-[#45AC5E]" />
               )
             ) : (
               <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
@@ -213,7 +213,7 @@ export const UserListTable: FC = () => {
           const role = getValue<UserTypeEnum>();
           let badgeStyle = "bg-slate-100 text-slate-700 border-slate-200";
           if (role === UserTypeEnum.ADMIN) {
-            badgeStyle = "bg-[#FFF0EE] text-[#F05A4A] border-[#F05A4A]/30";
+            badgeStyle = "bg-[#EBF6EE] text-[#45AC5E] border-[#45AC5E]/30";
           } else if (role === UserTypeEnum.CMS) {
             badgeStyle = "bg-indigo-50 text-indigo-700 border-indigo-200";
           }
@@ -265,14 +265,14 @@ export const UserListTable: FC = () => {
             variant="ghost"
             size="sm"
             onClick={() => handleSort("updatedAt")}
-            className="inline-flex items-center gap-1 hover:text-[#F05A4A] transition-colors font-bold cursor-pointer p-0 h-auto"
+            className="inline-flex items-center gap-1 hover:text-[#45AC5E] transition-colors font-bold cursor-pointer p-0 h-auto"
           >
             <span>Updated At</span>
             {sortBy === "updatedAt" ? (
               sortOrder === "ASC" ? (
-                <ArrowUp className="w-3.5 h-3.5 text-[#F05A4A]" />
+                <ArrowUp className="w-3.5 h-3.5 text-[#45AC5E]" />
               ) : (
-                <ArrowDown className="w-3.5 h-3.5 text-[#F05A4A]" />
+                <ArrowDown className="w-3.5 h-3.5 text-[#45AC5E]" />
               )
             ) : (
               <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
@@ -357,7 +357,7 @@ export const UserListTable: FC = () => {
               placeholder="Search user name..."
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full pl-3 pr-10 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F05A4A]/20 focus:border-[#F05A4A] transition-colors placeholder:text-slate-400"
+              className="w-full pl-3 pr-10 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#45AC5E]/20 focus:border-[#45AC5E] transition-colors placeholder:text-slate-400"
             />
             <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
@@ -377,7 +377,7 @@ export const UserListTable: FC = () => {
               onChange={(e) =>
                 handleUserTypeChange(e.target.value as UserTypeEnum)
               }
-              className="px-3 py-2 text-xs font-semibold border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#F05A4A]/20 focus:border-[#F05A4A] text-slate-700"
+              className="px-3 py-2 text-xs font-semibold border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#45AC5E]/20 focus:border-[#45AC5E] text-slate-700"
             >
               <option value="">All Roles</option>
               <option value={UserTypeEnum.ADMIN}>Admin</option>
@@ -395,7 +395,7 @@ export const UserListTable: FC = () => {
               setUserToEdit(null);
               setIsFormDialogOpen(true);
             }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-[#F05A4A] hover:bg-[#D94738] rounded-lg transition-colors shadow-2xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-[#45AC5E] hover:bg-[#389350] rounded-lg transition-colors shadow-2xs cursor-pointer"
           >
             <UserPlus className="w-3.5 h-3.5" />
             <span>Add User</span>
@@ -444,7 +444,7 @@ export const UserListTable: FC = () => {
                   className="py-12 text-center text-slate-400 text-xs font-medium"
                 >
                   <div className="flex flex-col items-center justify-center gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin text-[#F05A4A]" />
+                    <Loader2 className="w-5 h-5 animate-spin text-[#45AC5E]" />
                     <span>Loading users...</span>
                   </div>
                 </TableCell>
@@ -486,7 +486,7 @@ export const UserListTable: FC = () => {
       >
         {isFetchingNextPage ? (
           <div className="flex items-center justify-center gap-2">
-            <Loader2 className="w-4 h-4 animate-spin text-[#F05A4A]" />
+            <Loader2 className="w-4 h-4 animate-spin text-[#45AC5E]" />
             <span>Loading more users...</span>
           </div>
         ) : !hasNextPage && accumulatedUsers.length > 0 ? (

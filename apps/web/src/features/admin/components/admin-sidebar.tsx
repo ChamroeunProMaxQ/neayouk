@@ -1,31 +1,36 @@
-import React, { useState } from "react";
+import { useState, useEffect, type FC, type ComponentType } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
-  ShoppingBag,
-  UserCheck,
-  Tag,
-  Ticket,
-  Percent,
-  LayoutGrid,
-  Package,
-  Image,
+  Users,
   Bell,
-  Zap,
-  MapPin,
-  Clock,
+  GraduationCap,
+  ClipboardCheck,
+  Award,
+  BookOpen,
+  CreditCard,
+  Briefcase,
+  Library,
+  Bus,
+  Building2,
+  BarChart3,
   Settings,
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
 
+export interface SubNavItem {
+  label: string;
+  path: string;
+}
+
 export interface NavItem {
   id: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
   path?: string;
   isCollapsible?: boolean;
-  subItems?: string[];
+  subItems?: (string | SubNavItem)[];
 }
 
 export interface NavGroup {
@@ -43,52 +48,186 @@ const adminNavGroups: NavGroup[] = [
   {
     items: [
       { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
-      { id: "customer-orders", label: "Customer Orders", icon: ShoppingBag },
-      { id: "user-list", label: "User List", icon: UserCheck, path: "/users" },
+      {
+        id: "users",
+        label: "User Management",
+        icon: Users,
+        path: "/users",
+        isCollapsible: true,
+        subItems: [
+          { label: "Students", path: "/users/students" },
+          { label: "Teachers & Staff", path: "/users/teachers" },
+          { label: "Parents", path: "/users/parents" },
+          { label: "Roles & Permissions", path: "/users/roles" },
+        ],
+      },
+      {
+        id: "announcements",
+        label: "Announcements",
+        icon: Bell,
+        path: "/announcements",
+        isCollapsible: true,
+        subItems: [
+          { label: "Notices & Bulletins", path: "/announcements/notices" },
+          { label: "SMS & Email Broadcasts", path: "/announcements/broadcasts" },
+          { label: "School Events", path: "/announcements/events" },
+        ],
+      },
     ],
   },
   {
-    groupHeader: "Store Managements",
+    groupHeader: "Academic Management",
     items: [
       {
-        id: "promo-campaign",
-        label: "Promo and Campaign",
-        icon: Tag,
+        id: "academics",
+        label: "Academics & Classes",
+        icon: GraduationCap,
+        path: "/academics",
         isCollapsible: true,
-        subItems: ["Campaign List", "Promotions"],
+        subItems: [
+          { label: "Academic Years & Terms", path: "/academics/academic-years" },
+          { label: "Classes & Sections", path: "/academics/classes" },
+          { label: "Subjects & Courses", path: "/academics/subjects" },
+          { label: "Class Timetable", path: "/academics/timetable" },
+        ],
       },
-      { id: "coupon", label: "Coupon", icon: Ticket },
-      { id: "discounts", label: "Discounts", icon: Percent },
-      { id: "product-display", label: "Product Display", icon: LayoutGrid },
-      { id: "product-category", label: "Product and Category", icon: Package },
-      { id: "banner-ads", label: "Banner Ads", icon: Image },
-      { id: "notifications", label: "Notifications", icon: Bell },
       {
-        id: "operation-settings",
-        label: "Operation Settings",
-        icon: Zap,
+        id: "attendance",
+        label: "Attendance",
+        icon: ClipboardCheck,
+        path: "/attendance",
         isCollapsible: true,
-        subItems: ["General Rules", "Fulfillment"],
+        subItems: [
+          { label: "Student Attendance", path: "/attendance/students" },
+          { label: "Teacher Attendance", path: "/attendance/teachers" },
+          { label: "Leave Requests", path: "/attendance/leave-requests" },
+        ],
       },
-      { id: "delivery-zone", label: "Delivery Zone", icon: MapPin },
-      { id: "delivery-timeslots", label: "Delivery Timeslots", icon: Clock },
+      {
+        id: "examinations",
+        label: "Examinations & Grades",
+        icon: Award,
+        path: "/examinations",
+        isCollapsible: true,
+        subItems: [
+          { label: "Exam Schedules", path: "/examinations/schedules" },
+          { label: "Gradebook", path: "/examinations/gradebook" },
+          { label: "Report Cards", path: "/examinations/report-cards" },
+          { label: "Grading Rules", path: "/examinations/rules" },
+        ],
+      },
+      {
+        id: "assignments",
+        label: "Assignments & Homework",
+        icon: BookOpen,
+        path: "/assignments",
+        isCollapsible: true,
+        subItems: [
+          { label: "Class Assignments", path: "/assignments/class-assignments" },
+          { label: "Homework Tracker", path: "/assignments/homework-tracker" },
+          { label: "Study Resources", path: "/assignments/study-resources" },
+        ],
+      },
+    ],
+  },
+  {
+    groupHeader: "School Operations",
+    items: [
+      {
+        id: "fee-management",
+        label: "Fee & Billing",
+        icon: CreditCard,
+        path: "/fee-management",
+        isCollapsible: true,
+        subItems: [
+          { label: "Fee Structures", path: "/fee-management/structures" },
+          { label: "Invoices & Payments", path: "/fee-management/invoices" },
+          { label: "Scholarships & Discounts", path: "/fee-management/scholarships" },
+        ],
+      },
+      {
+        id: "hr-payroll",
+        label: "HR & Payroll",
+        icon: Briefcase,
+        path: "/hr-payroll",
+        isCollapsible: true,
+        subItems: [
+          { label: "Staff Directory", path: "/hr-payroll/directory" },
+          { label: "Payroll & Salary", path: "/hr-payroll/salary" },
+          { label: "Staff Attendance", path: "/hr-payroll/attendance" },
+        ],
+      },
+      {
+        id: "library",
+        label: "Library Management",
+        icon: Library,
+        path: "/library",
+        isCollapsible: true,
+        subItems: [
+          { label: "Book Catalog", path: "/library/catalog" },
+          { label: "Issue & Return", path: "/library/issue-return" },
+          { label: "Library Members", path: "/library/members" },
+        ],
+      },
+      {
+        id: "transport",
+        label: "Transport & Bus",
+        icon: Bus,
+        path: "/transport",
+        isCollapsible: true,
+        subItems: [
+          { label: "Bus Routes", path: "/transport/routes" },
+          { label: "Vehicle Fleet", path: "/transport/fleet" },
+          { label: "Driver Management", path: "/transport/drivers" },
+        ],
+      },
+      {
+        id: "hostel",
+        label: "Hostel & Dormitory",
+        icon: Building2,
+        path: "/hostel",
+        isCollapsible: true,
+        subItems: [
+          { label: "Dorm Rooms", path: "/hostel/rooms" },
+          { label: "Room Allocation", path: "/hostel/allocation" },
+          { label: "Hostel Attendance", path: "/hostel/attendance" },
+        ],
+      },
     ],
   },
   {
     groupHeader: "System Management",
     items: [
       {
+        id: "reports",
+        label: "Reports & Analytics",
+        icon: BarChart3,
+        path: "/reports",
+        isCollapsible: true,
+        subItems: [
+          { label: "Academic Reports", path: "/reports/academic" },
+          { label: "Attendance Analytics", path: "/reports/attendance" },
+          { label: "Financial Reports", path: "/reports/financial" },
+        ],
+      },
+      {
         id: "settings",
         label: "Settings",
         icon: Settings,
+        path: "/settings",
         isCollapsible: true,
-        subItems: ["General", "Roles & Permissions"],
+        subItems: [
+          { label: "School Profile", path: "/settings/profile" },
+          { label: "General Rules", path: "/settings/rules" },
+          { label: "Integrations", path: "/settings/integrations" },
+          { label: "Audit Logs", path: "/settings/audit-logs" },
+        ],
       },
     ],
   },
 ];
 
-export const AdminSidebar: React.FC<AdminSidebarProps> = ({
+export const AdminSidebar: FC<AdminSidebarProps> = ({
   activeTab,
   onSelectTab,
   className = "",
@@ -96,6 +235,25 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const location = useLocation();
   const navigate = useNavigate();
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+
+  // Expand parent section if current route matches any child path
+  useEffect(() => {
+    adminNavGroups.forEach((group) => {
+      group.items.forEach((item) => {
+        if (item.subItems) {
+          const hasActiveSubItem = item.subItems.some((sub) => {
+            const subPath = typeof sub === "string"
+              ? `${item.path || ""}/${sub.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`
+              : sub.path;
+            return location.pathname === subPath || location.pathname.startsWith(subPath);
+          });
+          if (hasActiveSubItem) {
+            setExpandedSections((prev) => ({ ...prev, [item.id]: true }));
+          }
+        }
+      });
+    });
+  }, [location.pathname]);
 
   const toggleSection = (id: string) => {
     setExpandedSections((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -109,6 +267,22 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       navigate(item.path);
     }
     onSelectTab?.(item.id);
+  };
+
+  const handleSubItemClick = (
+    sub: string | SubNavItem,
+    parentItem: NavItem,
+    idx: number
+  ) => {
+    const subPath =
+      typeof sub === "string"
+        ? `${parentItem.path || ""}/${sub.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`
+        : sub.path;
+
+    if (subPath) {
+      navigate(subPath);
+    }
+    onSelectTab?.(`${parentItem.id}-${idx}`);
   };
 
   return (
@@ -125,7 +299,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           <nav className="space-y-1">
             {group.items.map((item) => {
               const Icon = item.icon;
-              const isPathActive = Boolean(item.path && location.pathname.startsWith(item.path));
+              const isPathActive = Boolean(item.path && (location.pathname === item.path || location.pathname.startsWith(item.path + "/")));
               const isActive = activeTab !== undefined ? activeTab === item.id : isPathActive;
               const isExpanded = Boolean(expandedSections[item.id]);
 
@@ -133,16 +307,16 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 <div key={item.id}>
                   <button
                     onClick={() => handleItemClick(item)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150 relative ${
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150 relative cursor-pointer ${
                       isActive
-                        ? "text-[#F05A4A] bg-[#FFF0EE] border-r-4 border-[#F05A4A]"
+                        ? "text-[#45AC5E] bg-[#EBF6EE] border-r-4 border-[#45AC5E]"
                         : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <Icon
                         className={`w-4 h-4 ${
-                          isActive ? "text-[#F05A4A]" : "text-slate-500"
+                          isActive ? "text-[#45AC5E]" : "text-slate-500"
                         }`}
                       />
                       <span>{item.label}</span>
@@ -162,15 +336,28 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                   {/* Submenu if expanded */}
                   {item.isCollapsible && isExpanded && item.subItems && (
                     <div className="ml-8 mt-1 space-y-1 border-l-2 border-slate-100 pl-3">
-                      {item.subItems.map((sub, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => onSelectTab?.(`${item.id}-${idx}`)}
-                          className="block w-full text-left py-1.5 px-2 text-xs font-medium text-slate-500 hover:text-[#F05A4A] hover:bg-slate-50 rounded"
-                        >
-                          {sub}
-                        </button>
-                      ))}
+                      {item.subItems.map((sub, idx) => {
+                        const subLabel = typeof sub === "string" ? sub : sub.label;
+                        const subPath =
+                          typeof sub === "string"
+                            ? `${item.path || ""}/${sub.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`
+                            : sub.path;
+                        const isSubActive = location.pathname === subPath;
+
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() => handleSubItemClick(sub, item, idx)}
+                            className={`block w-full text-left py-1.5 px-2 text-xs font-medium rounded transition-colors cursor-pointer ${
+                              isSubActive
+                                ? "text-[#45AC5E] bg-[#EBF6EE] font-bold"
+                                : "text-slate-500 hover:text-[#45AC5E] hover:bg-slate-50"
+                            }`}
+                          >
+                            {subLabel}
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </div>

@@ -1,6 +1,6 @@
-# 🚀 d1-monorepo-template
+# 🚀 neayouk
 
-Production-grade full-stack TypeScript monorepo template built with **pnpm**, **Turborepo**, **NestJS 12**, **React 19**, **Vite 8**, **Zod**, and an integrated **Observability & Infrastructure Stack** (Grafana, Loki, Prometheus, Tempo).
+Production-grade full-stack TypeScript monorepo built with **pnpm**, **Turborepo**, **NestJS 12**, **React 19**, **Vite 8**, **Zod**, and an integrated **Observability & Infrastructure Stack** (Grafana, Loki, Prometheus, Tempo).
 
 ---
 
@@ -35,7 +35,7 @@ Production-grade full-stack TypeScript monorepo template built with **pnpm**, **
 ## 🏛️ Monorepo Architecture
 
 ```
-d1-monorepo-template/
+neayouk/
 ├── apps/
 │   ├── api/                 # NestJS 12 REST API (Port 3000)
 │   └── web/                 # React 19 + Vite 8 SPA (Port 5173)
@@ -209,7 +209,7 @@ pnpm --filter api exec vitest run -t "user controller"
 ### Manual API Requests
 
 API endpoints can be tested manually using the REST Client file:
-- [`apps/api/http/user.http`](file:///e:/work/d1-monorepo-template/apps/api/http/user.http)
+- [`apps/api/http/user.http`](file:///e:/work/neayouk/apps/api/http/user.http)
 
 ---
 

@@ -62,11 +62,16 @@ export const AdminHeader: FC<AdminHeaderProps> = ({ onToggleSidebar }) => {
           </Button>
         )}
         <div className="flex items-center gap-3">
+          <img
+            src="/neayouk_logo.svg"
+            alt="Neayouk Logo"
+            className="h-9 w-9 shrink-0 object-contain"
+          />
           <div className="flex flex-col">
             <span className="text-xl font-extrabold tracking-tight text-slate-900 font-sans">
-              D1
+              Neayouk
             </span>
-            <span className="inline-block px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase text-[#F05A4A] bg-[#FFF0EE] rounded-sm w-fit leading-none">
+            <span className="inline-block px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase text-[#45AC5E] bg-[#EBF6EE] rounded-sm w-fit leading-none">
               CMS_ADMIN
             </span>
           </div>
@@ -93,7 +98,7 @@ export const AdminHeader: FC<AdminHeaderProps> = ({ onToggleSidebar }) => {
             aria-label="User Account Menu"
             className="flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-slate-100/80 transition-colors cursor-pointer border border-transparent hover:border-slate-200"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFF0EE] text-[#F05A4A] font-bold text-xs shadow-xs border border-[#F05A4A]/20">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#EBF6EE] text-[#45AC5E] font-bold text-xs shadow-xs border border-[#45AC5E]/20">
               {user?.username ? user.username.charAt(0).toUpperCase() : <User className="w-4 h-4" />}
             </div>
             <div className="hidden md:flex flex-col text-left">
@@ -119,7 +124,7 @@ export const AdminHeader: FC<AdminHeaderProps> = ({ onToggleSidebar }) => {
                   {user?.username || "Admin User"}
                 </p>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#FFF0EE] text-[#F05A4A] border border-[#F05A4A]/20">
+                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#EBF6EE] text-[#45AC5E] border border-[#45AC5E]/20">
                     {user?.userType || user?.type || "ADMIN"}
                   </span>
                   {user?.id && (
@@ -175,7 +180,7 @@ export const AdminHeader: FC<AdminHeaderProps> = ({ onToggleSidebar }) => {
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-[#FFF0EE] text-[#F05A4A]">
+                <div className="p-1.5 rounded-lg bg-[#EBF6EE] text-[#45AC5E]">
                   <Shield className="w-4 h-4" />
                 </div>
                 <h2 id="account-modal-title" className="text-base font-bold text-slate-800">
@@ -195,7 +200,7 @@ export const AdminHeader: FC<AdminHeaderProps> = ({ onToggleSidebar }) => {
             {/* User Details Grid */}
             <div className="space-y-3.5">
               <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#FFF0EE] text-[#F05A4A] font-extrabold text-base shadow-xs border border-[#F05A4A]/20">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#EBF6EE] text-[#45AC5E] font-extrabold text-base shadow-xs border border-[#45AC5E]/20">
                   {user?.username ? user.username.charAt(0).toUpperCase() : "U"}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -217,7 +222,7 @@ export const AdminHeader: FC<AdminHeaderProps> = ({ onToggleSidebar }) => {
                 </div>
                 <div className="flex justify-between py-2">
                   <span className="text-slate-500 font-medium">Role:</span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-[#FFF0EE] text-[#F05A4A] border border-[#F05A4A]/20">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-[#EBF6EE] text-[#45AC5E] border border-[#45AC5E]/20">
                     {user?.userType || user?.type || "ADMIN"}
                   </span>
                 </div>

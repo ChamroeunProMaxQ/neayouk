@@ -3,7 +3,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 export const swaggerConfig = (app: INestApplication) => {
   const config = new DocumentBuilder()
-    .setTitle('D1 Nest Monorepo Template')
+    .setTitle('Neayouk API')
     .setDescription('api docs')
     .setVersion('1.0')
     .addBearerAuth()

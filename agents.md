@@ -11,7 +11,7 @@ This repository is a production-grade full-stack TypeScript monorepo managed wit
 ### Directory Structure
 
 ```
-d1-monorepo-template/
+neayouk/
 ├── apps/
 │   ├── api/                 # NestJS 12 REST API (Port 3000)
 │   └── web/                 # React 19 + Vite 8 SPA Frontend (Port 5173)

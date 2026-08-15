@@ -153,20 +153,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             )}
           </div>
 
-          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px] text-muted-foreground flex items-center justify-between shadow-inner">
-            <span className="font-medium text-slate-600 dark:text-slate-400">Accepted Roles:</span>
-            <div className="flex gap-1.5">
-              <span className="px-2 py-0.5 rounded-full bg-[#f3e5f5] text-[#7b1fa2] border border-[#e1bee7] font-bold tracking-wide">
-                ADMIN
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-[#fff3e0] text-[#e65100] border border-[#ffe0b2] font-bold tracking-wide">
-                CMS
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-[#e0f2f1] text-[#00695c] border border-[#b2dfdb] font-bold tracking-wide">
-                CUSTOMER
-              </span>
-            </div>
-          </div>
         </CardContent>
 
         <CardFooter className="flex flex-col gap-3 pt-2 pb-6">

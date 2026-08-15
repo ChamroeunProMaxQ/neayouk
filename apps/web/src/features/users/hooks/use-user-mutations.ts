@@ -6,38 +6,18 @@ import {
   type ResponseDto,
   type UserAttribute,
 } from "@repo/contracts";
-import { useAuthStore } from "@/features/auth/stores/use-auth-store";
-
-function getAuthHeaders(token: string | null) {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-  return headers;
-}
+import { apiClient } from "@/shared/lib/api-client";
 
 export function useCreateUserMutation() {
   const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
 
   return useMutation<ResponseDto<UserAttribute>, Error, CreateUserDto>({
     mutationFn: async (dto: CreateUserDto) => {
-      const response = await fetch(API_ROUTE.USER.CREATE, {
-        method: "POST",
-        headers: getAuthHeaders(token),
-        body: JSON.stringify(dto),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(
-          errorData?.message || `Failed to create user (${response.status})`
-        );
-      }
-
-      return (await response.json()) as ResponseDto<UserAttribute>;
+      const response = await apiClient.post<ResponseDto<UserAttribute>>(
+        API_ROUTE.USER.CREATE,
+        dto
+      );
+      return response.data;
     },
     onSuccess: (res) => {
       if (res?.data) {
@@ -80,7 +60,6 @@ export interface UpdateUserMutationParams {
 
 export function useUpdateUserMutation() {
   const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
 
   return useMutation<
     ResponseDto<UserAttribute>,
@@ -89,20 +68,11 @@ export function useUpdateUserMutation() {
   >({
     mutationFn: async ({ id, dto }) => {
       const url = API_ROUTE.USER.UPDATE.replace(":id", String(id));
-      const response = await fetch(url, {
-        method: "PATCH",
-        headers: getAuthHeaders(token),
-        body: JSON.stringify(dto),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(
-          errorData?.message || `Failed to update user (${response.status})`
-        );
-      }
-
-      return (await response.json()) as ResponseDto<UserAttribute>;
+      const response = await apiClient.patch<ResponseDto<UserAttribute>>(
+        url,
+        dto
+      );
+      return response.data;
     },
     onSuccess: (res) => {
       if (res?.data) {
@@ -126,27 +96,14 @@ export function useUpdateUserMutation() {
 
 export function useDeleteUserMutation() {
   const queryClient = useQueryClient();
-  const token = useAuthStore((state) => state.token);
 
   return useMutation<ResponseDto<{ id: number; success: boolean }>, Error, number>({
     mutationFn: async (id: number) => {
       const url = API_ROUTE.USER.DELETE.replace(":id", String(id));
-      const response = await fetch(url, {
-        method: "DELETE",
-        headers: getAuthHeaders(token),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(
-          errorData?.message || `Failed to delete user (${response.status})`
-        );
-      }
-
-      return (await response.json()) as ResponseDto<{
-        id: number;
-        success: boolean;
-      }>;
+      const response = await apiClient.delete<
+        ResponseDto<{ id: number; success: boolean }>
+      >(url);
+      return response.data;
     },
     onSuccess: (_res, id) => {
       queryClient.setQueriesData<ResponseDto<UserAttribute[]>>(

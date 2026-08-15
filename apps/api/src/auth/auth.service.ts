@@ -9,7 +9,7 @@ export class AuthService {
   constructor(
     private readonly userServer: UserService,
     private readonly userTokenSerive: UserTokenService,
-  ) {}
+  ) { }
 
   // Mock login method (replace with database lookup and bcrypt check in real apps)
   async login(dto: LogInDto) {
@@ -33,11 +33,10 @@ export class AuthService {
     return this.userTokenSerive.revoke({ userId });
   }
 
-  async refreshToken(tokenStr: string, userId: number) {
+  async refreshToken(tokenStr: string) {
     const token = await this.userTokenSerive.findOne(tokenStr);
     if (!token) throw new UnauthorizedException();
     const user = await token.getUser();
-    if (user.id != userId) throw new UnauthorizedException();
     const accessToken = await this.userTokenSerive.generateAccessToken(user);
     const refreshToken = await this.userTokenSerive.generateRefreshToken(user);
     // revoke token

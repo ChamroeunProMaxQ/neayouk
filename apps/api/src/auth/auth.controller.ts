@@ -8,7 +8,7 @@ import { JwtAuthGuard } from './jwt-auth.guard.js';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   // Public endpoint to request a JWT
   @Post('login')
@@ -23,11 +23,9 @@ export class AuthController {
     return this.authService.logout(req.user?.sub!);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Post('refresh-token')
-  async refreshToken(@Body() dto: RefreshTokenDto, @Req() req: Request) {
-    return this.authService.refreshToken(dto.refreshToken, req.user?.sub!);
+  async refreshToken(@Body() dto: RefreshTokenDto) {
+    return this.authService.refreshToken(dto.refreshToken);
   }
 
   @ApiBearerAuth()

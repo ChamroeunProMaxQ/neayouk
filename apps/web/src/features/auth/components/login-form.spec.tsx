@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { LoginForm } from "./login-form";
 import { useAuthStore } from "../stores/use-auth-store";
+import { apiClient } from "@/shared/lib/api-client";
 
 function createWrapper() {
   const queryClient = new QueryClient({
@@ -66,38 +67,35 @@ describe("LoginForm", () => {
     const onSuccessMock = vi.fn();
     const user = userEvent.setup();
 
-    vi.spyOn(globalThis, "fetch").mockImplementation((url) => {
-      const urlStr = String(url);
-      if (urlStr.includes("/auth/login")) {
-        return Promise.resolve(
-          new Response(
-            JSON.stringify({
-              status: 201,
-              message: "success",
-              data: {
-                accessToken: "test-access-token",
-                refreshToken: "test-refresh-token",
-              },
-            }),
-            { status: 201, headers: { "Content-Type": "application/json" } }
-          )
-        );
+    vi.spyOn(apiClient, "post").mockImplementation((url) => {
+      if (url.includes("/auth/login")) {
+        return Promise.resolve({
+          data: {
+            status: 201,
+            message: "success",
+            data: {
+              accessToken: "test-access-token",
+              refreshToken: "test-refresh-token",
+            },
+          },
+        } as any);
       }
-      if (urlStr.includes("/auth/profile")) {
-        return Promise.resolve(
-          new Response(
-            JSON.stringify({
-              status: 200,
-              message: "success",
-              data: {
-                id: 1,
-                username: "admin",
-                userType: "ADMIN",
-              },
-            }),
-            { status: 200, headers: { "Content-Type": "application/json" } }
-          )
-        );
+      return Promise.reject(new Error("Unknown route"));
+    });
+
+    vi.spyOn(apiClient, "get").mockImplementation((url) => {
+      if (url.includes("/auth/profile")) {
+        return Promise.resolve({
+          data: {
+            status: 200,
+            message: "success",
+            data: {
+              id: 1,
+              username: "admin",
+              userType: "ADMIN",
+            },
+          },
+        } as any);
       }
       return Promise.reject(new Error("Unknown route"));
     });
@@ -124,15 +122,9 @@ describe("LoginForm", () => {
   it("displays error banner when authentication fails", async () => {
     const user = userEvent.setup();
 
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          statusCode: 401,
-          message: "Invalid username or password",
-        }),
-        { status: 401, headers: { "Content-Type": "application/json" } }
-      )
-    );
+    vi.spyOn(apiClient, "post").mockRejectedValue({
+      message: "Invalid username or password",
+    });
 
     render(<LoginForm />, { wrapper: createWrapper() });
 

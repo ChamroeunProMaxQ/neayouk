@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserStatusEnum, UserTypeEnum, type UserAttribute } from "@repo/contracts";
 import { MemoryRouter } from "react-router-dom";
 import { UserListTable } from "./user-list-table";
+import { apiClient } from "@/shared/lib/api-client";
 
 function createWrapper(initialEntries: string[] = ["/"]) {
   const queryClient = new QueryClient({
@@ -77,24 +78,19 @@ describe("UserListTable", () => {
   });
 
   it("renders search bar, role filter, action buttons, pagination, and user rows", async () => {
-    vi.spyOn(globalThis, "fetch").mockImplementation(() =>
-      Promise.resolve(
-        new Response(
-          JSON.stringify({
-            status: 200,
-            message: "success",
-            data: mockUsers.slice(0, 3),
-            pagination: {
-              page: 1,
-              pageSize: 10,
-              totalCount: 3,
-              totalPage: 1,
-            },
-          }),
-          { status: 200, headers: { "Content-Type": "application/json" } }
-        )
-      )
-    );
+    vi.spyOn(apiClient, "get").mockResolvedValue({
+      data: {
+        status: 200,
+        message: "success",
+        data: mockUsers.slice(0, 3),
+        pagination: {
+          page: 1,
+          pageSize: 10,
+          totalCount: 3,
+          totalPage: 1,
+        },
+      },
+    } as any);
 
     render(<UserListTable />, { wrapper: createWrapper() });
 
@@ -118,19 +114,14 @@ describe("UserListTable", () => {
 
   it("triggers search and updates fetch parameters when typing", async () => {
     const user = userEvent.setup();
-    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(() =>
-      Promise.resolve(
-        new Response(
-          JSON.stringify({
-            status: 200,
-            message: "success",
-            data: [mockUsers[0]],
-            pagination: { page: 1, pageSize: 10, totalCount: 1, totalPage: 1 },
-          }),
-          { status: 200, headers: { "Content-Type": "application/json" } }
-        )
-      )
-    );
+    const getSpy = vi.spyOn(apiClient, "get").mockResolvedValue({
+      data: {
+        status: 200,
+        message: "success",
+        data: [mockUsers[0]],
+        pagination: { page: 1, pageSize: 10, totalCount: 1, totalPage: 1 },
+      },
+    } as any);
 
     render(<UserListTable />, { wrapper: createWrapper() });
 
@@ -138,7 +129,7 @@ describe("UserListTable", () => {
     await user.type(searchInput, "alice");
 
     await waitFor(() => {
-      expect(fetchSpy).toHaveBeenCalledWith(
+      expect(getSpy).toHaveBeenCalledWith(
         expect.stringContaining("search=alice"),
         expect.anything()
       );
@@ -147,19 +138,14 @@ describe("UserListTable", () => {
 
   it("changes role filter and queries with userType", async () => {
     const user = userEvent.setup();
-    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(() =>
-      Promise.resolve(
-        new Response(
-          JSON.stringify({
-            status: 200,
-            message: "success",
-            data: [mockUsers[0]],
-            pagination: { page: 1, pageSize: 10, totalCount: 1, totalPage: 1 },
-          }),
-          { status: 200, headers: { "Content-Type": "application/json" } }
-        )
-      )
-    );
+    const getSpy = vi.spyOn(apiClient, "get").mockResolvedValue({
+      data: {
+        status: 200,
+        message: "success",
+        data: [mockUsers[0]],
+        pagination: { page: 1, pageSize: 10, totalCount: 1, totalPage: 1 },
+      },
+    } as any);
 
     render(<UserListTable />, { wrapper: createWrapper() });
 
@@ -167,7 +153,7 @@ describe("UserListTable", () => {
     await user.selectOptions(roleSelect, UserTypeEnum.ADMIN);
 
     await waitFor(() => {
-      expect(fetchSpy).toHaveBeenCalledWith(
+      expect(getSpy).toHaveBeenCalledWith(
         expect.stringContaining("userType=ADMIN"),
         expect.anything()
       );
@@ -176,19 +162,14 @@ describe("UserListTable", () => {
 
   it("toggles sorting when clicking Username and Updated At headers", async () => {
     const user = userEvent.setup();
-    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(() =>
-      Promise.resolve(
-        new Response(
-          JSON.stringify({
-            status: 200,
-            message: "success",
-            data: mockUsers,
-            pagination: { page: 1, pageSize: 10, totalCount: 4, totalPage: 1 },
-          }),
-          { status: 200, headers: { "Content-Type": "application/json" } }
-        )
-      )
-    );
+    const getSpy = vi.spyOn(apiClient, "get").mockResolvedValue({
+      data: {
+        status: 200,
+        message: "success",
+        data: mockUsers,
+        pagination: { page: 1, pageSize: 10, totalCount: 4, totalPage: 1 },
+      },
+    } as any);
 
     render(<UserListTable />, { wrapper: createWrapper() });
 
@@ -196,7 +177,7 @@ describe("UserListTable", () => {
     await user.click(usernameSortBtn);
 
     await waitFor(() => {
-      expect(fetchSpy).toHaveBeenCalledWith(
+      expect(getSpy).toHaveBeenCalledWith(
         expect.stringContaining("sortBy=username"),
         expect.anything()
       );
@@ -205,38 +186,28 @@ describe("UserListTable", () => {
 
   it("opens Add User dialog and creates user on form submission", async () => {
     const user = userEvent.setup();
-    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation((_url, init) => {
-      const method = init?.method || "GET";
-      if (method === "POST") {
-        return Promise.resolve(
-          new Response(
-            JSON.stringify({
-              status: 201,
-              message: "success",
-              data: {
-                id: 5,
-                username: "new_created_user",
-                userType: UserTypeEnum.CUSTOMER,
-                status: UserStatusEnum.ACTIVE,
-                computedNameId: "user-5",
-              },
-            }),
-            { status: 201, headers: { "Content-Type": "application/json" } }
-          )
-        );
-      }
-      return Promise.resolve(
-        new Response(
-          JSON.stringify({
-            status: 200,
-            message: "success",
-            data: mockUsers,
-            pagination: { page: 1, pageSize: 10, totalCount: 4, totalPage: 1 },
-          }),
-          { status: 200, headers: { "Content-Type": "application/json" } }
-        )
-      );
-    });
+    vi.spyOn(apiClient, "get").mockResolvedValue({
+      data: {
+        status: 200,
+        message: "success",
+        data: mockUsers,
+        pagination: { page: 1, pageSize: 10, totalCount: 4, totalPage: 1 },
+      },
+    } as any);
+
+    const postSpy = vi.spyOn(apiClient, "post").mockResolvedValue({
+      data: {
+        status: 201,
+        message: "success",
+        data: {
+          id: 5,
+          username: "new_created_user",
+          userType: UserTypeEnum.CUSTOMER,
+          status: UserStatusEnum.ACTIVE,
+          computedNameId: "user-5",
+        },
+      },
+    } as any);
 
     render(<UserListTable />, { wrapper: createWrapper() });
 
@@ -255,11 +226,10 @@ describe("UserListTable", () => {
     await user.click(submitBtn);
 
     await waitFor(() => {
-      expect(fetchSpy).toHaveBeenCalledWith(
+      expect(postSpy).toHaveBeenCalledWith(
         "/api/v1/users",
         expect.objectContaining({
-          method: "POST",
-          body: expect.stringContaining("new_created_user"),
+          username: "new_created_user",
         })
       );
     });
@@ -267,32 +237,22 @@ describe("UserListTable", () => {
 
   it("opens Delete User confirmation and soft-deletes user", async () => {
     const user = userEvent.setup();
-    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation((_url, init) => {
-      const method = init?.method || "DELETE";
-      if (method === "DELETE") {
-        return Promise.resolve(
-          new Response(
-            JSON.stringify({
-              status: 200,
-              message: "success",
-              data: { id: 1, success: true },
-            }),
-            { status: 200, headers: { "Content-Type": "application/json" } }
-          )
-        );
-      }
-      return Promise.resolve(
-        new Response(
-          JSON.stringify({
-            status: 200,
-            message: "success",
-            data: [mockUsers[0]],
-            pagination: { page: 1, pageSize: 10, totalCount: 1, totalPage: 1 },
-          }),
-          { status: 200, headers: { "Content-Type": "application/json" } }
-        )
-      );
-    });
+    vi.spyOn(apiClient, "get").mockResolvedValue({
+      data: {
+        status: 200,
+        message: "success",
+        data: [mockUsers[0]],
+        pagination: { page: 1, pageSize: 10, totalCount: 1, totalPage: 1 },
+      },
+    } as any);
+
+    const deleteSpy = vi.spyOn(apiClient, "delete").mockResolvedValue({
+      data: {
+        status: 200,
+        message: "success",
+        data: { id: 1, success: true },
+      },
+    } as any);
 
     render(<UserListTable />, { wrapper: createWrapper() });
 
@@ -306,12 +266,7 @@ describe("UserListTable", () => {
     await user.click(confirmBtn);
 
     await waitFor(() => {
-      expect(fetchSpy).toHaveBeenCalledWith(
-        "/api/v1/users/1",
-        expect.objectContaining({
-          method: "DELETE",
-        })
-      );
+      expect(deleteSpy).toHaveBeenCalledWith("/api/v1/users/1");
     });
   });
 });

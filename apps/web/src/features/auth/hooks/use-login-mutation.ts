@@ -6,6 +6,7 @@ import {
   type ResponseDto,
 } from "@repo/contracts";
 import { useAuthStore, type AuthUser } from "../stores/use-auth-store";
+import { apiClient } from "@/shared/lib/api-client";
 
 export interface LoginResult {
   tokens: LogInResponseDto;
@@ -18,20 +19,19 @@ export function useLoginMutation() {
 
   return useMutation<LoginResult, Error, LogInDto>({
     mutationFn: async (credentials: LogInDto): Promise<LoginResult> => {
-      const response = await fetch(API_ROUTE.AUTH.LOGIN, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(credentials),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        const errorMessage =
-          errorData?.message || "Invalid username or password";
-        throw new Error(errorMessage);
+      let resJson: ResponseDto<LogInResponseDto>;
+      try {
+        const response = await apiClient.post<ResponseDto<LogInResponseDto>>(
+          API_ROUTE.AUTH.LOGIN,
+          credentials
+        );
+        resJson = response.data;
+      } catch (err: unknown) {
+        const message =
+          (err as { message?: string }).message || "Invalid username or password";
+        throw new Error(message);
       }
 
-      const resJson = (await response.json()) as ResponseDto<LogInResponseDto>;
       const tokens = resJson.data;
 
       if (!tokens?.accessToken) {
@@ -40,16 +40,15 @@ export function useLoginMutation() {
 
       let profile: AuthUser | undefined;
       try {
-        const profileRes = await fetch(API_ROUTE.AUTH.PROFILE, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${tokens.accessToken}`,
-          },
-        });
-        if (profileRes.ok) {
-          const profileJson = (await profileRes.json()) as ResponseDto<AuthUser>;
-          profile = profileJson.data;
-        }
+        const profileRes = await apiClient.get<ResponseDto<AuthUser>>(
+          API_ROUTE.AUTH.PROFILE,
+          {
+            headers: {
+              Authorization: `Bearer ${tokens.accessToken}`,
+            },
+          }
+        );
+        profile = profileRes.data.data;
       } catch {
         // Fallback to credentials username if profile fetch fails
       }

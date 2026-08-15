@@ -3,9 +3,7 @@ import {
   type MiddlewareConsumer,
   type NestModule,
 } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { AppController } from '@src/app.controller.js';
 import { AppService } from '@src/app.service.js';
@@ -19,10 +17,6 @@ import { HttpLoggerMiddleware } from '@src/common/middleware/http-logger.middlew
 import { HttpRequestDurationProvider } from '@src/common/provider/http-request-duration.provider .js';
 import { HttpRequestsCounterProvider } from '@src/common/provider/http-requests-counter.provider .js';
 import { UserModule } from '@src/user/user.module.js';
-import { CaslModule, type AuthorizableUser } from 'nest-casl';
-import { UserTypeEnum } from '@repo/contracts';
-import type { JwtPayload } from '@src/auth/dto/jwt-payload.dto.js';
-import type { Request } from 'express';
 import { caslConfig } from '@src/common/config/casl.config.js';
 import { envModuelConfig } from '@src/common/config/env.config.js';
 import { typeOrmConfig } from './common/config/orm.config.js';

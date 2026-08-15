@@ -5,6 +5,7 @@ Update the existing Customer List interface into a dynamic, API-driven User Mana
 
 **Architecture Alignment**:
 - `Admin Feature Module` (`apps/web/src/features/admin`): Dedicated layout and navigation shells (`AdminHeader`, `AdminSidebar`, `AdminLayout` with React Router `<Outlet />`).
+  - **Fixed / Sticky Sidebar & Header Layout**: Admin layout is pinned to full viewport (`h-screen overflow-hidden`), ensuring the top header and navigation sidebar stay fixed/sticky while the main content area (`UserListTable` / list view) scrolls independently.
 - `Users Feature Module` (`apps/web/src/features/users` or `user`): Dedicated domain feature module for all user management logic:
   - `components/`: `UserListTable`, `UserForm`, `UserFormDialog`, `DeleteUserDialog`, and component unit tests.
   - `hooks/`: `useUsersQuery`, `useCreateUserMutation`, `useUpdateUserMutation`, `useDeleteUserMutation`.
@@ -39,8 +40,8 @@ Update the existing Customer List interface into a dynamic, API-driven User Mana
     - [x] `index.ts`: Barrel export for the users feature module.
     - [x] Unit & Component Tests in `features/users`: Vitest tests for `user-list-table.spec.tsx` and `user-form.spec.tsx`.
   - [x] Admin Layout & Navigation (`apps/web/src/features/admin`):
-    - [x] `AdminLayout`: Layout route container rendering `AdminHeader`, `AdminSidebar`, and `<Outlet />`.
-    - [x] `AdminSidebar`: Route-aware navigation linking to `/dashboard` and `/users`.
+    - [x] `AdminLayout`: Layout route container rendering `AdminHeader`, `AdminSidebar`, and `<Outlet />`. Configured with viewport bounds (`h-screen overflow-hidden`) so the sidebar remains fixed/sticky in place while user list content scrolls independently.
+    - [x] `AdminSidebar`: Route-aware navigation linking to `/dashboard` and `/users` with independent scroll capability (`h-full overflow-y-auto shrink-0`).
     - [x] `admin-layout.spec.tsx`: Layout and sidebar tests.
   - [x] Routing (`apps/web/src/routes`):
     - [x] `users-page.tsx`: Route page component for `/users` rendering `UserListTable`.
@@ -63,7 +64,7 @@ Update the existing Customer List interface into a dynamic, API-driven User Mana
   - `apps/web/src/features/users/components/user-list-table.spec.tsx` [NEW]
   - `apps/web/src/features/users/components/user-form.spec.tsx` [NEW]
   - `apps/web/src/features/users/index.ts` [NEW]
-  - `apps/web/src/features/admin/components/admin-layout.tsx` [MODIFY]
+  - `apps/web/src/features/admin/components/admin-layout.tsx` [MODIFY] (fixed/sticky sidebar & header scroll containment)
   - `apps/web/src/features/admin/components/admin-sidebar.tsx` [MODIFY]
   - `apps/web/src/features/admin/components/admin-layout.spec.tsx` [MODIFY]
   - `apps/web/src/features/admin/index.ts` [MODIFY] (clean up user-specific exports)
@@ -75,7 +76,8 @@ Update the existing Customer List interface into a dynamic, API-driven User Mana
 ## 4. Acceptance Criteria
 - [x] Contracts build cleanly (`pnpm --filter @repo/contracts build`).
 - [x] Backend e2e tests pass for sorting on username and updated_at, user query filters, deleted user filtering, and soft delete (`pnpm --filter api test`).
-- [x] `AdminLayout` acts as a route layout with `<Outlet />`, containing header and sidebar.
+- [x] `AdminLayout` acts as a route layout with `<Outlet />`, containing fixed header and sticky/fixed sidebar.
+- [x] Sidebar remains fixed/sticky in view while scrolling through the user list or table contents.
 - [x] `UsersPage` is mounted at route `/users` as an independent page under `AdminLayout`.
 - [x] User management logic is fully encapsulated in its own feature module (`apps/web/src/features/users`).
 - [x] Sidebar active states reflect the current URL pathname and trigger client-side route navigation.

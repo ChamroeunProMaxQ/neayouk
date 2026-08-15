@@ -11,16 +11,16 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#F4F5F7] text-slate-800 flex flex-col font-sans">
+    <div className="h-screen overflow-hidden bg-[#F4F5F7] text-slate-800 flex flex-col font-sans">
       {/* Header */}
       <AdminHeader onToggleSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)} />
 
       {/* Main Body Shell */}
-      <div className="flex flex-1 relative overflow-hidden">
+      <div className="flex flex-1 min-h-0 relative overflow-hidden">
         {/* Desktop Sidebar */}
         <AdminSidebar
           onSelectTab={() => setMobileSidebarOpen(false)}
-          className="hidden lg:flex border-r border-slate-100"
+          className="hidden lg:flex border-r border-slate-100 h-full overflow-y-auto shrink-0"
         />
 
         {/* Mobile Backdrop & Sidebar Drawer */}
@@ -40,7 +40,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         )}
 
         {/* Main Content Area */}
-        <main className="flex-1 p-4 sm:p-6 overflow-y-auto max-w-full">
+        <main className="flex-1 min-h-0 p-4 sm:p-6 overflow-y-auto max-w-full">
           {children ?? <Outlet />}
         </main>
       </div>

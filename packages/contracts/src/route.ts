@@ -22,4 +22,25 @@ export const API_ROUTE = {
   PERMISSION: {
     LIST: '/api/v1/admin/permissions',
   },
+  STUDENT: {
+    LIST: '/api/v1/admin/students',
+    CREATE: '/api/v1/admin/students',
+    GET: '/api/v1/admin/students/:id',
+    UPDATE: '/api/v1/admin/students/:id',
+    DELETE: '/api/v1/admin/students/:id',
+    SUMMARY: '/api/v1/admin/students/:id/summary',
+    ASSIGN_CLASSES: '/api/v1/admin/students/:id/classes',
+    PROMOTE: '/api/v1/admin/students/:id/promote',
+    BATCH_PROMOTE: '/api/v1/admin/students/batch-promote',
+    PAYMENTS: '/api/v1/admin/students/:id/payments',
+    RECORD_PAYMENT: '/api/v1/admin/students/:id/payments',
+  },
+  CLASS: {
+    LIST: '/api/v1/admin/classes',
+    CREATE: '/api/v1/admin/classes',
+    GET: '/api/v1/admin/classes/:id',
+    UPDATE: '/api/v1/admin/classes/:id',
+    DELETE: '/api/v1/admin/classes/:id',
+  },
 };
+

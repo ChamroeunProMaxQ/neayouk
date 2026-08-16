@@ -4,9 +4,9 @@ import { TokenStatusEnum, TokenTypeEnum } from "./token.enum.js";
 export const UserTokenSchema = z.object({
   id: z.number(),
   token: z.string(),
-  tokenType: z.nativeEnum(TokenTypeEnum),
+  tokenType: z.enum(TokenTypeEnum),
   expDate: z.date(),
-  status: z.nativeEnum(TokenStatusEnum),
+  status: z.enum(TokenStatusEnum),
   userId: z.number(),
 });
 

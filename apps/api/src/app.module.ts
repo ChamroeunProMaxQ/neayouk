@@ -19,6 +19,7 @@ import { HttpRequestsCounterProvider } from '@src/common/provider/http-requests-
 import { UserModule } from '@src/user/user.module.js';
 import { RoleModule } from '@src/role/role.module.js';
 import { PermissionModule } from '@src/permission/permission.module.js';
+import { StudentModule } from '@src/student/student.module.js';
 import { caslConfig } from '@src/common/config/casl.config.js';
 import { envModuelConfig } from '@src/common/config/env.config.js';
 import { typeOrmConfig } from './common/config/orm.config.js';
@@ -31,6 +32,7 @@ import { typeOrmConfig } from './common/config/orm.config.js';
     UserModule,
     RoleModule,
     PermissionModule,
+    StudentModule,
     ...oberservableConfig,
     LoggerModule,
     AuthModule,

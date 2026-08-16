@@ -99,7 +99,7 @@ describe("AdminLayout", () => {
             <Route element={<AdminLayout />}>
               <Route path="/dashboard" element={<div>Dashboard Page</div>} />
               <Route path="/users" element={<div>Users Main Page</div>} />
-              <Route path="/users/students" element={<div>Students Dummy Page</div>} />
+              <Route path="/students" element={<div>Students Dummy Page</div>} />
             </Route>
           </Routes>
         </QueryClientProvider>

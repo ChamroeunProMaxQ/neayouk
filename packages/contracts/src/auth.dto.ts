@@ -20,8 +20,8 @@ export const AuthUserSchema = z.object({
   id: z.number().optional(),
   sub: z.number().optional(),
   username: z.string(),
-  userType: z.nativeEnum(UserTypeEnum).optional(),
-  type: z.nativeEnum(UserTypeEnum).optional(),
+  userType: z.enum(UserTypeEnum).optional(),
+  type: z.enum(UserTypeEnum).optional(),
   roles: z.array(z.string()).default([]),
   permissions: z.array(PermissionSchema).default([]),
 });

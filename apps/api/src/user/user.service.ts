@@ -51,8 +51,9 @@ export class UserService {
       query.andWhere('roles.slug = :role', { role });
     }
 
-    if (search) {
-      query.andWhere('user.username like :search', { search: `%${search}%` });
+    const searchVal = search || (dto as any).name;
+    if (searchVal) {
+      query.andWhere('user.username like :search', { search: `%${searchVal}%` });
     }
     query.orderBy(`user.${sortBy}`, sortOrder);
 

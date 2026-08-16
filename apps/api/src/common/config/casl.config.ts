@@ -3,14 +3,33 @@ import { UserTypeEnum } from "@repo/contracts";
 import type { Request } from "express";
 import { CaslModule, type AuthorizableUser } from "nest-casl";
 
-export const caslConfig = CaslModule.forRoot<UserTypeEnum, AuthorizableUser<UserTypeEnum, number>>({
-    superuserRole: UserTypeEnum.ADMIN,
-    getUserFromRequest: (request) => {
-        const user = (request as unknown as Request).user as JwtPayload | undefined;
-        if (!user) return undefined;
-        return {
-            id: Number(user.sub),
-            roles: [user.type as UserTypeEnum],
-        };
-    },
+export interface AppAuthorizableUser extends AuthorizableUser<string, number> {
+  id: number;
+  roles: string[];
+}
+
+export const caslConfig = CaslModule.forRoot<string, AppAuthorizableUser>({
+  superuserRole: UserTypeEnum.ADMIN,
+  getUserFromRequest: (request) => {
+    const user = (request as unknown as Request).user as JwtPayload | undefined;
+    if (!user) return undefined;
+    const userType = user.userType ?? user.type;
+    const roles: string[] = [];
+    if (userType) {
+      roles.push(userType);
+      roles.push(userType.toLowerCase());
+      roles.push(userType.toUpperCase());
+    }
+    if (user.roles) {
+      for (const r of user.roles) {
+        roles.push(r);
+        roles.push(r.toLowerCase());
+        roles.push(r.toUpperCase());
+      }
+    }
+    return {
+      id: Number(user.sub),
+      roles: Array.from(new Set(roles)),
+    };
+  },
 });

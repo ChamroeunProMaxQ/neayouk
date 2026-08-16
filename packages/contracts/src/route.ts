@@ -6,11 +6,20 @@ export const API_ROUTE = {
     PROFILE: '/api/v1/auth/profile',
   },
   USER: {
-    LIST: '/api/v1/users',
-    CREATE: '/api/v1/users',
-    GET: '/api/v1/users/:id',
-    UPDATE: '/api/v1/users/:id',
-    DELETE: '/api/v1/users/:id',
+    LIST: '/api/v1/admin/users',
+    CREATE: '/api/v1/admin/users',
+    GET: '/api/v1/admin/users/:id',
+    UPDATE: '/api/v1/admin/users/:id',
+    DELETE: '/api/v1/admin/users/:id',
+  },
+  ROLE: {
+    LIST: '/api/v1/admin/roles',
+    CREATE: '/api/v1/admin/roles',
+    GET: '/api/v1/admin/roles/:id',
+    UPDATE: '/api/v1/admin/roles/:id',
+    DELETE: '/api/v1/admin/roles/:id',
+  },
+  PERMISSION: {
+    LIST: '/api/v1/admin/permissions',
   },
 };
-

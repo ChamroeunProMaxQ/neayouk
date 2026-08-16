@@ -2,6 +2,8 @@ import { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import { LayoutShell } from "@/shared/components/layout-shell";
 import { ProtectedLayout } from "./protected-layout";
+import { PermissionRoute } from "./permission-route";
+import { ForbiddenPage } from "./forbidden-page";
 
 const LoginPage = lazy(() =>
   import("./login-page").then((m) => ({ default: m.LoginPage }))
@@ -14,6 +16,9 @@ const DashboardPage = lazy(() =>
 );
 const UsersPage = lazy(() =>
   import("./users-page").then((m) => ({ default: m.UsersPage }))
+);
+const RolesPage = lazy(() =>
+  import("./roles-page").then((m) => ({ default: m.RolesPage }))
 );
 const DummyPage = lazy(() =>
   import("./dummy-page").then((m) => ({ default: m.DummyPage }))
@@ -64,9 +69,29 @@ const router = createBrowserRouter([
             path: "/users",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <UsersPage />
+                <PermissionRoute resource="user" action="read">
+                  <UsersPage />
+                </PermissionRoute>
               </Suspense>
             ),
+          },
+          {
+            path: "/users/roles",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource="role" action="read">
+                  <RolesPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/roles",
+            element: <Navigate to="/users/roles" replace />,
+          },
+          {
+            path: "/forbidden",
+            element: <ForbiddenPage />,
           },
           {
             path: "*",

@@ -20,7 +20,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(@Req() req: Request) {
-    return this.authService.logout(req.user?.sub!);
+    return this.authService.logout(req.user?.sub as number);
   }
 
   @Post('refresh-token')

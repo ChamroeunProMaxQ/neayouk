@@ -1,6 +1,5 @@
-import { FC } from "react";
-import { useLocation, useNavigate } from "react-[#react-router-dom]";
-import { useLocation as useRRLocation, useNavigate as useRRNavigate } from "react-router-dom";
+import { type FC } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, BookOpen, Clock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -8,8 +7,8 @@ function formatPathTitle(pathname: string): { category: string; pageTitle: strin
   const parts = pathname.split("/").filter(Boolean);
   if (parts.length === 0) return { category: "Overview", pageTitle: "Dashboard" };
 
-  const formatWord = (str: string) =>
-    str
+  const formatWord = (str?: string) =>
+    (str || "")
       .split("-")
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ");
@@ -21,8 +20,8 @@ function formatPathTitle(pathname: string): { category: string; pageTitle: strin
 }
 
 export const DummyPage: FC = () => {
-  const location = useRRLocation();
-  const navigate = useRRNavigate();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { category, pageTitle } = formatPathTitle(location.pathname);
 
   return (

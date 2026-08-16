@@ -1,6 +1,6 @@
-import React from "react";
+import { type FC } from "react";
 import type { UserAttribute } from "@repo/contracts";
-import { AlertTriangle, Loader2, X } from "lucide-react";
+import { AlertCircle, AlertTriangle, Loader2, X } from "lucide-react";
 
 interface DeleteUserDialogProps {
   isOpen: boolean;
@@ -8,14 +8,16 @@ interface DeleteUserDialogProps {
   onConfirm: () => Promise<void> | void;
   userToDelete?: UserAttribute | null;
   isLoading?: boolean;
+  error?: Error | null;
 }
 
-export const DeleteUserDialog: React.FC<DeleteUserDialogProps> = ({
+export const DeleteUserDialog: FC<DeleteUserDialogProps> = ({
   isOpen,
   onClose,
   onConfirm,
   userToDelete,
   isLoading = false,
+  error = null,
 }) => {
   if (!isOpen || !userToDelete) return null;
 
@@ -56,6 +58,19 @@ export const DeleteUserDialog: React.FC<DeleteUserDialogProps> = ({
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {error && (
+          <div
+            role="alert"
+            className="p-3 text-xs font-medium text-rose-700 bg-rose-50 rounded-xl border border-rose-200 flex items-start gap-2.5"
+          >
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-bold text-rose-800">Delete Failed</p>
+              <p className="mt-0.5">{error.message || "Failed to delete user."}</p>
+            </div>
+          </div>
+        )}
 
         <p className="text-xs text-slate-600 leading-relaxed">
           Are you sure you want to delete user{" "}

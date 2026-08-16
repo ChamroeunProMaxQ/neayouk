@@ -1,7 +1,7 @@
 import { VersioningType, type INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
-import { UserTypeEnum } from '@repo/contracts';
+import { UserTypeEnum, type PermissionDto } from '@repo/contracts';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { seeder } from '@database/umzug.js';
 import { AppModule } from '@src/app.module.js';
@@ -18,6 +18,9 @@ export interface E2eTestContext {
     sub?: number;
     username?: string;
     type?: UserTypeEnum;
+    userType?: UserTypeEnum;
+    roles?: string[];
+    permissions?: PermissionDto[];
   }) => string;
   server: any;
 }
@@ -57,11 +60,18 @@ export async function setupE2eApp(
     sub?: number;
     username?: string;
     type?: UserTypeEnum;
+    userType?: UserTypeEnum;
+    roles?: string[];
+    permissions?: PermissionDto[];
   }) => {
+    const userType = payload?.userType ?? payload?.type ?? UserTypeEnum.ADMIN;
     return jwtService.sign({
       sub: payload?.sub ?? 11,
       username: payload?.username ?? 'admin',
-      type: payload?.type ?? UserTypeEnum.ADMIN,
+      type: userType,
+      userType,
+      roles: payload?.roles ?? [userType.toLowerCase()],
+      permissions: payload?.permissions ?? [],
     });
   };
 

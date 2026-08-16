@@ -20,7 +20,7 @@ describe('Forbidden Requests (e2e)', () => {
     await teardownE2eApp(app);
   });
 
-  describe('POST /api/v1/users (Forbidden for CUSTOMER)', () => {
+  describe('POST /api/v1/admin/users (Forbidden for CUSTOMER)', () => {
     it('should return 403 formatted response when customer attempts to create user', async () => {
       const customerToken = createToken({
         sub: 1,
@@ -29,7 +29,7 @@ describe('Forbidden Requests (e2e)', () => {
       });
 
       const response = await request(server)
-        .post('/api/v1/users')
+        .post('/api/v1/admin/users')
         .set('Authorization', `Bearer ${customerToken}`)
         .send({
           username: 'unauthorized_new_user',
@@ -45,7 +45,7 @@ describe('Forbidden Requests (e2e)', () => {
     });
   });
 
-  describe('GET /api/v1/users/:id (Forbidden for other CUSTOMER profile)', () => {
+  describe('GET /api/v1/admin/users/:id (Forbidden for other CUSTOMER profile)', () => {
     it('should return 403 formatted response when customer accesses another profile', async () => {
       const customerToken = createToken({
         sub: 1,
@@ -54,7 +54,7 @@ describe('Forbidden Requests (e2e)', () => {
       });
 
       const response = await request(server)
-        .get('/api/v1/users/2')
+        .get('/api/v1/admin/users/2')
         .set('Authorization', `Bearer ${customerToken}`)
         .expect(403);
 

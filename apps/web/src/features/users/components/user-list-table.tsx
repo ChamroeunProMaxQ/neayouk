@@ -43,8 +43,14 @@ import { DeleteUserDialog } from "./delete-user-dialog";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { useInfiniteScroll } from "@/hooks/use-intersection-observer";
 import { useDebounce } from "@/hooks/use-debounce";
+import { usePermission } from "@/features/auth";
 
 export const UserListTable: FC = () => {
+  const { can } = usePermission();
+  const canCreateUser = can("create", "user");
+  const canUpdateUser = can("update", "user");
+  const canDeleteUser = can("delete", "user");
+
   const { values, setValue, setValues } = useUrlFilters(FindUsersSchema);
   const { search, userType, sortBy, sortOrder } = values;
 
@@ -129,29 +135,35 @@ export const UserListTable: FC = () => {
           username: formValues.username,
           userType: formValues.userType,
           status: formValues.status,
+          roles: formValues.roles,
           ...(formValues.password ? { password: formValues.password } : {}),
         },
       });
-    } else {
-      if (!formValues.username) return;
-      await createMutation.mutateAsync({
-        username: formValues.username,
-        password: formValues.password || "password123",
-        userType: formValues.userType,
-        status: formValues.status,
-      });
+      setIsFormDialogOpen(false);
+      setUserToEdit(null);
+      return;
     }
+
+    if (!formValues.username) return;
+
+    await createMutation.mutateAsync({
+      username: formValues.username,
+      password: formValues.password || "password123",
+      userType: formValues.userType,
+      status: formValues.status,
+      roles: formValues.roles,
+    });
     setIsFormDialogOpen(false);
     setUserToEdit(null);
   };
 
   // Delete confirmation handler
   const handleDeleteConfirm = async () => {
-    if (userToDelete) {
-      await deleteMutation.mutateAsync(userToDelete.id);
-      setIsDeleteDialogOpen(false);
-      setUserToDelete(null);
-    }
+    if (!userToDelete) return;
+
+    await deleteMutation.mutateAsync(userToDelete.id);
+    setIsDeleteDialogOpen(false);
+    setUserToDelete(null);
   };
 
   // Columns definition
@@ -208,7 +220,7 @@ export const UserListTable: FC = () => {
       },
       {
         accessorKey: "userType",
-        header: "userType",
+        header: "User Type",
         cell: ({ getValue }) => {
           const role = getValue<UserTypeEnum>();
           let badgeStyle = "bg-slate-100 text-slate-700 border-slate-200";
@@ -224,6 +236,34 @@ export const UserListTable: FC = () => {
             >
               {role || "CUSTOMER"}
             </span>
+          );
+        },
+      },
+      {
+        id: "roles",
+        header: "Roles",
+        cell: ({ row }) => {
+          const user = row.original;
+          const roles = user.roles ?? [];
+          if (!roles || roles.length === 0) {
+            return <span className="text-[11px] text-slate-400 italic">None</span>;
+          }
+
+          return (
+            <div className="flex flex-wrap gap-1 max-w-[200px]">
+              {roles.map((r) => {
+                const slug = typeof r === "string" ? r : r.slug;
+                const name = typeof r === "string" ? r : r.name;
+                return (
+                  <span
+                    key={slug}
+                    className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-[#45AC5E] border border-[#45AC5E]/30"
+                  >
+                    {name}
+                  </span>
+                );
+              })}
+            </div>
           );
         },
       },
@@ -307,7 +347,9 @@ export const UserListTable: FC = () => {
                   setUserToEdit(user);
                   setIsFormDialogOpen(true);
                 }}
-                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-md transition-colors cursor-pointer h-auto"
+                disabled={!canUpdateUser}
+                title={!canUpdateUser ? "You do not have permission to edit users" : undefined}
+                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-md transition-colors cursor-pointer h-auto disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label={`Edit ${user.username}`}
               >
                 <Edit3 className="w-3.5 h-3.5 text-slate-600" />
@@ -322,7 +364,9 @@ export const UserListTable: FC = () => {
                     setUserToDelete(user);
                     setIsDeleteDialogOpen(true);
                   }}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#F05A4A] bg-[#FFF0EE] hover:bg-[#FFE0DC] border border-[#F05A4A]/20 rounded-md transition-colors cursor-pointer h-auto"
+                  disabled={!canDeleteUser}
+                  title={!canDeleteUser ? "You do not have permission to delete users" : undefined}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#F05A4A] bg-[#FFF0EE] hover:bg-[#FFE0DC] border border-[#F05A4A]/20 rounded-md transition-colors cursor-pointer h-auto disabled:opacity-40 disabled:cursor-not-allowed"
                   aria-label={`Delete ${user.username}`}
                 >
                   <Trash2 className="w-3.5 h-3.5 text-[#F05A4A]" />
@@ -334,7 +378,7 @@ export const UserListTable: FC = () => {
         },
       },
     ],
-    [sortBy, sortOrder]
+    [sortBy, sortOrder, canUpdateUser, canDeleteUser]
   );
 
   const table = useReactTable({
@@ -389,13 +433,15 @@ export const UserListTable: FC = () => {
 
         {/* Right Side: Action Buttons */}
         <div className="flex flex-wrap items-center justify-between xl:justify-end gap-3">
-          {/* Add User Button using shadcn Button primitive */}
+          {/* Add User Button with disabled state if !canCreateUser */}
           <Button
             onClick={() => {
               setUserToEdit(null);
               setIsFormDialogOpen(true);
             }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-[#45AC5E] hover:bg-[#389350] rounded-lg transition-colors shadow-2xs cursor-pointer"
+            disabled={!canCreateUser}
+            title={!canCreateUser ? "You do not have permission to create users" : undefined}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-[#45AC5E] hover:bg-[#389350] rounded-lg transition-colors shadow-2xs cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <UserPlus className="w-3.5 h-3.5" />
             <span>Add User</span>
@@ -512,10 +558,12 @@ export const UserListTable: FC = () => {
         onClose={() => {
           setIsDeleteDialogOpen(false);
           setUserToDelete(null);
+          deleteMutation.reset();
         }}
         onConfirm={handleDeleteConfirm}
         userToDelete={userToDelete}
         isLoading={deleteMutation.isPending}
+        error={deleteMutation.error}
       />
     </div>
   );

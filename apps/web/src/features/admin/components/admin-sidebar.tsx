@@ -17,11 +17,16 @@ import {
   Settings,
   ChevronDown,
   ChevronRight,
+  Lock,
 } from "lucide-react";
+import { usePermission } from "@/features/auth";
+import type { UserTypeEnum } from "@repo/contracts";
 
 export interface SubNavItem {
   label: string;
   path: string;
+  requiredPermission?: { action: string; resource: string };
+  requiredUserType?: UserTypeEnum | string;
 }
 
 export interface NavItem {
@@ -31,6 +36,8 @@ export interface NavItem {
   path?: string;
   isCollapsible?: boolean;
   subItems?: (string | SubNavItem)[];
+  requiredPermission?: { action: string; resource: string };
+  requiredUserType?: UserTypeEnum | string;
 }
 
 export interface NavGroup {
@@ -44,21 +51,28 @@ interface AdminSidebarProps {
   className?: string;
 }
 
-const adminNavGroups: NavGroup[] = [
+export const adminNavGroups: NavGroup[] = [
   {
     items: [
-      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+      {
+        id: "dashboard",
+        label: "Dashboard",
+        icon: LayoutDashboard,
+        path: "/dashboard",
+        requiredPermission: { action: "read", resource: "dashboard" },
+      },
       {
         id: "users",
         label: "User Management",
         icon: Users,
         path: "/users",
         isCollapsible: true,
+        requiredPermission: { action: "read", resource: "user" },
         subItems: [
-          { label: "Students", path: "/users/students" },
-          { label: "Teachers & Staff", path: "/users/teachers" },
-          { label: "Parents", path: "/users/parents" },
-          { label: "Roles & Permissions", path: "/users/roles" },
+          { label: "Students", path: "/users/students", requiredPermission: { action: "read", resource: "user" } },
+          { label: "Teachers & Staff", path: "/users/teachers", requiredPermission: { action: "read", resource: "user" } },
+          { label: "Parents", path: "/users/parents", requiredPermission: { action: "read", resource: "user" } },
+          { label: "Roles & Permissions", path: "/users/roles", requiredPermission: { action: "read", resource: "role" } },
         ],
       },
       {
@@ -67,6 +81,7 @@ const adminNavGroups: NavGroup[] = [
         icon: Bell,
         path: "/announcements",
         isCollapsible: true,
+        requiredPermission: { action: "read", resource: "announcement" },
         subItems: [
           { label: "Notices & Bulletins", path: "/announcements/notices" },
           { label: "SMS & Email Broadcasts", path: "/announcements/broadcasts" },
@@ -84,6 +99,7 @@ const adminNavGroups: NavGroup[] = [
         icon: GraduationCap,
         path: "/academics",
         isCollapsible: true,
+        requiredPermission: { action: "read", resource: "academic" },
         subItems: [
           { label: "Academic Years & Terms", path: "/academics/academic-years" },
           { label: "Classes & Sections", path: "/academics/classes" },
@@ -97,6 +113,7 @@ const adminNavGroups: NavGroup[] = [
         icon: ClipboardCheck,
         path: "/attendance",
         isCollapsible: true,
+        requiredPermission: { action: "read", resource: "attendance" },
         subItems: [
           { label: "Student Attendance", path: "/attendance/students" },
           { label: "Teacher Attendance", path: "/attendance/teachers" },
@@ -109,6 +126,7 @@ const adminNavGroups: NavGroup[] = [
         icon: Award,
         path: "/examinations",
         isCollapsible: true,
+        requiredPermission: { action: "read", resource: "examination" },
         subItems: [
           { label: "Exam Schedules", path: "/examinations/schedules" },
           { label: "Gradebook", path: "/examinations/gradebook" },
@@ -122,6 +140,7 @@ const adminNavGroups: NavGroup[] = [
         icon: BookOpen,
         path: "/assignments",
         isCollapsible: true,
+        requiredPermission: { action: "read", resource: "assignment" },
         subItems: [
           { label: "Class Assignments", path: "/assignments/class-assignments" },
           { label: "Homework Tracker", path: "/assignments/homework-tracker" },
@@ -139,6 +158,7 @@ const adminNavGroups: NavGroup[] = [
         icon: CreditCard,
         path: "/fee-management",
         isCollapsible: true,
+        requiredPermission: { action: "read", resource: "fee" },
         subItems: [
           { label: "Fee Structures", path: "/fee-management/structures" },
           { label: "Invoices & Payments", path: "/fee-management/invoices" },
@@ -151,6 +171,7 @@ const adminNavGroups: NavGroup[] = [
         icon: Briefcase,
         path: "/hr-payroll",
         isCollapsible: true,
+        requiredPermission: { action: "read", resource: "hr" },
         subItems: [
           { label: "Staff Directory", path: "/hr-payroll/directory" },
           { label: "Payroll & Salary", path: "/hr-payroll/salary" },
@@ -163,6 +184,7 @@ const adminNavGroups: NavGroup[] = [
         icon: Library,
         path: "/library",
         isCollapsible: true,
+        requiredPermission: { action: "read", resource: "library" },
         subItems: [
           { label: "Book Catalog", path: "/library/catalog" },
           { label: "Issue & Return", path: "/library/issue-return" },
@@ -175,6 +197,7 @@ const adminNavGroups: NavGroup[] = [
         icon: Bus,
         path: "/transport",
         isCollapsible: true,
+        requiredPermission: { action: "read", resource: "transport" },
         subItems: [
           { label: "Bus Routes", path: "/transport/routes" },
           { label: "Vehicle Fleet", path: "/transport/fleet" },
@@ -187,6 +210,7 @@ const adminNavGroups: NavGroup[] = [
         icon: Building2,
         path: "/hostel",
         isCollapsible: true,
+        requiredPermission: { action: "read", resource: "hostel" },
         subItems: [
           { label: "Dorm Rooms", path: "/hostel/rooms" },
           { label: "Room Allocation", path: "/hostel/allocation" },
@@ -204,6 +228,7 @@ const adminNavGroups: NavGroup[] = [
         icon: BarChart3,
         path: "/reports",
         isCollapsible: true,
+        requiredPermission: { action: "read", resource: "report" },
         subItems: [
           { label: "Academic Reports", path: "/reports/academic" },
           { label: "Attendance Analytics", path: "/reports/attendance" },
@@ -216,6 +241,7 @@ const adminNavGroups: NavGroup[] = [
         icon: Settings,
         path: "/settings",
         isCollapsible: true,
+        requiredPermission: { action: "read", resource: "setting" },
         subItems: [
           { label: "School Profile", path: "/settings/profile" },
           { label: "General Rules", path: "/settings/rules" },
@@ -234,13 +260,41 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { can, isUserType } = usePermission();
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+
+  // Helper to check if a nav item is enabled
+  const checkItemEnabled = (item: NavItem): boolean => {
+    if (item.requiredUserType && !isUserType(item.requiredUserType)) {
+      return false;
+    }
+    if (item.requiredPermission && !can(item.requiredPermission.action, item.requiredPermission.resource)) {
+      return false;
+    }
+    return true;
+  };
+
+  // Helper to check if a sub nav item is enabled
+  const checkSubItemEnabled = (sub: string | SubNavItem, parentItem: NavItem): boolean => {
+    if (!checkItemEnabled(parentItem)) {
+      return false;
+    }
+    if (typeof sub === "object") {
+      if (sub.requiredUserType && !isUserType(sub.requiredUserType)) {
+        return false;
+      }
+      if (sub.requiredPermission && !can(sub.requiredPermission.action, sub.requiredPermission.resource)) {
+        return false;
+      }
+    }
+    return true;
+  };
 
   // Expand parent section if current route matches any child path
   useEffect(() => {
     adminNavGroups.forEach((group) => {
       group.items.forEach((item) => {
-        if (item.subItems) {
+        if (item.subItems && checkItemEnabled(item)) {
           const hasActiveSubItem = item.subItems.some((sub) => {
             const subPath = typeof sub === "string"
               ? `${item.path || ""}/${sub.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`
@@ -259,7 +313,10 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({
     setExpandedSections((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const handleItemClick = (item: NavItem) => {
+  const handleItemClick = (item: NavItem, isEnabled: boolean) => {
+    if (!isEnabled) {
+      return;
+    }
     if (item.isCollapsible) {
       toggleSection(item.id);
     }
@@ -272,8 +329,12 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({
   const handleSubItemClick = (
     sub: string | SubNavItem,
     parentItem: NavItem,
-    idx: number
+    idx: number,
+    isEnabled: boolean
   ) => {
+    if (!isEnabled) {
+      return;
+    }
     const subPath =
       typeof sub === "string"
         ? `${parentItem.path || ""}/${sub.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`
@@ -299,30 +360,46 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({
           <nav className="space-y-1">
             {group.items.map((item) => {
               const Icon = item.icon;
-              const isPathActive = Boolean(item.path && (location.pathname === item.path || location.pathname.startsWith(item.path + "/")));
+              const isEnabled = checkItemEnabled(item);
+              const isPathActive = Boolean(
+                isEnabled &&
+                item.path &&
+                (location.pathname === item.path || location.pathname.startsWith(item.path + "/"))
+              );
               const isActive = activeTab !== undefined ? activeTab === item.id : isPathActive;
               const isExpanded = Boolean(expandedSections[item.id]);
 
               return (
                 <div key={item.id}>
                   <button
-                    onClick={() => handleItemClick(item)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150 relative cursor-pointer ${
-                      isActive
-                        ? "text-[#45AC5E] bg-[#EBF6EE] border-r-4 border-[#45AC5E]"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                    onClick={() => handleItemClick(item, isEnabled)}
+                    disabled={!isEnabled}
+                    title={!isEnabled ? "Access Restricted" : undefined}
+                    aria-disabled={!isEnabled}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150 relative ${
+                      !isEnabled
+                        ? "opacity-40 text-slate-400 cursor-not-allowed hover:bg-transparent"
+                        : isActive
+                        ? "text-[#45AC5E] bg-[#EBF6EE] border-r-4 border-[#45AC5E] cursor-pointer"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 cursor-pointer"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <Icon
                         className={`w-4 h-4 ${
-                          isActive ? "text-[#45AC5E]" : "text-slate-500"
+                          !isEnabled
+                            ? "text-slate-300"
+                            : isActive
+                            ? "text-[#45AC5E]"
+                            : "text-slate-500"
                         }`}
                       />
                       <span>{item.label}</span>
                     </div>
 
-                    {item.isCollapsible && (
+                    {!isEnabled ? (
+                      <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    ) : item.isCollapsible ? (
                       <span className="text-slate-400">
                         {isExpanded ? (
                           <ChevronDown className="w-4 h-4" />
@@ -330,31 +407,37 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({
                           <ChevronRight className="w-4 h-4" />
                         )}
                       </span>
-                    )}
+                    ) : null}
                   </button>
 
                   {/* Submenu if expanded */}
-                  {item.isCollapsible && isExpanded && item.subItems && (
+                  {isEnabled && item.isCollapsible && isExpanded && item.subItems && (
                     <div className="ml-8 mt-1 space-y-1 border-l-2 border-slate-100 pl-3">
                       {item.subItems.map((sub, idx) => {
+                        const isSubEnabled = checkSubItemEnabled(sub, item);
                         const subLabel = typeof sub === "string" ? sub : sub.label;
                         const subPath =
                           typeof sub === "string"
                             ? `${item.path || ""}/${sub.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`
                             : sub.path;
-                        const isSubActive = location.pathname === subPath;
+                        const isSubActive = isSubEnabled && location.pathname === subPath;
 
                         return (
                           <button
                             key={idx}
-                            onClick={() => handleSubItemClick(sub, item, idx)}
-                            className={`block w-full text-left py-1.5 px-2 text-xs font-medium rounded transition-colors cursor-pointer ${
-                              isSubActive
-                                ? "text-[#45AC5E] bg-[#EBF6EE] font-bold"
-                                : "text-slate-500 hover:text-[#45AC5E] hover:bg-slate-50"
+                            onClick={() => handleSubItemClick(sub, item, idx, isSubEnabled)}
+                            disabled={!isSubEnabled}
+                            aria-disabled={!isSubEnabled}
+                            className={`flex items-center justify-between w-full text-left py-1.5 px-2 text-xs font-medium rounded transition-colors ${
+                              !isSubEnabled
+                                ? "opacity-40 text-slate-400 cursor-not-allowed"
+                                : isSubActive
+                                ? "text-[#45AC5E] bg-[#EBF6EE] font-bold cursor-pointer"
+                                : "text-slate-500 hover:text-[#45AC5E] hover:bg-slate-50 cursor-pointer"
                             }`}
                           >
-                            {subLabel}
+                            <span>{subLabel}</span>
+                            {!isSubEnabled && <Lock className="w-3 h-3 text-slate-400" />}
                           </button>
                         );
                       })}

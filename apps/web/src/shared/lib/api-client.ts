@@ -8,7 +8,7 @@ import { API_ROUTE, type LogInResponseDto, type ResponseDto } from "@repo/contra
 import { useAuthStore } from "@/features/auth/stores/use-auth-store";
 
 export interface ApiErrorResponse {
-  message?: string;
+  message?: string | string[];
   error?: string;
   statusCode?: number;
   [key: string]: unknown;
@@ -24,16 +24,37 @@ let isRefreshing = false;
 let failedQueue: FailedRequestQueueItem[] = [];
 
 const processQueue = (error: unknown, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
+  for (const prom of failedQueue) {
     if (error) {
       prom.reject(error);
-    } else if (token) {
+      continue;
+    }
+    if (token) {
       prom.resolve(token);
     }
-  });
+  }
 
   failedQueue = [];
 };
+
+function extractErrorMessage(error: AxiosError<ApiErrorResponse>): void {
+  const responseData = error.response?.data;
+  if (!responseData) return;
+
+  if (typeof responseData.message === "string") {
+    error.message = responseData.message;
+    return;
+  }
+
+  if (Array.isArray(responseData.message) && responseData.message.length > 0) {
+    error.message = responseData.message.join(", ");
+    return;
+  }
+
+  if (typeof responseData.error === "string") {
+    error.message = responseData.error;
+  }
+}
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL: "",
@@ -64,82 +85,80 @@ apiClient.interceptors.response.use(
     };
 
     if (!originalRequest) {
+      extractErrorMessage(error);
       return Promise.reject(error);
     }
 
-    // Check if error status is 401 and request was not already retried
-    if (
+    const isRefreshCandidate =
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      originalRequest.url !== API_ROUTE.AUTH.REFRESH_TOKEN
-    ) {
-      if (isRefreshing) {
-        // If a refresh is already in progress, wait until completed
-        return new Promise<string>((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-            }
-            return apiClient(originalRequest);
-          })
-          .catch((err) => Promise.reject(err));
-      }
+      originalRequest.url !== API_ROUTE.AUTH.REFRESH_TOKEN;
 
-      originalRequest._retry = true;
-      isRefreshing = true;
+    // Guard Clause: If not a refresh candidate, extract error message and reject early
+    if (!isRefreshCandidate) {
+      extractErrorMessage(error);
+      return Promise.reject(error);
+    }
 
-      const refreshToken = useAuthStore.getState().refreshToken;
-
-      if (!refreshToken) {
-        isRefreshing = false;
-        useAuthStore.getState().logout();
-        return Promise.reject(error);
-      }
-
-      try {
-        // Direct axios post call to avoid recursive interceptor invocation
-        const response = await axios.post<ResponseDto<LogInResponseDto>>(
-          API_ROUTE.AUTH.REFRESH_TOKEN,
-          { refreshToken },
-          {
-            headers: { "Content-Type": "application/json" },
+    if (isRefreshing) {
+      // If a refresh is already in progress, wait until completed
+      return new Promise<string>((resolve, reject) => {
+        failedQueue.push({ resolve, reject });
+      })
+        .then((token) => {
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
           }
-        );
+          return apiClient(originalRequest);
+        })
+        .catch((err) => Promise.reject(err));
+    }
 
-        const newTokens = response.data?.data;
-        if (!newTokens?.accessToken) {
-          throw new Error("Token refresh response missing access token.");
+    originalRequest._retry = true;
+    isRefreshing = true;
+
+    const refreshToken = useAuthStore.getState().refreshToken;
+
+    if (!refreshToken) {
+      isRefreshing = false;
+      useAuthStore.getState().logout();
+      extractErrorMessage(error);
+      return Promise.reject(error);
+    }
+
+    try {
+      // Direct axios post call to avoid recursive interceptor invocation
+      const response = await axios.post<ResponseDto<LogInResponseDto>>(
+        API_ROUTE.AUTH.REFRESH_TOKEN,
+        { refreshToken },
+        {
+          headers: { "Content-Type": "application/json" },
         }
+      );
 
-        useAuthStore.getState().setTokens({
-          accessToken: newTokens.accessToken,
-          refreshToken: newTokens.refreshToken || refreshToken,
-        });
-
-        if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${newTokens.accessToken}`;
-        }
-
-        processQueue(null, newTokens.accessToken);
-
-        return apiClient(originalRequest);
-      } catch (refreshError) {
-        processQueue(refreshError, null);
-        useAuthStore.getState().logout();
-        return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
+      const newTokens = response.data?.data;
+      if (!newTokens?.accessToken) {
+        throw new Error("Token refresh response missing access token.");
       }
-    }
 
-    // Extract standardized error message from backend response if available
-    const customMessage = error.response?.data?.message;
-    if (customMessage && typeof customMessage === "string") {
-      error.message = customMessage;
-    }
+      useAuthStore.getState().setTokens({
+        accessToken: newTokens.accessToken,
+        refreshToken: newTokens.refreshToken || refreshToken,
+      });
 
-    return Promise.reject(error);
+      if (originalRequest.headers) {
+        originalRequest.headers.Authorization = `Bearer ${newTokens.accessToken}`;
+      }
+
+      processQueue(null, newTokens.accessToken);
+
+      return apiClient(originalRequest);
+    } catch (refreshError) {
+      processQueue(refreshError, null);
+      useAuthStore.getState().logout();
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
+    }
   }
 );

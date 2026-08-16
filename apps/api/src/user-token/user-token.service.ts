@@ -5,6 +5,7 @@ import {
   TokenStatusEnum,
   TokenTypeEnum,
   type CreateUserTokenDto,
+  type PermissionDto,
 } from '@repo/contracts';
 import type { FindOptionsWhere } from 'typeorm';
 import { MoreThan, Repository } from 'typeorm';
@@ -32,7 +33,7 @@ export class UserTokenService {
         status: TokenStatusEnum.ACTIVE,
         expDate: MoreThan(new Date()),
       },
-      relations: ['user'],
+      relations: ['user', 'user.roles', 'user.roles.permissions'],
     });
   }
 
@@ -51,14 +52,43 @@ export class UserTokenService {
   }
 
   async generateAccessToken(user: User) {
+    const roles: string[] = user.roles && user.roles.length > 0
+      ? user.roles.map((r) => (typeof r === 'string' ? r : r.slug))
+      : [user.userType?.toLowerCase() ?? 'customer'];
+
+    const permMap = new Map<string, PermissionDto>();
+    if (user.roles) {
+      for (const role of user.roles) {
+        if (role.permissions) {
+          for (const perm of role.permissions) {
+            const key = `${perm.resource}:${perm.action}`;
+            if (!permMap.has(key)) {
+              permMap.set(key, {
+                id: perm.id,
+                resource: perm.resource,
+                action: perm.action,
+                description: perm.description ?? undefined,
+              });
+            }
+          }
+        }
+      }
+    }
+
+    const permissions = Array.from(permMap.values());
+
     const payload: JwtPayload = {
       username: user.username,
       sub: user.id,
       type: user.userType,
+      userType: user.userType,
+      roles,
+      permissions,
     };
+
     const token = this.jwtService.sign(payload);
     await this.create({
-      expDate: new Date(Date.now() + 1 * 60 * 1000),
+      expDate: new Date(Date.now() + 15 * 60 * 1000),
       userId: user.id,
       token: token,
       tokenType: TokenTypeEnum.ACCESS_TOKEN,

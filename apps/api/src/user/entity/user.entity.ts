@@ -7,12 +7,15 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { hashPassword } from '@src/common/helper/password.helper.js';
 import { UserToken } from '@src/user-token/entity/user-token.entity.js';
+import { Role } from '@src/role/entity/role.entity.js';
 
 @Entity({ name: 'users' })
 export class User implements UserAttribute {
@@ -56,6 +59,14 @@ export class User implements UserAttribute {
   @OneToMany(() => UserToken, (token) => token.user)
   declare tokens: UserToken[];
 
+  @ManyToMany(() => Role, (role) => role.users)
+  @JoinTable({
+    name: 'user_roles',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'role_id', referencedColumnName: 'id' },
+  })
+  declare roles?: Role[];
+
   get computedNameId(): string {
     return `user-${this.id}`;
   }
@@ -84,6 +95,10 @@ export class User implements UserAttribute {
   }
 
   toJSON() {
+    const rolesList = this.roles && this.roles.length > 0
+      ? this.roles.map((r) => (typeof r === 'string' ? r : r.slug))
+      : [this.userType?.toLowerCase() ?? 'customer'];
+
     return {
       ...this,
       id: this.id,
@@ -92,6 +107,7 @@ export class User implements UserAttribute {
       password: '',
       userType: this.userType,
       status: this.status,
+      roles: rolesList,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       deletedAt: this.deletedAt,

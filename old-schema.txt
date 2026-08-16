@@ -1,0 +1,96 @@
++-----------------------+------------------+-------------------+-----------------+-------------+-------------------+------------+-------------------+----------------+
+| TABLE_NAME            | ORDINAL_POSITION | COLUMN_NAME       | COLUMN_TYPE     | IS_NULLABLE | COLUMN_DEFAULT    | COLUMN_KEY | EXTRA             | COLUMN_COMMENT |
++-----------------------+------------------+-------------------+-----------------+-------------+-------------------+------------+-------------------+----------------+
+| cache                 |                1 | key               | varchar(255)    | NO          | NULL              | PRI        |                   |                |
+| cache                 |                2 | value             | text            | NO          | NULL              |            |                   |                |
+| cache                 |                3 | expiration        | int             | NO          | NULL              |            |                   |                |
+| cache_locks           |                1 | key               | varchar(255)    | NO          | NULL              | PRI        |                   |                |
+| cache_locks           |                2 | owner             | varchar(255)    | NO          | NULL              |            |                   |                |
+| cache_locks           |                3 | expiration        | int             | NO          | NULL              |            |                   |                |
+| failed_jobs           |                1 | id                | int             | NO          | NULL              | PRI        | auto_increment    |                |
+| failed_jobs           |                2 | uuid              | varchar(255)    | NO          | NULL              | UNI        |                   |                |
+| failed_jobs           |                3 | connection        | text            | NO          | NULL              |            |                   |                |
+| failed_jobs           |                4 | queue             | text            | NO          | NULL              |            |                   |                |
+| failed_jobs           |                5 | payload           | text            | NO          | NULL              |            |                   |                |
+| failed_jobs           |                6 | exception         | text            | NO          | NULL              |            |                   |                |
+| failed_jobs           |                7 | failed_at         | datetime        | NO          | CURRENT_TIMESTAMP |            | DEFAULT_GENERATED |                |
+| job_batches           |                1 | id                | varchar(255)    | NO          | NULL              | PRI        |                   |                |
+| job_batches           |                2 | name              | varchar(255)    | NO          | NULL              |            |                   |                |
+| job_batches           |                3 | total_jobs        | int             | NO          | NULL              |            |                   |                |
+| job_batches           |                4 | pending_jobs      | int             | NO          | NULL              |            |                   |                |
+| job_batches           |                5 | failed_jobs       | int             | NO          | NULL              |            |                   |                |
+| job_batches           |                6 | failed_job_ids    | text            | NO          | NULL              |            |                   |                |
+| job_batches           |                7 | options           | text            | YES         | NULL              |            |                   |                |
+| job_batches           |                8 | cancelled_at      | int             | YES         | NULL              |            |                   |                |
+| job_batches           |                9 | created_at        | int             | NO          | NULL              |            |                   |                |
+| job_batches           |               10 | finished_at       | int             | YES         | NULL              |            |                   |                |
+| jobs                  |                1 | id                | int             | NO          | NULL              | PRI        | auto_increment    |                |
+| jobs                  |                2 | queue             | varchar(255)    | NO          | NULL              | MUL        |                   |                |
+| jobs                  |                3 | payload           | text            | NO          | NULL              |            |                   |                |
+| jobs                  |                4 | attempts          | int             | NO          | NULL              |            |                   |                |
+| jobs                  |                5 | reserved_at       | int             | YES         | NULL              |            |                   |                |
+| jobs                  |                6 | available_at      | int             | NO          | NULL              |            |                   |                |
+| jobs                  |                7 | created_at        | int             | NO          | NULL              |            |                   |                |
+| levels                |                1 | id                | int             | NO          | NULL              | PRI        | auto_increment    |                |
+| levels                |                2 | level             | varchar(255)    | NO          | NULL              |            |                   |                |
+| levels                |                3 | fee               | double          | NO          | NULL              |            |                   |                |
+| levels                |                4 | created_at        | datetime        | YES         | NULL              |            |                   |                |
+| levels                |                5 | updated_at        | datetime        | YES         | NULL              |            |                   |                |
+| levels                |                6 | program           | varchar(255)    | YES         | NULL              |            |                   |                |
+| levels                |                7 | class             | varchar(255)    | YES         | NULL              |            |                   |                |
+| levels                |                8 | teacher_id        | bigint unsigned | YES         | NULL              | MUL        |                   |                |
+| migrations            |                1 | id                | int             | NO          | NULL              | PRI        | auto_increment    |                |
+| migrations            |                2 | migration         | varchar(255)    | NO          | NULL              |            |                   |                |
+| migrations            |                3 | batch             | int             | NO          | NULL              |            |                   |                |
+| password_reset_tokens |                1 | email             | varchar(255)    | NO          | NULL              | PRI        |                   |                |
+| password_reset_tokens |                2 | token             | varchar(255)    | NO          | NULL              |            |                   |                |
+| password_reset_tokens |                3 | created_at        | datetime        | YES         | NULL              |            |                   |                |
+| sessions              |                1 | id                | varchar(255)    | NO          | NULL              | PRI        |                   |                |
+| sessions              |                2 | user_id           | int             | YES         | NULL              | MUL        |                   |                |
+| sessions              |                3 | ip_address        | varchar(255)    | YES         | NULL              |            |                   |                |
+| sessions              |                4 | user_agent        | text            | YES         | NULL              |            |                   |                |
+| sessions              |                5 | payload           | text            | NO          | NULL              |            |                   |                |
+| sessions              |                6 | last_activity     | int             | NO          | NULL              | MUL        |                   |                |
+| students              |                1 | id                | int             | NO          | NULL              | PRI        | auto_increment    |                |
+| students              |                2 | first_name        | varchar(255)    | NO          | NULL              |            |                   |                |
+| students              |                3 | last_name         | varchar(255)    | NO          | NULL              |            |                   |                |
+| students              |                4 | first_name_km     | varchar(255)    | YES         | NULL              |            |                   |                |
+| students              |                5 | last_name_km      | varchar(255)    | YES         | NULL              |            |                   |                |
+| students              |                6 | date_of_birth     | varchar(255)    | YES         | NULL              |            |                   |                |
+| students              |                7 | contact           | varchar(255)    | YES         | NULL              |            |                   |                |
+| students              |                8 | payable_date      | int             | YES         | NULL              |            |                   |                |
+| students              |                9 | registered_at     | datetime        | YES         | NULL              |            |                   |                |
+| students              |               10 | level_id          | int             | YES         | NULL              |            |                   |                |
+| students              |               11 | created_at        | datetime        | YES         | NULL              |            |                   |                |
+| students              |               12 | updated_at        | datetime        | YES         | NULL              |            |                   |                |
+| students              |               13 | discount          | decimal(10,0)   | NO          | 0                 |            |                   |                |
+| students              |               14 | gender            | varchar(16)     | NO          | NULL              |            |                   |                |
+| teacher_absences      |                1 | id                | bigint unsigned | NO          | NULL              | PRI        | auto_increment    |                |
+| teacher_absences      |                2 | teacher_id        | bigint unsigned | YES         | NULL              | MUL        |                   |                |
+| teacher_absences      |                3 | date              | timestamp       | NO          | NULL              |            |                   |                |
+| teacher_absences      |                4 | created_at        | timestamp       | YES         | NULL              |            |                   |                |
+| teacher_absences      |                5 | updated_at        | timestamp       | YES         | NULL              |            |                   |                |
+| teachers              |                1 | id                | bigint unsigned | NO          | NULL              | PRI        | auto_increment    |                |
+| teachers              |                2 | name              | varchar(255)    | NO          | NULL              |            |                   |                |
+| teachers              |                3 | salary_in_hour    | decimal(8,2)    | NO          | NULL              |            |                   |                |
+| teachers              |                4 | created_at        | timestamp       | YES         | NULL              |            |                   |                |
+| teachers              |                5 | updated_at        | timestamp       | YES         | NULL              |            |                   |                |
+| transactions          |                1 | id                | int             | NO          | NULL              | PRI        | auto_increment    |                |
+| transactions          |                2 | amount            | double          | NO          | NULL              |            |                   |                |
+| transactions          |                3 | reference         | varchar(255)    | NO          | NULL              |            |                   |                |
+| transactions          |                4 | status            | varchar(255)    | NO          | NULL              |            |                   |                |
+| transactions          |                5 | type              | varchar(255)    | NO          | NULL              |            |                   |                |
+| transactions          |                6 | student_id        | int             | YES         | NULL              | MUL        |                   |                |
+| transactions          |                7 | level_id          | int             | YES         | NULL              | MUL        |                   |                |
+| transactions          |                8 | created_at        | datetime        | YES         | NULL              |            |                   |                |
+| transactions          |                9 | updated_at        | datetime        | YES         | NULL              |            |                   |                |
+| transactions          |               10 | transaction_date  | date            | YES         | NULL              |            |                   |                |
+| users                 |                1 | id                | int             | NO          | NULL              | PRI        | auto_increment    |                |
+| users                 |                2 | name              | varchar(255)    | NO          | NULL              |            |                   |                |
+| users                 |                3 | email             | varchar(255)    | NO          | NULL              | UNI        |                   |                |
+| users                 |                4 | email_verified_at | datetime        | YES         | NULL              |            |                   |                |
+| users                 |                5 | password          | varchar(255)    | NO          | NULL              |            |                   |                |
+| users                 |                6 | remember_token    | varchar(255)    | YES         | NULL              |            |                   |                |
+| users                 |                7 | created_at        | datetime        | YES         | NULL              |            |                   |                |
+| users                 |                8 | updated_at        | datetime        | YES         | NULL              |            |                   |                |
++-----------------------+------------------+-------------------+-----------------+-------------+-------------------+------------+-------------------+----------------+

@@ -6,6 +6,7 @@ import { UserStatusEnum, UserTypeEnum, type UserAttribute } from "@repo/contract
 import { MemoryRouter } from "react-router-dom";
 import { UserListTable } from "./user-list-table";
 import { apiClient } from "@/shared/lib/api-client";
+import { useAuthStore } from "@/features/auth";
 
 function createWrapper(initialEntries: string[] = ["/"]) {
   const queryClient = new QueryClient({
@@ -75,6 +76,16 @@ const mockUsers: UserAttribute[] = [
 describe("UserListTable", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    useAuthStore.setState({
+      user: {
+        id: 1,
+        username: "admin",
+        userType: UserTypeEnum.ADMIN,
+        roles: ["admin"],
+        permissions: [{ resource: "all", action: "manage" }],
+      },
+      isAuthenticated: true,
+    });
   });
 
   it("renders search bar, role filter, action buttons, pagination, and user rows", async () => {
@@ -90,7 +101,7 @@ describe("UserListTable", () => {
           totalPage: 1,
         },
       },
-    } as any);
+    } as unknown as import("axios").AxiosResponse);
 
     render(<UserListTable />, { wrapper: createWrapper() });
 
@@ -101,7 +112,8 @@ describe("UserListTable", () => {
     expect(screen.getByText("Avatar")).toBeInTheDocument();
     expect(screen.getByText("User ID")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^username/i })).toBeInTheDocument();
-    expect(screen.getByText("userType")).toBeInTheDocument();
+    expect(screen.getByText("User Type")).toBeInTheDocument();
+    expect(screen.getByText("Roles")).toBeInTheDocument();
     expect(screen.getByText("Status")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /updated at/i })).toBeInTheDocument();
     expect(screen.getByText("Actions")).toBeInTheDocument();
@@ -121,7 +133,7 @@ describe("UserListTable", () => {
         data: [mockUsers[0]],
         pagination: { page: 1, pageSize: 10, totalCount: 1, totalPage: 1 },
       },
-    } as any);
+    } as unknown as import("axios").AxiosResponse);
 
     render(<UserListTable />, { wrapper: createWrapper() });
 
@@ -145,7 +157,7 @@ describe("UserListTable", () => {
         data: [mockUsers[0]],
         pagination: { page: 1, pageSize: 10, totalCount: 1, totalPage: 1 },
       },
-    } as any);
+    } as unknown as import("axios").AxiosResponse);
 
     render(<UserListTable />, { wrapper: createWrapper() });
 
@@ -169,7 +181,7 @@ describe("UserListTable", () => {
         data: mockUsers,
         pagination: { page: 1, pageSize: 10, totalCount: 4, totalPage: 1 },
       },
-    } as any);
+    } as unknown as import("axios").AxiosResponse);
 
     render(<UserListTable />, { wrapper: createWrapper() });
 
@@ -193,7 +205,7 @@ describe("UserListTable", () => {
         data: mockUsers,
         pagination: { page: 1, pageSize: 10, totalCount: 4, totalPage: 1 },
       },
-    } as any);
+    } as unknown as import("axios").AxiosResponse);
 
     const postSpy = vi.spyOn(apiClient, "post").mockResolvedValue({
       data: {
@@ -207,7 +219,7 @@ describe("UserListTable", () => {
           computedNameId: "user-5",
         },
       },
-    } as any);
+    } as unknown as import("axios").AxiosResponse);
 
     render(<UserListTable />, { wrapper: createWrapper() });
 
@@ -227,7 +239,7 @@ describe("UserListTable", () => {
 
     await waitFor(() => {
       expect(postSpy).toHaveBeenCalledWith(
-        "/api/v1/users",
+        "/api/v1/admin/users",
         expect.objectContaining({
           username: "new_created_user",
         })
@@ -244,7 +256,7 @@ describe("UserListTable", () => {
         data: [mockUsers[0]],
         pagination: { page: 1, pageSize: 10, totalCount: 1, totalPage: 1 },
       },
-    } as any);
+    } as unknown as import("axios").AxiosResponse);
 
     const deleteSpy = vi.spyOn(apiClient, "delete").mockResolvedValue({
       data: {
@@ -252,7 +264,7 @@ describe("UserListTable", () => {
         message: "success",
         data: { id: 1, success: true },
       },
-    } as any);
+    } as unknown as import("axios").AxiosResponse);
 
     render(<UserListTable />, { wrapper: createWrapper() });
 
@@ -266,7 +278,36 @@ describe("UserListTable", () => {
     await user.click(confirmBtn);
 
     await waitFor(() => {
-      expect(deleteSpy).toHaveBeenCalledWith("/api/v1/users/1");
+      expect(deleteSpy).toHaveBeenCalledWith("/api/v1/admin/users/1");
     });
+  });
+
+  it("disables Add, Edit, and Delete buttons when user lacks permissions", async () => {
+    useAuthStore.setState({
+      user: {
+        id: 2,
+        username: "readonly_user",
+        userType: UserTypeEnum.CUSTOMER,
+        roles: ["customer"],
+        permissions: [{ resource: "user", action: "read" }],
+      },
+      isAuthenticated: true,
+    });
+
+    vi.spyOn(apiClient, "get").mockResolvedValue({
+      data: {
+        status: 200,
+        message: "success",
+        data: [mockUsers[0]],
+        pagination: { page: 1, pageSize: 10, totalCount: 1, totalPage: 1 },
+      },
+    } as unknown as import("axios").AxiosResponse);
+
+    render(<UserListTable />, { wrapper: createWrapper() });
+
+    expect(await screen.findByText("alice_admin")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /add user/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Edit alice_admin" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Delete alice_admin" })).toBeDisabled();
   });
 });

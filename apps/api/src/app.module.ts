@@ -17,6 +17,8 @@ import { HttpLoggerMiddleware } from '@src/common/middleware/http-logger.middlew
 import { HttpRequestDurationProvider } from '@src/common/provider/http-request-duration.provider .js';
 import { HttpRequestsCounterProvider } from '@src/common/provider/http-requests-counter.provider .js';
 import { UserModule } from '@src/user/user.module.js';
+import { RoleModule } from '@src/role/role.module.js';
+import { PermissionModule } from '@src/permission/permission.module.js';
 import { caslConfig } from '@src/common/config/casl.config.js';
 import { envModuelConfig } from '@src/common/config/env.config.js';
 import { typeOrmConfig } from './common/config/orm.config.js';
@@ -27,6 +29,8 @@ import { typeOrmConfig } from './common/config/orm.config.js';
     caslConfig,
     typeOrmConfig,
     UserModule,
+    RoleModule,
+    PermissionModule,
     ...oberservableConfig,
     LoggerModule,
     AuthModule,

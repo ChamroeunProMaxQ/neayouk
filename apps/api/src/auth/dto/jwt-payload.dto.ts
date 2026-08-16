@@ -1,9 +1,12 @@
-import type { UserTypeEnum } from '@repo/contracts';
+import type { PermissionDto, UserTypeEnum } from '@repo/contracts';
 
 export interface JwtPayload {
   sub: number;
   username: string;
-  type: UserTypeEnum;
-  iat: number,
-  exp: number
+  type?: UserTypeEnum;
+  userType?: UserTypeEnum;
+  roles?: string[];
+  permissions?: PermissionDto[];
+  iat?: number;
+  exp?: number;
 }

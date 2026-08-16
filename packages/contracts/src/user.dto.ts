@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createSortSchema, PaginationSchema } from "./pagination.dto.js";
 import { UserStatusEnum } from "./user-status.enum.js";
 import { UserTypeEnum } from "./user-type.enum.js";
+import { RoleSchema } from "./role.dto.js";
 
 export const UserSchema = z.object({
   id: z.number(),
@@ -11,6 +12,8 @@ export const UserSchema = z.object({
   userType: z.nativeEnum(UserTypeEnum),
   status: z.nativeEnum(UserStatusEnum),
   computedNameId: z.string(),
+  roles: z.array(z.string().or(RoleSchema)).optional(),
+  roleIds: z.array(z.number()).optional(),
   createdAt: z.date().or(z.string()).optional(),
   updatedAt: z.date().or(z.string()).optional(),
   deletedAt: z.date().or(z.string()).nullable().optional(),
@@ -23,6 +26,8 @@ export const CreateUserSchema = z.object({
   password: z.string().min(6, "password must be at least 6 characters"),
   status: z.nativeEnum(UserStatusEnum).optional(),
   userType: z.nativeEnum(UserTypeEnum).optional(),
+  roleIds: z.array(z.number()).optional(),
+  roles: z.array(z.string()).optional(),
 });
 
 export type CreateUserAttribute = z.infer<typeof CreateUserSchema>;
@@ -33,6 +38,8 @@ export const UpdateUserSchema = z.object({
   password: z.string().min(6, "password must be at least 6 characters").or(z.literal("")).optional(),
   status: z.nativeEnum(UserStatusEnum).optional(),
   userType: z.nativeEnum(UserTypeEnum).optional(),
+  roleIds: z.array(z.number()).optional(),
+  roles: z.array(z.string()).optional(),
 });
 
 export type UpdateUserAttribute = z.infer<typeof UpdateUserSchema>;
@@ -52,8 +59,9 @@ export const FindUsersSchema = PaginationSchema.extend({
   ...createSortSchema(['id', 'updatedAt', 'username'], 'id'),
   search: z.string().optional(),
   userType: z.nativeEnum(UserTypeEnum).optional(),
+  role: z.string().optional(),
   includeDeleted: booleanParam,
-  onlyDeleted: booleanParam
+  onlyDeleted: booleanParam,
 });
 
 export type FindUsersDto = z.infer<typeof FindUsersSchema>;

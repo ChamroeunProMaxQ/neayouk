@@ -1,12 +1,15 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import type { PermissionDto, UserTypeEnum } from "@repo/contracts";
 
 export interface AuthUser {
   id?: number;
   sub?: number;
   username: string;
-  userType?: string;
-  type?: string;
+  userType?: UserTypeEnum | string;
+  type?: UserTypeEnum | string;
+  roles?: string[];
+  permissions?: PermissionDto[];
 }
 
 export interface AuthState {
@@ -53,4 +56,3 @@ export const useAuthUser = () => useAuthStore((state) => state.user);
 export const useIsAuthenticated = () =>
   useAuthStore((state) => state.isAuthenticated);
 export const useAuthToken = () => useAuthStore((state) => state.token);
-

@@ -78,7 +78,7 @@ describe("LoginForm", () => {
               refreshToken: "test-refresh-token",
             },
           },
-        } as any);
+        } as unknown as import("axios").AxiosResponse);
       }
       return Promise.reject(new Error("Unknown route"));
     });
@@ -95,7 +95,7 @@ describe("LoginForm", () => {
               userType: "ADMIN",
             },
           },
-        } as any);
+        } as unknown as import("axios").AxiosResponse);
       }
       return Promise.reject(new Error("Unknown route"));
     });

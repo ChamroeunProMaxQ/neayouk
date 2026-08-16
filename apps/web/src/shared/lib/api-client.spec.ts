@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { apiClient } from "./api-client";
 import { useAuthStore } from "@/features/auth/stores/use-auth-store";
-import axios from "axios";
+import axios, { AxiosError, type AxiosRequestHeaders } from "axios";
 
 describe("apiClient", () => {
   beforeEach(() => {
@@ -17,9 +17,9 @@ describe("apiClient", () => {
   it("injects Authorization Bearer header when token exists in auth store", async () => {
     useAuthStore.setState({ token: "my-secret-access-token" });
 
-    let capturedHeaders: any;
+    let capturedHeaders: AxiosRequestHeaders | undefined;
     apiClient.defaults.adapter = async (config) => {
-      capturedHeaders = config.headers;
+      capturedHeaders = config.headers as AxiosRequestHeaders;
       return {
         data: { success: true },
         status: 200,
@@ -53,9 +53,19 @@ describe("apiClient", () => {
     apiClient.defaults.adapter = async (config) => {
       callCount++;
       if (callCount === 1) {
-        const error: any = new Error("Request failed with status code 401");
-        error.response = { status: 401, data: { message: "Unauthorized" } };
-        error.config = config;
+        const error = new AxiosError(
+          "Request failed with status code 401",
+          "ERR_BAD_REQUEST",
+          config,
+          undefined,
+          {
+            status: 401,
+            statusText: "Unauthorized",
+            data: { message: "Unauthorized" },
+            headers: {},
+            config,
+          }
+        );
         throw error;
       }
 
@@ -91,9 +101,19 @@ describe("apiClient", () => {
     vi.spyOn(axios, "post").mockRejectedValue(new Error("Invalid refresh token"));
 
     apiClient.defaults.adapter = async (config) => {
-      const error: any = new Error("Request failed with status code 401");
-      error.response = { status: 401, data: { message: "Unauthorized" } };
-      error.config = config;
+      const error = new AxiosError(
+        "Request failed with status code 401",
+        "ERR_BAD_REQUEST",
+        config,
+        undefined,
+        {
+          status: 401,
+          statusText: "Unauthorized",
+          data: { message: "Unauthorized" },
+          headers: {},
+          config,
+        }
+      );
       throw error;
     };
 

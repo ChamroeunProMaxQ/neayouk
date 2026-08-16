@@ -24,11 +24,17 @@ export class UserTypesGuard implements CanActivate {
     }
 
     const { user } = context.switchToHttp().getRequest();
+    const userType = user?.userType ?? user?.type;
 
-    if (!user || !user.type) {
+    if (!user || !userType) {
       return false;
     }
 
-    return requireUserTypes.some((type) => user.type?.includes(type));
+    return requireUserTypes.some((type) => {
+      if (type === userType) return true;
+      if (type === 'CUSTOMER' && userType === 'PORTAL_USER') return true;
+      if (type === 'PORTAL_USER' && userType === 'CUSTOMER') return true;
+      return false;
+    });
   }
 }

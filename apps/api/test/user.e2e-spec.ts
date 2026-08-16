@@ -4,7 +4,7 @@ import request from 'supertest';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { setupE2eApp, teardownE2eApp } from './utils/e2e-test.utils.js';
 
-describe('UserController (e2e)', () => {
+describe('AdminUserController (e2e)', () => {
   let app: INestApplication;
   let server: any;
   let adminToken: string;
@@ -24,10 +24,10 @@ describe('UserController (e2e)', () => {
     await teardownE2eApp(app);
   });
 
-  describe('/api/v1/users (POST)', () => {
+  describe('/api/v1/admin/users (POST)', () => {
     it('should create user', async () => {
       const response = await request(server)
-        .post('/api/v1/users')
+        .post('/api/v1/admin/users')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           username: 'john',
@@ -44,7 +44,7 @@ describe('UserController (e2e)', () => {
 
     it('should return empty password', async () => {
       const response = await request(server)
-        .post('/api/v1/users')
+        .post('/api/v1/admin/users')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           username: 'john2',
@@ -60,10 +60,10 @@ describe('UserController (e2e)', () => {
     });
   });
 
-  describe('/api/v1/users/:id (GET)', () => {
+  describe('/api/v1/admin/users/:id (GET)', () => {
     it('should return user by id', async () => {
       const response = await request(server)
-        .get('/api/v1/users/1')
+        .get('/api/v1/admin/users/1')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -71,10 +71,10 @@ describe('UserController (e2e)', () => {
     });
   });
 
-  describe('/api/v1/users (GET)', () => {
+  describe('/api/v1/admin/users (GET)', () => {
     it('should return users', async () => {
       const response = await request(server)
-        .get('/api/v1/users')
+        .get('/api/v1/admin/users')
         .set('Authorization', `Bearer ${adminToken}`)
         .query({
           page: 1,
@@ -88,7 +88,7 @@ describe('UserController (e2e)', () => {
 
     it('should return filtered users when name parameter is provided', async () => {
       const response = await request(server)
-        .get('/api/v1/users')
+        .get('/api/v1/admin/users')
         .set('Authorization', `Bearer ${adminToken}`)
         .query({
           page: 1,
@@ -108,7 +108,7 @@ describe('UserController (e2e)', () => {
 
     it('should filter users by userType', async () => {
       const response = await request(server)
-        .get('/api/v1/users')
+        .get('/api/v1/admin/users')
         .set('Authorization', `Bearer ${adminToken}`)
         .query({
           page: 1,
@@ -128,7 +128,7 @@ describe('UserController (e2e)', () => {
 
     it('should sort users by username ASC and DESC', async () => {
       const ascResponse = await request(server)
-        .get('/api/v1/users')
+        .get('/api/v1/admin/users')
         .set('Authorization', `Bearer ${adminToken}`)
         .query({
           page: 1,
@@ -146,11 +146,11 @@ describe('UserController (e2e)', () => {
     });
   });
 
-  describe('/api/v1/users/:id (PATCH)', () => {
+  describe('/api/v1/admin/users/:id (PATCH)', () => {
     it('should update user status and username', async () => {
       // Create user first
       const createRes = await request(server)
-        .post('/api/v1/users')
+        .post('/api/v1/admin/users')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           username: 'user-to-update',
@@ -161,7 +161,7 @@ describe('UserController (e2e)', () => {
       const userId = createRes.body.data.id;
 
       const updateRes = await request(server)
-        .patch(`/api/v1/users/${userId}`)
+        .patch(`/api/v1/admin/users/${userId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           username: 'user-updated-name',
@@ -172,11 +172,11 @@ describe('UserController (e2e)', () => {
     });
   });
 
-  describe('/api/v1/users/:id (DELETE) & Soft Delete queries', () => {
+  describe('/api/v1/admin/users/:id (DELETE) & Soft Delete queries', () => {
     it('should soft delete user and filter with onlyDeleted / includeDeleted', async () => {
       // 1. Create a user to delete
       const createRes = await request(server)
-        .post('/api/v1/users')
+        .post('/api/v1/admin/users')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           username: 'user-to-soft-delete',
@@ -188,13 +188,13 @@ describe('UserController (e2e)', () => {
 
       // 2. Soft delete the user
       await request(server)
-        .delete(`/api/v1/users/${userId}`)
+        .delete(`/api/v1/admin/users/${userId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
       // 3. Normal list query should NOT include the deleted user
       const listRes = await request(server)
-        .get('/api/v1/users')
+        .get('/api/v1/admin/users')
         .set('Authorization', `Bearer ${adminToken}`)
         .query({
           name: 'user-to-soft-delete',
@@ -207,7 +207,7 @@ describe('UserController (e2e)', () => {
 
       // 4. onlyDeleted=true query SHOULD include the deleted user
       const deletedListRes = await request(server)
-        .get('/api/v1/users')
+        .get('/api/v1/admin/users')
         .set('Authorization', `Bearer ${adminToken}`)
         .query({
           name: 'user-to-soft-delete',

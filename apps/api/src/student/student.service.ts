@@ -1,7 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { ClassEnrollmentStatusEnum, SemesterEnum, StudentStatusEnum } from '@repo/contracts';
+import {
+  ClassEnrollmentStatusEnum,
+  PaymentStatusEnum,
+  SemesterEnum,
+  StudentStatusEnum,
+} from '@repo/contracts';
 import { Student } from './entity/student.entity.js';
 import { StudentClass } from './entity/student-class.entity.js';
 import { Class } from './entity/class.entity.js';
@@ -82,8 +87,8 @@ export class StudentService {
     const currentYear = dto.billingYear || new Date().getFullYear();
     const currentMonth = dto.billingMonth || (new Date().getMonth() + 1);
 
-    if (dto.paymentStatus && dto.paymentStatus !== 'ALL') {
-      if (dto.paymentStatus === 'PAID') {
+    if (dto.paymentStatus) {
+      if (dto.paymentStatus === PaymentStatusEnum.PAID) {
         query.andWhere(
           `EXISTS (
             SELECT 1 FROM student_payments sp
@@ -94,7 +99,7 @@ export class StudentService {
           )`,
           { payYear: currentYear, payMonth: currentMonth },
         );
-      } else if (dto.paymentStatus === 'PARTIAL') {
+      } else if (dto.paymentStatus === PaymentStatusEnum.PARTIAL) {
         query.andWhere(
           `EXISTS (
             SELECT 1 FROM student_payments sp
@@ -102,7 +107,7 @@ export class StudentService {
               AND sp.status = 'PARTIAL'
           )`,
         );
-      } else if (dto.paymentStatus === 'UNPAID') {
+      } else if (dto.paymentStatus === PaymentStatusEnum.UNPAID) {
         query.andWhere(
           `(
             NOT EXISTS (
@@ -122,7 +127,7 @@ export class StudentService {
           )`,
           { payYear: currentYear, payMonth: currentMonth },
         );
-      } else if (dto.paymentStatus === 'OVERDUE') {
+      } else if (dto.paymentStatus === PaymentStatusEnum.OVERDUE) {
         const todayDay = new Date().getDate();
         query.andWhere(
           `(

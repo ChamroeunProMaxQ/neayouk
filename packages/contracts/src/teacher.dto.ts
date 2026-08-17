@@ -65,7 +65,8 @@ export const CreateTeacherSchema = z.object({
   salaryInHour: z.coerce
     .number()
     .min(0, "Hourly salary must be non-negative")
-    .default(0),
+    .default(0)
+    .optional(),
   specialization: z.string().optional(),
   bio: z.string().optional(),
   status: z.string().default("ACTIVE").optional(),

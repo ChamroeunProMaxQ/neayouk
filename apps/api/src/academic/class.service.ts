@@ -31,7 +31,7 @@ export class ClassService {
     private readonly timetableRepo: Repository<ClassTimetable>,
     @InjectRepository(StudentClass)
     private readonly studentClassRepo: Repository<StudentClass>,
-  ) {}
+  ) { }
 
   async findAll(dto: FindClassesDto) {
     const {
@@ -146,7 +146,9 @@ export class ClassService {
     }
 
     const { program: _program, ...data } = dto;
-    Object.assign(cls, data);
+
+    this.classRepo.merge(cls, data);
+
     const saved = await this.classRepo.save(cls);
     return ClassMapper.toDto(saved);
   }

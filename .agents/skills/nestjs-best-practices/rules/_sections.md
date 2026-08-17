@@ -43,7 +43,7 @@ The section ID (in parentheses) is the filename prefix used to group rules.
 ## 8. Database & ORM (db)
 
 **Impact:** MEDIUM-HIGH
-**Description:** Proper database access patterns, TypeORM transactions (`db-use-transactions.md`), avoiding N+1 queries (`db-avoid-n-plus-one.md`), and Umzug migrations (`db-use-migrations.md`).
+**Description:** Proper database access patterns, entity updates via repository merge (`db-prefer-repository-merge.md`), TypeORM transactions (`db-use-transactions.md`), avoiding N+1 queries (`db-avoid-n-plus-one.md`), and Umzug migrations (`db-use-migrations.md`).
 
 ## 9. API Design (api)
 

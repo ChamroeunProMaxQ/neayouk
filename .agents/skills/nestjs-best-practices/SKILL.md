@@ -109,6 +109,7 @@ Reference these guidelines when:
 
 ### 8. Database & ORM (MEDIUM-HIGH)
 
+- `db-prefer-repository-merge` - **Use `this.repo.merge(entity, updateDto)` instead of `Object.assign()` for entity updates**. Ensures type safety, prevents `undefined` column overwrites, and prevents FK relation conflicts (`db-prefer-repository-merge.md`).
 - `db-no-tojson-in-entities` - **DO NOT implement `toJSON()` inside TypeORM entity classes**. Entities are strictly for database persistence mapping. Response transformation must be handled by dedicated Mappers or DTOs.
 - `db-use-transactions` - Transaction management for multi-entity operations.
 - `db-avoid-n-plus-one` - Prevent N+1 database query issues via relations or query builder joins.

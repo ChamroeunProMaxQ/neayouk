@@ -106,4 +106,37 @@ describe("AdminSidebar RBAC", () => {
     expect(userMgmtButton).toBeDisabled();
     expect(hrButton).toBeDisabled();
   });
+
+  it("collapses and expands section when clicking on an active collapsible header", async () => {
+    const user = userEvent.setup();
+
+    useAuthStore.setState({
+      user: {
+        id: 1,
+        username: "admin",
+        userType: UserTypeEnum.ADMIN,
+        roles: ["admin"],
+        permissions: [{ resource: "all", action: "manage" }],
+      },
+      isAuthenticated: true,
+    });
+
+    renderSidebar(["/academics/classes"]);
+
+    // Auto-expanded because /academics/classes is the active path
+    expect(screen.getByText("Classes & Cohorts")).toBeInTheDocument();
+    expect(screen.getByText("Academic Years & Terms")).toBeInTheDocument();
+
+    // Click to collapse
+    const academicsButton = screen.getByRole("button", { name: /academics & classes/i });
+    await user.click(academicsButton);
+
+    expect(screen.queryByText("Classes & Cohorts")).not.toBeInTheDocument();
+    expect(screen.queryByText("Academic Years & Terms")).not.toBeInTheDocument();
+
+    // Click again to re-expand
+    await user.click(academicsButton);
+    expect(screen.getByText("Classes & Cohorts")).toBeInTheDocument();
+    expect(screen.getByText("Academic Years & Terms")).toBeInTheDocument();
+  });
 });

@@ -319,8 +319,7 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({
     }
     if (item.isCollapsible) {
       toggleSection(item.id);
-    }
-    if (item.path) {
+    } else if (item.path) {
       navigate(item.path);
     }
     onSelectTab?.(item.id);

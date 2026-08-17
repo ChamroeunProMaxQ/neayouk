@@ -37,9 +37,17 @@ import {
   Trash2,
   BookOpen,
   GraduationCap,
+  UserCheck,
+  UserX,
 } from "lucide-react";
+import { usePermission } from "@/features/auth";
 
 export function ClassListTable() {
+  const { can } = usePermission();
+  const canCreateClass = can("create", "academic") || can("manage", "academic");
+  const canUpdateClass = can("update", "academic") || can("manage", "academic");
+  const canDeleteClass = can("delete", "academic") || can("manage", "academic");
+
   // 1. URL Filter Sync & Debounced Search
   const { values, setValues } = useUrlFilters(FindClassesSchema);
   const debouncedSearch = useDebounce(values.search, 800);
@@ -136,7 +144,9 @@ export function ClassListTable() {
 
         <Button
           onClick={handleCreate}
-          className="bg-[#45AC5E] hover:bg-[#3d9853] text-white gap-2 font-semibold shadow-sm"
+          disabled={!canCreateClass}
+          title={!canCreateClass ? "You do not have permission to create classes" : undefined}
+          className="bg-[#45AC5E] hover:bg-[#3d9853] text-white gap-2 font-semibold shadow-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           Create Class
@@ -260,6 +270,7 @@ export function ClassListTable() {
             <TableRow>
               <TableHead className="text-xs font-bold text-slate-700">Class Name & Code</TableHead>
               <TableHead className="text-xs font-bold text-slate-700">Program / Grade</TableHead>
+              <TableHead className="text-xs font-bold text-slate-700">Assigned Teacher</TableHead>
               <TableHead className="text-xs font-bold text-slate-700">Academic Term</TableHead>
               <TableHead className="text-xs font-bold text-slate-700">Shift & Schedule</TableHead>
               <TableHead className="text-xs font-bold text-slate-700">Room</TableHead>
@@ -271,14 +282,14 @@ export function ClassListTable() {
           <TableBody>
             {isLoading && accumulatedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="py-12 text-center">
+                <TableCell colSpan={9} className="py-12 text-center">
                   <Loader2 className="mx-auto h-6 w-6 animate-spin text-[#45AC5E]" />
                   <p className="mt-2 text-xs text-slate-500">Loading academic classes...</p>
                 </TableCell>
               </TableRow>
             ) : accumulatedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="py-12 text-center">
+                <TableCell colSpan={9} className="py-12 text-center">
                   <GraduationCap className="mx-auto h-8 w-8 text-slate-300 mb-2" />
                   <p className="text-sm font-semibold text-slate-700">No Classes Found</p>
                   <p className="text-xs text-slate-400 mt-1">
@@ -317,6 +328,28 @@ export function ClassListTable() {
                         {cls.gradeLevel ? `Grade ${cls.gradeLevel}` : "Standard"} {cls.section ? `• Sec ${cls.section}` : ""}
                       </p>
                     </div>
+                  </TableCell>
+
+                  {/* Assigned Teacher */}
+                  <TableCell>
+                    {cls.teacher || cls.teacherName ? (
+                      <div className="text-xs">
+                        <p className="font-semibold text-slate-800 flex items-center gap-1">
+                          <UserCheck className="h-3.5 w-3.5 text-[#45AC5E]" />
+                          {cls.teacher?.name || cls.teacherName}
+                        </p>
+                        {cls.teacher?.teacherCode && (
+                          <p className="text-[11px] font-mono text-slate-400">
+                            {cls.teacher.teacherCode}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[11px] text-slate-400 italic">
+                        <UserX className="h-3 w-3 text-slate-300" />
+                        Unassigned
+                      </span>
+                    )}
                   </TableCell>
 
                   {/* Academic Year & Semester */}
@@ -397,8 +430,9 @@ export function ClassListTable() {
                         variant="ghost"
                         size="icon"
                         onClick={() => handlePromote(cls)}
-                        title="Promote Class / Advance to Next Level (Semester End)"
-                        className="h-7 w-7 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+                        disabled={!canUpdateClass}
+                        title={!canUpdateClass ? "You do not have permission to promote classes" : "Promote Class / Advance to Next Level (Semester End)"}
+                        className="h-7 w-7 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         <GraduationCap className="h-3.5 w-3.5" />
                       </Button>
@@ -406,8 +440,9 @@ export function ClassListTable() {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleEdit(cls)}
-                        title="Edit Class"
-                        className="h-7 w-7 text-slate-500 hover:text-slate-900"
+                        disabled={!canUpdateClass}
+                        title={!canUpdateClass ? "You do not have permission to edit classes" : "Edit Class"}
+                        className="h-7 w-7 text-slate-500 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         <Edit2 className="h-3.5 w-3.5" />
                       </Button>
@@ -415,8 +450,9 @@ export function ClassListTable() {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(cls)}
-                        title="Delete Class"
-                        className="h-7 w-7 text-red-500 hover:bg-red-50"
+                        disabled={!canDeleteClass}
+                        title={!canDeleteClass ? "You do not have permission to delete classes" : "Delete Class"}
+                        className="h-7 w-7 text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>

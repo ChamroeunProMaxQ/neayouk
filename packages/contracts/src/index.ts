@@ -19,4 +19,5 @@ export * from "./user-status.enum.js";
 export * from "./user-token.dto.js";
 export * from "./user-type.enum.js";
 export * from "./user.dto.js";
+export * from "./teacher.dto.js";
 

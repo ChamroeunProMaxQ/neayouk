@@ -70,7 +70,7 @@ export const adminNavGroups: NavGroup[] = [
         requiredPermission: { action: "read", resource: "user" },
         subItems: [
           { label: "Students", path: "/students", requiredPermission: { action: "read", resource: "student" } },
-          { label: "Teachers & Staff", path: "/users/teachers", requiredPermission: { action: "read", resource: "user" } },
+          { label: "Teachers", path: "/teachers", requiredPermission: { action: "read", resource: "teacher" } },
           { label: "Parents", path: "/users/parents", requiredPermission: { action: "read", resource: "user" } },
           { label: "Roles & Permissions", path: "/users/roles", requiredPermission: { action: "read", resource: "role" } },
         ],

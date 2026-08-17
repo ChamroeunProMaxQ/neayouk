@@ -39,6 +39,14 @@ export class ClassMapper {
       endDate: entity.endDate,
       monthlyFee: Number(entity.monthlyFee || 0),
       teacherId: entity.teacherId ? Number(entity.teacherId) : null,
+      teacherName: entity.teacher ? entity.teacher.name : null,
+      teacher: entity.teacher
+        ? {
+            id: entity.teacher.id,
+            name: entity.teacher.name,
+            teacherCode: entity.teacher.teacherCode ?? null,
+          }
+        : null,
       academicYear: entity.academicYear,
       semester: entity.semester,
       status: entity.status,

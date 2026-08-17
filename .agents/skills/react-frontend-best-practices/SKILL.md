@@ -98,6 +98,7 @@ This master skill incorporates and mandates the following specialized frontend s
 - `table-tanstack-v8-shadcn` - Combine TanStack Table v8 head/row models with shadcn UI primitive table elements.
 - `table-sentinel-intersection` - Attach `sentinelRef` from `useInfiniteScroll` to a bottom element for smooth automatic page fetching.
 - `table-server-sorting` - Pass `manualSorting: true` to TanStack Table and handle header clicks via URL query parameters.
+- `ui-action-rbac-enforcement` - Enforce Role-Based Access Control (RBAC) on all Create, Edit, Delete, and action trigger buttons using `usePermission()`.
 
 ### 6. Forms & Validation (React Hook Form + Zod) (HIGH)
 

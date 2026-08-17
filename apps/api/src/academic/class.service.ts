@@ -51,7 +51,8 @@ export class ClassService {
       .createQueryBuilder('class')
       .leftJoinAndSelect('class.enrollments', 'enrollments')
       .leftJoinAndSelect('class.timetables', 'timetables')
-      .leftJoinAndSelect('class.program', 'program');
+      .leftJoinAndSelect('class.program', 'program')
+      .leftJoinAndSelect('class.teacher', 'teacher');
 
     if (search) {
       query.andWhere(
@@ -103,7 +104,7 @@ export class ClassService {
   async findOne(id: number) {
     const cls = await this.classRepo.findOne({
       where: { id },
-      relations: ['enrollments', 'timetables', 'program'],
+      relations: ['enrollments', 'timetables', 'program', 'teacher'],
     });
     if (!cls) {
       throw new NotFoundException(`Class with ID ${id} not found`);
@@ -126,13 +127,13 @@ export class ClassService {
       status: dto.status ?? 'ACTIVE',
     });
     const saved = await this.classRepo.save(cls);
-    return ClassMapper.toDto(saved);
+    return this.findOne(saved.id);
   }
 
   async update(id: number, dto: UpdateClassDto) {
     const cls = await this.classRepo.findOne({
       where: { id },
-      relations: ['enrollments', 'timetables', 'program'],
+      relations: ['enrollments', 'timetables', 'program', 'teacher'],
     });
     if (!cls) {
       throw new NotFoundException(`Class with ID ${id} not found`);

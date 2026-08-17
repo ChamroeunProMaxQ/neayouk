@@ -20,6 +20,7 @@ import type { Program } from './program.entity.js';
 import type { StudentClass } from '@src/student/entity/student-class.entity.js';
 import type { StudentPayment } from '@src/student/entity/student-payment.entity.js';
 import type { ClassTimetable } from './class-timetable.entity.js';
+import type { Teacher } from '@src/teacher/entity/teacher.entity.js';
 
 @Entity({ name: 'classes' })
 export class Class {
@@ -75,6 +76,10 @@ export class Class {
 
   @Column({ name: 'teacher_id', type: 'bigint', unsigned: true, nullable: true })
   teacherId!: number | null;
+
+  @ManyToOne('Teacher', (t: Teacher) => t.classes, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'teacher_id' })
+  declare teacher?: Teacher | null;
 
   @Column({ name: 'academic_year', type: 'varchar', length: 20, nullable: true })
   academicYear!: string | null;

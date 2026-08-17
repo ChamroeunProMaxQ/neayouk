@@ -98,7 +98,7 @@ export function AcademicYearsView() {
 
   const [selectedYear, setSelectedYear] = useState<string>("2025-2026");
 
-  const currentSession = SESSIONS.find((s) => s.year === selectedYear) ?? SESSIONS[0];
+  const currentSession = SESSIONS.find((s) => s.year === selectedYear) ?? SESSIONS[0]!;
 
   // Fast aggregated statistics from server
   const yearStats = summaryList.filter((s) => s.academicYear === selectedYear);

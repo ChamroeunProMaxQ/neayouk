@@ -46,7 +46,6 @@ const mockStudents: StudentAttribute[] = [
       code: "G10-A",
       monthlyFee: 50.0,
       semester: SemesterEnum.SEMESTER_1,
-      capacity: 30,
       status: "ACTIVE",
     },
     paymentSummary: {
@@ -84,7 +83,6 @@ const mockStudents: StudentAttribute[] = [
       code: "G11-B",
       monthlyFee: 60.0,
       semester: SemesterEnum.SEMESTER_1,
-      capacity: 30,
       status: "ACTIVE",
     },
     paymentSummary: {

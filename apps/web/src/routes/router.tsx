@@ -23,6 +23,9 @@ const RolesPage = lazy(() =>
 const StudentsPage = lazy(() =>
   import("./students-page").then((m) => ({ default: m.StudentsPage }))
 );
+const TeachersPage = lazy(() =>
+  import("./teachers-page").then((m) => ({ default: m.TeachersPage }))
+);
 const ClassesPage = lazy(() =>
   import("./classes-page").then((m) => ({ default: m.ClassesPage }))
 );
@@ -109,6 +112,20 @@ const router = createBrowserRouter([
                 </PermissionRoute>
               </Suspense>
             ),
+          },
+          {
+            path: "/teachers",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource="teacher" action="read">
+                  <TeachersPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/users/teachers",
+            element: <Navigate to="/teachers" replace />,
           },
           {
             path: "/academics/academic-years",

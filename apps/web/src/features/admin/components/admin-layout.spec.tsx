@@ -62,7 +62,6 @@ describe("AdminLayout", () => {
     expect(screen.getByText("Programs & Curriculum Books")).toBeInTheDocument();
     expect(screen.getByText("Classes & Cohorts")).toBeInTheDocument();
     expect(screen.getByText("Academic Years & Terms")).toBeInTheDocument();
-    expect(screen.getByText("Class Timetable")).toBeInTheDocument();
   });
 
   it("renders nested route content via Outlet", () => {

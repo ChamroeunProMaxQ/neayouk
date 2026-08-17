@@ -55,5 +55,13 @@ export const API_ROUTE = {
     UPDATE: '/api/v1/admin/programs/:id',
     DELETE: '/api/v1/admin/programs/:id',
   },
+  TEACHER: {
+    LIST: '/api/v1/admin/teachers',
+    CREATE: '/api/v1/admin/teachers',
+    GET: '/api/v1/admin/teachers/:id',
+    UPDATE: '/api/v1/admin/teachers/:id',
+    DELETE: '/api/v1/admin/teachers/:id',
+    CLASSES: '/api/v1/admin/teachers/:id/classes',
+  },
 };
 

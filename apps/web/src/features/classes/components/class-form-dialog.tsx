@@ -25,6 +25,7 @@ import {
   useUpdateClassMutation,
 } from "../hooks/use-class-mutations";
 import { useProgramsQuery } from "@/features/programs";
+import { useTeachersQuery } from "@/features/teachers";
 import { Loader2, AlertCircle } from "lucide-react";
 
 export type ClassFormValues = CreateClassDto | UpdateClassDto;
@@ -64,6 +65,7 @@ export function ClassFormDialog({
   const updateMutation = useUpdateClassMutation();
   const { data: programsData } = useProgramsQuery({ status: "ACTIVE" });
   const programsList = programsData?.programs ?? [];
+  const { data: teachersList = [] } = useTeachersQuery({ status: "ACTIVE" });
 
   const activeSchema = isEdit ? UpdateClassSchema : CreateClassSchema;
 
@@ -340,6 +342,26 @@ export function ClassFormDialog({
                 />
                 {errors.room && (
                   <p className="mt-1 text-xs text-rose-500">{errors.room.message}</p>
+                )}
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold text-slate-700">Assigned Teacher</Label>
+                <select
+                  {...register("teacherId", {
+                    setValueAs: (v) => (v === "" || v === undefined ? undefined : Number(v)),
+                  })}
+                  className="mt-1 flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                >
+                  <option value="">-- No Teacher Assigned --</option>
+                  {teachersList.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name} {t.nameKm ? `(${t.nameKm})` : ""} {t.teacherCode ? `[${t.teacherCode}]` : ""}
+                    </option>
+                  ))}
+                </select>
+                {errors.teacherId && (
+                  <p className="mt-1 text-xs text-rose-500">{errors.teacherId.message}</p>
                 )}
               </div>
 

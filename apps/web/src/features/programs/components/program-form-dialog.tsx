@@ -5,7 +5,6 @@ import {
   CreateProgramSchema,
   UpdateProgramSchema,
   type CreateProgramDto,
-  type UpdateProgramDto,
   type ProgramAttribute,
 } from "@repo/contracts";
 import {
@@ -166,7 +165,7 @@ export function ProgramFormDialog({
     createMutation.error?.message || updateMutation.error?.message;
 
   const validationErrorsList = Object.entries(errors)
-    .map(([_, err]) => err?.message)
+    .map(([_, err]) => (err as any)?.message)
     .filter(Boolean);
 
   return (

@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { SemesterEnum, ShiftEnum, type ClassAttribute } from "@repo/contracts";
+import { SemesterEnum, ShiftEnum, UserTypeEnum, type ClassAttribute } from "@repo/contracts";
 import { MemoryRouter } from "react-router-dom";
 import { ClassListTable } from "./class-list-table";
 import { apiClient } from "@/shared/lib/api-client";
@@ -38,6 +38,12 @@ const mockClasses: ClassAttribute[] = [
     startDate: "2025-09-01",
     endDate: "2026-06-30",
     monthlyFee: 65.0,
+    teacherId: 1,
+    teacher: {
+      id: 1,
+      name: "John Sok",
+      teacherCode: "TCH-0001",
+    },
     academicYear: "2025-2026",
     semester: SemesterEnum.SEMESTER_1,
     status: "ACTIVE",
@@ -60,6 +66,8 @@ const mockClasses: ClassAttribute[] = [
     startDate: "2025-09-01",
     endDate: "2026-06-30",
     monthlyFee: 90.0,
+    teacherId: null,
+    teacher: null,
     academicYear: "2025-2026",
     semester: SemesterEnum.SEMESTER_1,
     status: "ACTIVE",
@@ -76,15 +84,16 @@ describe("ClassListTable", () => {
       user: {
         id: 1,
         username: "admin",
-        userType: "ADMIN" as any,
+        userType: UserTypeEnum.ADMIN,
         roles: ["admin"],
         permissions: [{ resource: "all", action: "manage" }],
       },
+      token: "mock-token",
       isAuthenticated: true,
     });
   });
 
-  it("renders search bar, filter dropdowns, create class button, and class rows with student counts", async () => {
+  it("renders search bar, filter dropdowns, create class button, assigned teacher, and class rows with student counts", async () => {
     vi.spyOn(apiClient, "get").mockResolvedValue({
       data: {
         status: 200,
@@ -98,10 +107,13 @@ describe("ClassListTable", () => {
 
     expect(screen.getByPlaceholderText(/search class, code, room/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /create class/i })).toBeInTheDocument();
+    expect(screen.getByText("Assigned Teacher")).toBeInTheDocument();
 
-    // Verify rendered class names and student count badges
+    // Verify rendered class names, teacher, and student count badges
     expect(await screen.findByText(/primary - grade 1a/i)).toBeInTheDocument();
     expect(screen.getByText(/secondary - grade 7a/i)).toBeInTheDocument();
+    expect(screen.getByText("John Sok")).toBeInTheDocument();
+    expect(screen.getByText("Unassigned")).toBeInTheDocument();
     expect(screen.getByText(/18 students/i)).toBeInTheDocument();
     expect(screen.getByText(/24 students/i)).toBeInTheDocument();
   });

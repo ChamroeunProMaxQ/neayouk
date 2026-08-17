@@ -28,8 +28,14 @@ import {
   XCircle,
   ExternalLink,
 } from "lucide-react";
+import { usePermission } from "@/features/auth";
 
 export function ProgramListTable() {
+  const { can } = usePermission();
+  const canCreateProgram = can("create", "academic") || can("manage", "academic");
+  const canUpdateProgram = can("update", "academic") || can("manage", "academic");
+  const canDeleteProgram = can("delete", "academic") || can("manage", "academic");
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
@@ -92,7 +98,9 @@ export function ProgramListTable() {
         {/* Action Button */}
         <Button
           onClick={handleCreate}
-          className="bg-[#45AC5E] hover:bg-[#3d9852] text-white shadow-sm h-9 px-4 text-sm font-medium gap-1.5 shrink-0"
+          disabled={!canCreateProgram}
+          title={!canCreateProgram ? "You do not have permission to create programs" : undefined}
+          className="bg-[#45AC5E] hover:bg-[#3d9852] text-white shadow-sm h-9 px-4 text-sm font-medium gap-1.5 shrink-0 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           Create Program
@@ -280,8 +288,9 @@ export function ProgramListTable() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEdit(prog)}
-                          className="h-8 w-8 p-0 text-slate-500 hover:text-[#45AC5E] hover:bg-emerald-50"
-                          title="Edit Program"
+                          disabled={!canUpdateProgram}
+                          title={!canUpdateProgram ? "You do not have permission to edit programs" : "Edit Program"}
+                          className="h-8 w-8 p-0 text-slate-500 hover:text-[#45AC5E] hover:bg-emerald-50 disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           <Edit2 className="h-3.5 w-3.5" />
                         </Button>
@@ -289,8 +298,9 @@ export function ProgramListTable() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(prog)}
-                          className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
-                          title="Delete Program"
+                          disabled={!canDeleteProgram}
+                          title={!canDeleteProgram ? "You do not have permission to delete programs" : "Delete Program"}
+                          className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>

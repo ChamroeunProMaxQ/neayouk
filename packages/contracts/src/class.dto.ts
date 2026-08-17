@@ -26,6 +26,15 @@ export const ClassSchema = z.object({
   endDate: z.string().or(z.date()).nullable().optional(),
   monthlyFee: z.coerce.number().default(0),
   teacherId: z.coerce.number().nullable().optional(),
+  teacherName: z.string().nullable().optional(),
+  teacher: z
+    .object({
+      id: z.number(),
+      name: z.string(),
+      teacherCode: z.string().nullable().optional(),
+    })
+    .nullable()
+    .optional(),
   academicYear: z.string().nullable().optional(),
   semester: z.enum(SemesterEnum).default(SemesterEnum.SEMESTER_1).optional(),
   status: z.string().default("ACTIVE"),

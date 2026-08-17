@@ -13,7 +13,8 @@ export enum ResourceEnum {
   HR = "hr",
   LIBRARY = "library",
   TRANSPORT = "transport",
-  HOSTEL = "hostel",
+  TEACHER = "teacher",
+  STUDENT = "student",
   REPORT = "report",
   SETTING = "setting",
 }

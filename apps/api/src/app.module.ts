@@ -21,6 +21,7 @@ import { RoleModule } from '@src/role/role.module.js';
 import { PermissionModule } from '@src/permission/permission.module.js';
 import { AcademicModule } from '@src/academic/academic.module.js';
 import { StudentModule } from '@src/student/student.module.js';
+import { TeacherModule } from '@src/teacher/teacher.module.js';
 import { caslConfig } from '@src/common/config/casl.config.js';
 import { envModuelConfig } from '@src/common/config/env.config.js';
 import { typeOrmConfig } from './common/config/orm.config.js';
@@ -35,6 +36,7 @@ import { typeOrmConfig } from './common/config/orm.config.js';
     PermissionModule,
     AcademicModule,
     StudentModule,
+    TeacherModule,
     ...oberservableConfig,
     LoggerModule,
     AuthModule,

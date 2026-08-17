@@ -12,13 +12,12 @@ import {
 import {
   StudentStatusEnum,
   ClassEnrollmentStatusEnum,
-  type StudentAttribute,
 } from '@repo/contracts';
 import type { StudentClass } from './student-class.entity.js';
 import type { StudentPayment } from './student-payment.entity.js';
 
 @Entity({ name: 'students' })
-export class Student implements StudentAttribute {
+export class Student {
   @PrimaryGeneratedColumn()
   id!: number;
 
@@ -100,40 +99,5 @@ export class Student implements StudentAttribute {
     if (!this.registeredAt) {
       this.registeredAt = new Date();
     }
-  }
-
-  toJSON() {
-    const activeEnrollments = this.enrollments
-      ? this.enrollments.filter((e) => e.status === ClassEnrollmentStatusEnum.ENROLLED)
-      : [];
-    const primaryEnrollment = activeEnrollments.find((e) => e.isPrimary) || activeEnrollments[0];
-    const classesList = this.enrollments
-      ? this.enrollments.map((e) => e.class ? (typeof e.class.toJSON === 'function' ? e.class.toJSON() : e.class) : undefined).filter(Boolean)
-      : [];
-
-    return {
-      id: this.id,
-      uuid: this.uuid,
-      studentCode: this.studentCode,
-      firstName: this.firstName,
-      lastName: this.lastName,
-      firstNameKm: this.firstNameKm,
-      lastNameKm: this.lastNameKm,
-      gender: this.gender,
-      dateOfBirth: this.dateOfBirth,
-      contact: this.contact,
-      guardianName: this.guardianName,
-      guardianPhone: this.guardianPhone,
-      payableDate: this.payableDate,
-      registeredAt: this.registeredAt,
-      discount: Number(this.discount),
-      status: this.status,
-      enrollments: this.enrollments?.map((e) => typeof e.toJSON === 'function' ? e.toJSON() : e),
-      classes: classesList,
-      primaryClass: primaryEnrollment?.class ? (typeof primaryEnrollment.class.toJSON === 'function' ? primaryEnrollment.class.toJSON() : primaryEnrollment.class) : null,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      deletedAt: this.deletedAt,
-    };
   }
 }

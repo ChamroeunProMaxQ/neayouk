@@ -28,7 +28,7 @@ import {
   AssignStudentClassesDto,
   PromoteStudentDto,
   BatchPromoteStudentsDto,
-} from './dto/class.dto.js';
+} from '@src/academic/dto/class.dto.js';
 import {
   RecordPaymentDto,
   BatchRecordPaymentDto,

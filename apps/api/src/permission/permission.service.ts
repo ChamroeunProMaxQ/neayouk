@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Permission } from './entity/permission.entity.js';
+import { PermissionMapper } from './mapper/permission.mapper.js';
 import type { FindPermissionsDto } from './dto/find-permissions.dto.js';
 import { getSkipTake } from '@src/common/helper/pagination.helper.js';
 
@@ -35,10 +36,11 @@ export class PermissionService {
     if (dto?.page && dto?.pageSize) {
       const { skip, take } = getSkipTake(dto);
       query.skip(skip).take(take);
-      return await query.getManyAndCount();
+      const [entities, total] = await query.getManyAndCount();
+      return [PermissionMapper.toDtoList(entities), total];
     }
 
     const rows = await query.getMany();
-    return [rows, rows.length];
+    return [PermissionMapper.toDtoList(rows), rows.length];
   }
 }

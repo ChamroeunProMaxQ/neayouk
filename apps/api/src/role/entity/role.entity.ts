@@ -52,15 +52,4 @@ export class Role {
       this.uuid = randomUUID();
     }
   }
-
-  toJSON() {
-    return {
-      id: this.id,
-      uuid: this.uuid,
-      name: this.name,
-      slug: this.slug,
-      description: this.description,
-      permissions: this.permissions?.map((p) => (typeof p.toJSON === 'function' ? p.toJSON() : p)),
-    };
-  }
 }

@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { SemesterEnum, ClassEnrollmentStatusEnum } from '@repo/contracts';
-import type { Class } from './class.entity.js';
+import type { Class } from '@src/academic/entity/class.entity.js';
 import type { Student } from './student.entity.js';
 
 @Entity({ name: 'student_classes' })
@@ -64,22 +64,4 @@ export class StudentClass {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
-
-  toJSON() {
-    return {
-      id: this.id,
-      studentId: this.studentId,
-      classId: this.classId,
-      class: this.class ? (typeof this.class.toJSON === 'function' ? this.class.toJSON() : this.class) : undefined,
-      academicYear: this.academicYear,
-      semester: this.semester,
-      isPrimary: Boolean(this.isPrimary),
-      status: this.status,
-      enrolledAt: this.enrolledAt,
-      completedAt: this.completedAt,
-      remarks: this.remarks,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-    };
-  }
 }

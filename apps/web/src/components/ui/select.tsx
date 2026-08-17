@@ -7,11 +7,15 @@ interface SelectContextType {
   onValueChange?: (val: string) => void;
   open: boolean;
   setOpen: (open: boolean) => void;
+  labels: Record<string, React.ReactNode>;
+  registerLabel: (val: string, label: React.ReactNode) => void;
 }
 
 const SelectContext = React.createContext<SelectContextType>({
   open: false,
   setOpen: () => {},
+  labels: {},
+  registerLabel: () => {},
 });
 
 export interface SelectProps {
@@ -23,7 +27,15 @@ export interface SelectProps {
 
 export function Select({ value, onValueChange, children }: SelectProps) {
   const [open, setOpen] = React.useState(false);
+  const [labels, setLabels] = React.useState<Record<string, React.ReactNode>>({});
   const containerRef = React.useRef<HTMLDivElement>(null);
+
+  const registerLabel = React.useCallback((val: string, label: React.ReactNode) => {
+    setLabels((prev) => {
+      if (prev[val] === label) return prev;
+      return { ...prev, [val]: label };
+    });
+  }, []);
 
   React.useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -40,7 +52,7 @@ export function Select({ value, onValueChange, children }: SelectProps) {
   }, [open]);
 
   return (
-    <SelectContext.Provider value={{ value, onValueChange, open, setOpen }}>
+    <SelectContext.Provider value={{ value, onValueChange, open, setOpen, labels, registerLabel }}>
       <div ref={containerRef} className="relative inline-block w-full">
         {children}
       </div>
@@ -74,11 +86,18 @@ SelectTrigger.displayName = "SelectTrigger";
 
 export const SelectValue = ({
   placeholder,
+  children,
 }: {
   placeholder?: string;
+  children?: React.ReactNode;
 }) => {
-  const { value } = React.useContext(SelectContext);
-  return <span>{value || placeholder || ""}</span>;
+  const { value, labels } = React.useContext(SelectContext);
+  if (children) {
+    return <span className="truncate">{children}</span>;
+  }
+  const hasValue = value !== undefined && value !== "";
+  const display = hasValue ? (labels[value] ?? value) : (placeholder || "");
+  return <span className="truncate">{display}</span>;
 };
 
 export const SelectContent = ({
@@ -112,7 +131,11 @@ export const SelectItem = ({
   className?: string;
   children: React.ReactNode;
 }) => {
-  const { onValueChange, setOpen } = React.useContext(SelectContext);
+  const { onValueChange, setOpen, registerLabel } = React.useContext(SelectContext);
+
+  React.useEffect(() => {
+    registerLabel(value, children);
+  }, [value, children, registerLabel]);
 
   return (
     <div

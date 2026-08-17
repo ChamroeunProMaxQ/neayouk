@@ -114,6 +114,7 @@ export function usePromoteStudentMutation() {
     },
     onSuccess: (_data, { studentId }) => {
       queryClient.invalidateQueries({ queryKey: ["students"] });
+      queryClient.invalidateQueries({ queryKey: ["classes"] });
       queryClient.invalidateQueries({ queryKey: ["student-summary", studentId] });
     },
   });
@@ -136,6 +137,7 @@ export function useBatchPromoteStudentsMutation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["students"] });
+      queryClient.invalidateQueries({ queryKey: ["classes"] });
     },
   });
 }

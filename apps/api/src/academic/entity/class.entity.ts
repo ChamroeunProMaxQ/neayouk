@@ -5,19 +5,24 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import {
-  SemesterEnum,
   ClassEnrollmentStatusEnum,
-  type ClassAttribute,
+  SemesterEnum,
+  ShiftEnum,
 } from '@repo/contracts';
-import type { StudentClass } from './student-class.entity.js';
-import type { StudentPayment } from './student-payment.entity.js';
+import type { Program } from './program.entity.js';
+import type { StudentClass } from '@src/student/entity/student-class.entity.js';
+import type { StudentPayment } from '@src/student/entity/student-payment.entity.js';
+import type { ClassTimetable } from './class-timetable.entity.js';
+
 @Entity({ name: 'classes' })
-export class Class implements ClassAttribute {
+export class Class {
   @PrimaryGeneratedColumn()
   id!: number;
 
@@ -33,11 +38,37 @@ export class Class implements ClassAttribute {
   @Column({ name: 'grade_level', type: 'varchar', length: 50, nullable: true })
   gradeLevel!: string | null;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  program!: string | null;
+  @Column({ name: 'program_id', type: 'int', nullable: true })
+  programId!: number | null;
+
+  @ManyToOne('Program', (p: Program) => p.classes, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'program_id' })
+  declare program?: Program | null;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   section!: string | null;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  room!: string | null;
+
+  @Column({
+    type: 'enum',
+    enum: ShiftEnum,
+    default: ShiftEnum.MORNING,
+  })
+  shift!: ShiftEnum;
+
+  @Column({ name: 'start_time', type: 'varchar', length: 10, nullable: true, default: '07:30' })
+  startTime!: string | null;
+
+  @Column({ name: 'end_time', type: 'varchar', length: 10, nullable: true, default: '11:30' })
+  endTime!: string | null;
+
+  @Column({ name: 'start_date', type: 'date', nullable: true })
+  startDate!: string | Date | null;
+
+  @Column({ name: 'end_date', type: 'date', nullable: true })
+  endDate!: string | Date | null;
 
   @Column({ name: 'monthly_fee', type: 'decimal', precision: 10, scale: 2, default: 0 })
   monthlyFee!: number;
@@ -55,9 +86,6 @@ export class Class implements ClassAttribute {
   })
   semester!: SemesterEnum;
 
-  @Column({ type: 'int', default: 30 })
-  capacity!: number;
-
   @Column({ type: 'varchar', length: 26, default: 'ACTIVE' })
   status!: string;
 
@@ -66,6 +94,9 @@ export class Class implements ClassAttribute {
 
   @OneToMany('StudentPayment', (sp: StudentPayment) => sp.class)
   declare payments?: StudentPayment[];
+
+  @OneToMany('ClassTimetable', (ct: ClassTimetable) => ct.class)
+  declare timetables?: ClassTimetable[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
@@ -81,27 +112,5 @@ export class Class implements ClassAttribute {
     if (!this.uuid) {
       this.uuid = randomUUID();
     }
-  }
-
-  toJSON() {
-    return {
-      id: this.id,
-      uuid: this.uuid,
-      name: this.name,
-      code: this.code,
-      gradeLevel: this.gradeLevel,
-      program: this.program,
-      section: this.section,
-      monthlyFee: Number(this.monthlyFee),
-      teacherId: this.teacherId ? Number(this.teacherId) : null,
-      academicYear: this.academicYear,
-      semester: this.semester,
-      capacity: this.capacity,
-      status: this.status,
-      studentCount: this.enrollments ? this.enrollments.filter((e) => e.status === ClassEnrollmentStatusEnum.ENROLLED).length : undefined,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      deletedAt: this.deletedAt,
-    };
   }
 }

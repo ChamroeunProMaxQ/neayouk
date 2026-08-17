@@ -10,8 +10,9 @@ import {
 } from '@repo/contracts';
 import { StudentPayment } from './entity/student-payment.entity.js';
 import { Student } from './entity/student.entity.js';
-import { Class } from './entity/class.entity.js';
+import { Class } from '@src/academic/entity/class.entity.js';
 import { StudentClass } from './entity/student-class.entity.js';
+import { StudentPaymentMapper } from './mapper/student-payment.mapper.js';
 import type {
   RecordPaymentDto,
   BatchRecordPaymentDto,
@@ -74,7 +75,8 @@ export class StudentPaymentService {
     const { skip, take } = getSkipTake(dto);
     query.skip(skip).take(take);
 
-    return await query.getManyAndCount();
+    const [entities, total] = await query.getManyAndCount();
+    return [StudentPaymentMapper.toDtoList(entities), total];
   }
 
   async recordPayment(dto: RecordPaymentDto, currentUserId?: number) {
@@ -97,34 +99,20 @@ export class StudentPaymentService {
     let defaultClassId = dto.classId;
     if (!defaultClassId && student.enrollments && student.enrollments.length > 0) {
       const primary = student.enrollments.find(
-        (e) => Boolean(e.isPrimary) && e.status === ClassEnrollmentStatusEnum.ENROLLED
+        (e) => Boolean(e.isPrimary) && e.status === ClassEnrollmentStatusEnum.ENROLLED,
       );
-      defaultClassId = primary?.classId ?? student.enrollments[0]?.classId;
+      defaultClassId = primary ? primary.classId : student.enrollments[0].classId;
     }
 
-    let baseFee = 0;
-    if (defaultClassId) {
-      const cls = await this.classRepo.findOne({ where: { id: defaultClassId } });
-      if (cls) {
-        baseFee = Number(cls.monthlyFee);
-      }
-    } else {
-      // Fallback to query primary class if enrollments were not joined
-      const activeEnrollment = await this.studentClassRepo.findOne({
-        where: { studentId: dto.studentId, status: ClassEnrollmentStatusEnum.ENROLLED },
-        relations: ['class'],
-      });
-      if (activeEnrollment?.class) {
-        defaultClassId = activeEnrollment.classId;
-        baseFee = Number(activeEnrollment.class.monthlyFee);
-      }
-    }
+    const targetClass = defaultClassId
+      ? await this.classRepo.findOne({ where: { id: defaultClassId } })
+      : null;
 
-    const discount = dto.discountApplied !== undefined ? Number(dto.discountApplied) : Number(student.discount);
-    const amountDue = dto.amountDue !== undefined ? Number(dto.amountDue) : Math.max(0, baseFee - discount);
-    const amountPaid = Number(dto.amountPaid);
-    const isPaid = (amountDue === 0 && amountPaid === 0) || amountPaid >= amountDue;
-    const status = dto.status ?? (isPaid ? PaymentStatusEnum.PAID : amountPaid > 0 ? PaymentStatusEnum.PARTIAL : PaymentStatusEnum.UNPAID);
+    const baseFee = targetClass ? Number(targetClass.monthlyFee) : 50;
+    const discount = Number(student.discount || 0);
+    const amountDue = dto.amountDue !== undefined ? dto.amountDue : Math.max(0, baseFee - discount);
+    const amountPaid = dto.amountPaid;
+    const status = dto.status ?? (amountPaid >= amountDue ? PaymentStatusEnum.PAID : amountPaid > 0 ? PaymentStatusEnum.PARTIAL : PaymentStatusEnum.UNPAID);
 
     if (!payment) {
       payment = this.paymentRepo.create({
@@ -155,7 +143,8 @@ export class StudentPaymentService {
       if (defaultClassId) payment.classId = defaultClassId;
     }
 
-    return await this.paymentRepo.save(payment);
+    const saved = await this.paymentRepo.save(payment);
+    return StudentPaymentMapper.toDto(saved);
   }
 
   async recordBatchPayment(dto: BatchRecordPaymentDto, currentUserId?: number) {
@@ -274,7 +263,7 @@ export class StudentPaymentService {
       unpaidMonthsList,
       totalOutstandingAmount,
       lastPaymentDate,
-      payments: payments.map((p) => typeof p.toJSON === 'function' ? p.toJSON() : p),
+      payments: StudentPaymentMapper.toDtoList(payments),
     };
   }
 }

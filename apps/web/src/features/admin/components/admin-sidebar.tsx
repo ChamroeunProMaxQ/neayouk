@@ -101,10 +101,10 @@ export const adminNavGroups: NavGroup[] = [
         isCollapsible: true,
         requiredPermission: { action: "read", resource: "academic" },
         subItems: [
+          { label: "Programs & Curriculum Books", path: "/academics/programs", requiredPermission: { action: "read", resource: "academic" } },
+          { label: "Classes & Cohorts", path: "/academics/classes" },
           { label: "Academic Years & Terms", path: "/academics/academic-years" },
-          { label: "Classes & Sections", path: "/academics/classes" },
-          { label: "Subjects & Courses", path: "/academics/subjects" },
-          { label: "Class Timetable", path: "/academics/timetable" },
+          // { label: "Class Timetable", path: "/academics/timetable" },
         ],
       },
       {

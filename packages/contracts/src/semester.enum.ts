@@ -1,8 +1,30 @@
 export enum SemesterEnum {
   SEMESTER_1 = 'SEMESTER_1',
   SEMESTER_2 = 'SEMESTER_2',
+  TERM_1 = 'TERM_1',
+  TERM_2 = 'TERM_2',
+  TERM_3 = 'TERM_3',
+  TERM_4 = 'TERM_4',
   SUMMER = 'SUMMER',
   FULL_YEAR = 'FULL_YEAR',
+}
+
+export enum ShiftEnum {
+  MORNING = 'MORNING',
+  AFTERNOON = 'AFTERNOON',
+  EVENING = 'EVENING',
+  FULL_DAY = 'FULL_DAY',
+  WEEKEND = 'WEEKEND',
+}
+
+export enum DayOfWeekEnum {
+  MONDAY = 'MONDAY',
+  TUESDAY = 'TUESDAY',
+  WEDNESDAY = 'WEDNESDAY',
+  THURSDAY = 'THURSDAY',
+  FRIDAY = 'FRIDAY',
+  SATURDAY = 'SATURDAY',
+  SUNDAY = 'SUNDAY',
 }
 
 export enum ClassEnrollmentStatusEnum {
@@ -11,3 +33,4 @@ export enum ClassEnrollmentStatusEnum {
   COMPLETED = 'COMPLETED',
   DROPPED = 'DROPPED',
 }
+

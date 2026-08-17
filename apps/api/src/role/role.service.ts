@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Role } from './entity/role.entity.js';
 import { Permission } from '@src/permission/entity/permission.entity.js';
+import { RoleMapper } from './mapper/role.mapper.js';
 import type { FindRolesDto } from './dto/find-roles.dto.js';
 import type { CreateRoleDto } from './dto/create-role.dto.js';
 import type { UpdateRoleDto } from './dto/update-role.dto.js';
@@ -42,7 +43,8 @@ export class RoleService {
     const { skip, take } = getSkipTake(dto);
     query.skip(skip).take(take);
 
-    return await query.getManyAndCount();
+    const [entities, total] = await query.getManyAndCount();
+    return [RoleMapper.toDtoList(entities), total];
   }
 
   async findOne(id: number) {
@@ -55,7 +57,7 @@ export class RoleService {
       throw new NotFoundException('Role not found');
     }
 
-    return role;
+    return RoleMapper.toDto(role);
   }
 
   async findBySlug(slug: string) {
@@ -123,7 +125,14 @@ export class RoleService {
   }
 
   async update(id: number, dto: UpdateRoleDto) {
-    const role = await this.findOne(id);
+    const role = await this.roleRepo.findOne({
+      where: { id },
+      relations: ['permissions'],
+    });
+
+    if (!role) {
+      throw new NotFoundException('Role not found');
+    }
 
     // Guard clause: Validate slug collision if changed
     if (dto.slug && dto.slug !== role.slug) {
@@ -151,7 +160,10 @@ export class RoleService {
   }
 
   async delete(id: number) {
-    const role = await this.findOne(id);
+    const role = await this.roleRepo.findOne({ where: { id } });
+    if (!role) {
+      throw new NotFoundException('Role not found');
+    }
 
     await this.roleRepo.delete(role.id);
     return { id, success: true };

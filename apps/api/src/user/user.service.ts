@@ -9,6 +9,7 @@ import type { UpdateUserDto } from './dto/update-user.dto.js';
 import { User } from './entity/user.entity.js';
 import { Role } from '@src/role/entity/role.entity.js';
 import { getSkipTake } from '@src/common/helper/pagination.helper.js';
+import { UserMapper } from './mapper/user.mapper.js';
 
 @Injectable()
 export class UserService {
@@ -29,8 +30,8 @@ export class UserService {
     role,
     includeDeleted,
     onlyDeleted,
-    sortBy,
-    sortOrder,
+    sortBy = 'id',
+    sortOrder = 'DESC',
     ...dto
   }: FindUsersDto) {
     const query = this.userRepo
@@ -60,14 +61,19 @@ export class UserService {
     const { skip, take } = getSkipTake(dto);
     query.skip(skip).take(take);
 
-    return await query.getManyAndCount();
+    const [entities, total] = await query.getManyAndCount();
+    return [UserMapper.toDtoList(entities), total];
   }
 
   async findOne(userId: number) {
-    return await this.userRepo.findOne({
+    const user = await this.userRepo.findOne({
       where: { id: userId },
       relations: ['roles', 'roles.permissions'],
     });
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+    return UserMapper.toDto(user);
   }
 
   async findByUsername(username: string) {
@@ -103,11 +109,15 @@ export class UserService {
       status: dto.status,
       roles,
     });
-    return await this.userRepo.save(user);
+    const saved = await this.userRepo.save(user);
+    return UserMapper.toDto(saved);
   }
 
   async updateUser(id: number, dto: UpdateUserDto, _userId?: number) {
-    const user = await this.findOne(id);
+    const user = await this.userRepo.findOne({
+      where: { id },
+      relations: ['roles', 'roles.permissions'],
+    });
     if (!user) {
       throw new NotFoundException('user not found');
     }
@@ -121,12 +131,12 @@ export class UserService {
       user.roles = await this.resolveUserRoles(dto.roles, dto.roleIds);
     }
 
-    await this.userRepo.save(user);
-    return await this.findOne(id);
+    const saved = await this.userRepo.save(user);
+    return UserMapper.toDto(saved);
   }
 
   async deleteUser(id: number) {
-    const user = await this.findOne(id);
+    const user = await this.userRepo.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException('user not found');
     }

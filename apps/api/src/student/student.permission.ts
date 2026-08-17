@@ -1,10 +1,11 @@
 import { type Permissions, Actions, type AuthorizableUser } from 'nest-casl';
 import { type InferSubjects } from '@casl/ability';
 import { Student } from './entity/student.entity.js';
-import { Class } from './entity/class.entity.js';
 import { StudentPayment } from './entity/student-payment.entity.js';
 
-export type Subjects = InferSubjects<typeof Student | typeof Class | typeof StudentPayment>;
+export type Subjects = InferSubjects<
+  typeof Student | typeof StudentPayment
+>;
 
 export const permissions: Permissions<
   string,
@@ -14,46 +15,38 @@ export const permissions: Permissions<
 > = {
   ADMIN({ can }) {
     can(Actions.manage, Student);
-    can(Actions.manage, Class);
     can(Actions.manage, StudentPayment);
   },
   admin({ can }) {
     can(Actions.manage, Student);
-    can(Actions.manage, Class);
     can(Actions.manage, StudentPayment);
   },
 
   CMS({ can }) {
     can(Actions.manage, Student);
-    can(Actions.manage, Class);
     can(Actions.manage, StudentPayment);
   },
   cms({ can }) {
     can(Actions.manage, Student);
-    can(Actions.manage, Class);
     can(Actions.manage, StudentPayment);
   },
 
   TEACHER({ can }) {
     can(Actions.read, Student);
-    can(Actions.read, Class);
     can(Actions.read, StudentPayment);
   },
   teacher({ can }) {
     can(Actions.read, Student);
-    can(Actions.read, Class);
     can(Actions.read, StudentPayment);
   },
 
   STAFF({ can }) {
     can(Actions.read, Student);
-    can(Actions.read, Class);
     can(Actions.read, StudentPayment);
     can(Actions.create, StudentPayment);
   },
   staff({ can }) {
     can(Actions.read, Student);
-    can(Actions.read, Class);
     can(Actions.read, StudentPayment);
     can(Actions.create, StudentPayment);
   },

@@ -23,6 +23,18 @@ const RolesPage = lazy(() =>
 const StudentsPage = lazy(() =>
   import("./students-page").then((m) => ({ default: m.StudentsPage }))
 );
+const ClassesPage = lazy(() =>
+  import("./classes-page").then((m) => ({ default: m.ClassesPage }))
+);
+const ProgramsPage = lazy(() =>
+  import("./programs-page").then((m) => ({ default: m.ProgramsPage }))
+);
+const AcademicYearsPage = lazy(() =>
+  import("./academic-years-page").then((m) => ({ default: m.AcademicYearsPage }))
+);
+const TimetablePage = lazy(() =>
+  import("./timetable-page").then((m) => ({ default: m.TimetablePage }))
+);
 const DummyPage = lazy(() =>
   import("./dummy-page").then((m) => ({ default: m.DummyPage }))
 );
@@ -97,6 +109,54 @@ const router = createBrowserRouter([
                 </PermissionRoute>
               </Suspense>
             ),
+          },
+          {
+            path: "/academics/academic-years",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource="academic" action="read">
+                  <AcademicYearsPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/academics/programs",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource="academic" action="read">
+                  <ProgramsPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/academics/classes",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource="academic" action="read">
+                  <ClassesPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/academics/subjects",
+            element: <Navigate to="/academics/programs" replace />,
+          },
+          {
+            path: "/academics/timetable",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource="academic" action="read">
+                  <TimetablePage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/academics",
+            element: <Navigate to="/academics/classes" replace />,
           },
           {
             path: "/roles",

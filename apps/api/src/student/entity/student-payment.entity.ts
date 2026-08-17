@@ -9,12 +9,12 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { PaymentStatusEnum, PaymentMethodEnum, type StudentPaymentAttribute } from '@repo/contracts';
-import type { Class } from './class.entity.js';
+import { PaymentStatusEnum, PaymentMethodEnum } from '@repo/contracts';
+import type { Class } from '@src/academic/entity/class.entity.js';
 import type { Student } from './student.entity.js';
 
 @Entity({ name: 'student_payments' })
-export class StudentPayment implements StudentPaymentAttribute {
+export class StudentPayment {
   @PrimaryGeneratedColumn()
   id!: number;
 
@@ -89,27 +89,5 @@ export class StudentPayment implements StudentPaymentAttribute {
     if (!this.uuid) {
       this.uuid = randomUUID();
     }
-  }
-
-  toJSON() {
-    return {
-      id: this.id,
-      uuid: this.uuid,
-      studentId: this.studentId,
-      classId: this.classId,
-      billingYear: this.billingYear,
-      billingMonth: this.billingMonth,
-      amountDue: Number(this.amountDue),
-      amountPaid: Number(this.amountPaid),
-      discountApplied: Number(this.discountApplied),
-      status: this.status,
-      paymentMethod: this.paymentMethod,
-      receiptNumber: this.receiptNumber,
-      paidAt: this.paidAt,
-      notes: this.notes,
-      recordedBy: this.recordedBy,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-    };
   }
 }

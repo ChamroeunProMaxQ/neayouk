@@ -109,12 +109,17 @@ Reference these guidelines when:
 
 ### 8. Database & ORM (MEDIUM-HIGH)
 
+- `db-no-tojson-in-entities` - **DO NOT implement `toJSON()` inside TypeORM entity classes**. Entities are strictly for database persistence mapping. Response transformation must be handled by dedicated Mappers or DTOs.
 - `db-use-transactions` - Transaction management for multi-entity operations.
 - `db-avoid-n-plus-one` - Prevent N+1 database query issues via relations or query builder joins.
 - `db-use-migrations` - Always use Umzug schema migrations for any database modification.
 
-### 9. API Design (MEDIUM)
+### 9. API Design & Response Serialization (MEDIUM-HIGH)
 
+- `api-use-dto-mappers` - **Use dedicated DTO Mapper classes** (`src/<feature>/mapper/<feature>.mapper.ts`) to transform TypeORM entities into `@repo/contracts` DTO attributes (e.g., `ClassMapper.toDto(entity)`, `ClassMapper.toDtoList(entities)`).
+  - Explicitly convert numeric decimals (`Number(entity.monthlyFee)`).
+  - Safely compute relations and active statuses (e.g. counting only `ENROLLED` students).
+  - Eliminate circular reference crashes and partial relation leakage.
 - `api-use-dto-serialization` - Response payload serialization using `@repo/contracts` schemas.
 - `api-use-interceptors` - Handle cross-cutting concerns (logging, response envelopes).
 - `api-versioning` - API URI versioning strategies (`/api/v1/...`).
@@ -139,6 +144,12 @@ apps/api/
 │       └── <timestamp>.<feature>-seeder.ts        # 2. Multi-State Fixture Seeder
 ├── src/
 │   └── <feature>/
+│       ├── entity/
+│       │   └── <feature>.entity.ts                # Pure TypeORM Entity (NO toJSON)
+│       ├── dto/
+│       │   └── <feature>.dto.ts                   # createZodDto wrapping @repo/contracts
+│       ├── mapper/
+│       │   └── <feature>.mapper.ts                # Entity -> @repo/contracts DTO Mapper
 │       ├── <feature>.controller.ts                # Endpoint Handlers with Guards
 │       ├── <feature>.service.ts                   # Business Logic & Repository Access
 │       └── <feature>.module.ts                    # NestJS Module Definition

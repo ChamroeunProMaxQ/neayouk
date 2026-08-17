@@ -9,8 +9,9 @@ import {
 } from '@repo/contracts';
 import { Student } from './entity/student.entity.js';
 import { StudentClass } from './entity/student-class.entity.js';
-import { Class } from './entity/class.entity.js';
+import { Class } from '@src/academic/entity/class.entity.js';
 import { StudentPaymentService } from './student-payment.service.js';
+import { StudentMapper } from './mapper/student.mapper.js';
 import type {
   CreateStudentDto,
   UpdateStudentDto,
@@ -20,7 +21,7 @@ import type {
   AssignStudentClassesDto,
   PromoteStudentDto,
   BatchPromoteStudentsDto,
-} from './dto/class.dto.js';
+} from '@src/academic/dto/class.dto.js';
 import { getSkipTake } from '@src/common/helper/pagination.helper.js';
 
 @Injectable()
@@ -165,10 +166,10 @@ export class StudentService {
     // Attach computed payment summaries for the retrieved page of students
     const dataWithSummaries = await Promise.all(
       students.map(async (student) => {
-        const json = typeof student.toJSON === 'function' ? student.toJSON() : student;
+        const dto = StudentMapper.toDto(student);
         const summary = await this.paymentService.getStudentPaymentSummary(student);
         return {
-          ...json,
+          ...dto,
           paymentSummary: summary,
         };
       }),
@@ -186,9 +187,9 @@ export class StudentService {
       throw new NotFoundException(`Student with ID ${id} not found`);
     }
     const summary = await this.paymentService.getStudentPaymentSummary(student);
-    const json = typeof student.toJSON === 'function' ? student.toJSON() : student;
+    const dto = StudentMapper.toDto(student);
     return {
-      ...json,
+      ...dto,
       paymentSummary: summary,
     };
   }
@@ -313,7 +314,11 @@ export class StudentService {
 
     const classes = await this.classRepo.findBy({ id: In(dto.classIds) });
     const enrollments = classes.map((cls, idx) => {
-      const isPrimary = dto.primaryClassId ? cls.id === dto.primaryClassId : idx === 0;
+      const isPrimary = dto.primaryClassId
+        ? cls.id === dto.primaryClassId
+        : dto.isPrimaryIndex !== undefined
+          ? idx === dto.isPrimaryIndex
+          : idx === 0;
       return this.studentClassRepo.create({
         studentId,
         classId: cls.id,

@@ -15,6 +15,7 @@ export const PermissionSchema = z.object({
 });
 
 export type PermissionDto = z.infer<typeof PermissionSchema>;
+export type PermissionAttribute = PermissionDto;
 
 export const CreatePermissionSchema = z.object({
   resource: z.string().min(1, "resource is required"),

@@ -59,9 +59,9 @@ describe("AdminLayout", () => {
     expect(screen.queryByText("Academic Years & Terms")).not.toBeInTheDocument();
 
     await user.click(academicsButton);
+    expect(screen.getByText("Programs & Curriculum Books")).toBeInTheDocument();
+    expect(screen.getByText("Classes & Cohorts")).toBeInTheDocument();
     expect(screen.getByText("Academic Years & Terms")).toBeInTheDocument();
-    expect(screen.getByText("Classes & Sections")).toBeInTheDocument();
-    expect(screen.getByText("Subjects & Courses")).toBeInTheDocument();
     expect(screen.getByText("Class Timetable")).toBeInTheDocument();
   });
 

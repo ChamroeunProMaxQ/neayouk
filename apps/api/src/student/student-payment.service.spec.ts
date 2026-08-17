@@ -18,7 +18,7 @@ describe('StudentPaymentService (Unit)', () => {
     mockPaymentRepo = {
       createQueryBuilder: vi.fn(),
       findOne: vi.fn(),
-      create: vi.fn((data) => ({ ...data, id: 1, toJSON: () => ({ ...data, id: 1 }) })),
+      create: vi.fn((data) => ({ ...data, id: 1 })),
       save: vi.fn(async (entity) => ({ ...entity, id: entity.id ?? 1 })),
     };
 
@@ -149,13 +149,14 @@ describe('StudentPaymentService (Unit)', () => {
         ],
         payments: [
           {
+            id: 1,
+            uuid: 'pay-uuid-1',
             billingYear: currentYear,
             billingMonth: currentMonth,
             amountDue: 50,
             amountPaid: 50,
             status: PaymentStatusEnum.PAID,
             paidAt: new Date(),
-            toJSON: () => ({ billingYear: currentYear, billingMonth: currentMonth }),
           },
         ],
       };

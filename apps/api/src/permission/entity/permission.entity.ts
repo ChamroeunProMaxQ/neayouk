@@ -42,14 +42,4 @@ export class Permission {
       this.uuid = randomUUID();
     }
   }
-
-  toJSON() {
-    return {
-      id: this.id,
-      uuid: this.uuid,
-      resource: this.resource,
-      action: this.action,
-      description: this.description,
-    };
-  }
 }

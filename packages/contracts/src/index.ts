@@ -4,6 +4,8 @@ export * from "./class.dto.js";
 export * from "./pagination.dto.js";
 export * from "./payment-status.enum.js";
 export * from "./permission.dto.js";
+export * from "./program.dto.js";
+export * from "./program.enum.js";
 export * from "./resource.enum.js";
 export * from "./response.dto.js";
 export * from "./role.dto.js";

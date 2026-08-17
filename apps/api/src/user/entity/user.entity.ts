@@ -1,4 +1,4 @@
-import { UserStatusEnum, UserTypeEnum, type UserAttribute } from '@repo/contracts';
+import { UserStatusEnum, UserTypeEnum } from '@repo/contracts';
 import { randomUUID } from 'node:crypto';
 import {
   BeforeInsert,
@@ -18,7 +18,7 @@ import { UserToken } from '@src/user-token/entity/user-token.entity.js';
 import { Role } from '@src/role/entity/role.entity.js';
 
 @Entity({ name: 'users' })
-export class User implements UserAttribute {
+export class User {
   @PrimaryGeneratedColumn()
   id!: number;
 
@@ -67,10 +67,6 @@ export class User implements UserAttribute {
   })
   declare roles?: Role[];
 
-  get computedNameId(): string {
-    return `user-${this.id}`;
-  }
-
   @BeforeInsert()
   generateUuidAndHashPassword() {
     if (!this.uuid) {
@@ -92,26 +88,5 @@ export class User implements UserAttribute {
     if (this.password && !this.password.includes(':')) {
       this.password = hashPassword(this.password);
     }
-  }
-
-  toJSON() {
-    const rolesList = this.roles && this.roles.length > 0
-      ? this.roles.map((r) => (typeof r === 'string' ? r : r.slug))
-      : [this.userType?.toLowerCase() ?? 'customer'];
-
-    return {
-      ...this,
-      id: this.id,
-      uuid: this.uuid,
-      username: this.username,
-      password: '',
-      userType: this.userType,
-      status: this.status,
-      roles: rolesList,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      deletedAt: this.deletedAt,
-      computedNameId: this.computedNameId,
-    };
   }
 }

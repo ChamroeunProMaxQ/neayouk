@@ -8,7 +8,7 @@ import {
 } from '@repo/contracts';
 import { StudentService } from './student.service.js';
 import type { Student } from './entity/student.entity.js';
-import type { Class } from './entity/class.entity.js';
+import type { Class } from '@src/academic/entity/class.entity.js';
 import type { StudentClass } from './entity/student-class.entity.js';
 
 describe('StudentService (Unit)', () => {
@@ -22,7 +22,7 @@ describe('StudentService (Unit)', () => {
     mockStudentRepo = {
       createQueryBuilder: vi.fn(),
       findOne: vi.fn(),
-      create: vi.fn((data) => ({ ...data, id: 1, toJSON: () => ({ ...data, id: 1 }) })),
+      create: vi.fn((data) => ({ ...data, id: 1 })),
       save: vi.fn(async (entity) => ({ ...entity, id: entity.id ?? 1 })),
       count: vi.fn().mockResolvedValue(10),
       softDelete: vi.fn().mockResolvedValue({ affected: 1 }),
@@ -85,7 +85,6 @@ describe('StudentService (Unit)', () => {
         ...dto,
         enrollments: [],
         payments: [],
-        toJSON: () => ({ id: 1, ...dto }),
       });
 
       const result = await service.create(dto);
@@ -116,7 +115,6 @@ describe('StudentService (Unit)', () => {
         ...dto,
         enrollments: [],
         payments: [],
-        toJSON: () => ({ id: 2, ...dto }),
       });
 
       await service.create(dto);
@@ -140,10 +138,10 @@ describe('StudentService (Unit)', () => {
     it('should return student with computed payment summary', async () => {
       const studentData = {
         id: 1,
+        uuid: 'stu-uuid-1',
         firstName: 'Sokha',
         lastName: 'Chan',
         status: StudentStatusEnum.ACTIVE,
-        toJSON: () => ({ id: 1, firstName: 'Sokha' }),
       };
       mockStudentRepo.findOne.mockResolvedValueOnce(studentData);
 
@@ -168,6 +166,7 @@ describe('StudentService (Unit)', () => {
     it('should update student details and replace active enrollments', async () => {
       const existingStudent = {
         id: 1,
+        uuid: 'stu-uuid-1',
         firstName: 'Old',
         lastName: 'Name',
       };
@@ -175,7 +174,6 @@ describe('StudentService (Unit)', () => {
       mockStudentRepo.findOne.mockResolvedValueOnce({
         ...existingStudent,
         firstName: 'New',
-        toJSON: () => ({ id: 1, firstName: 'New' }),
       });
 
       const result = await service.update(1, {
@@ -198,13 +196,13 @@ describe('StudentService (Unit)', () => {
     it('should complete previous enrollment and create new active enrollment', async () => {
       mockStudentRepo.findOne.mockResolvedValueOnce({
         id: 1,
+        uuid: 'stu-uuid-1',
         firstName: 'Sokha',
-        toJSON: () => ({ id: 1, firstName: 'Sokha' }),
       });
       mockStudentRepo.findOne.mockResolvedValueOnce({
         id: 1,
+        uuid: 'stu-uuid-1',
         firstName: 'Sokha',
-        toJSON: () => ({ id: 1, firstName: 'Sokha' }),
       });
 
       const dto = {

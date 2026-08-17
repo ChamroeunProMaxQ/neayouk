@@ -33,8 +33,8 @@ export function zodResolver<T extends Record<string, any>>(
     const errors: Record<string, { type: string; message: string }> = {};
 
     for (const issue of issues) {
-      const fieldName = issue.path.join(".");
-      if (fieldName && !errors[fieldName]) {
+      const fieldName = issue.path && issue.path.length > 0 ? issue.path.join(".") : "root";
+      if (!errors[fieldName]) {
         errors[fieldName] = {
           type: issue.code || "validation",
           message: issue.message,

@@ -38,6 +38,15 @@ const AcademicYearsPage = lazy(() =>
 const TimetablePage = lazy(() =>
   import("./timetable-page").then((m) => ({ default: m.TimetablePage }))
 );
+const StudentAttendancePage = lazy(() =>
+  import("./student-attendance-page").then((m) => ({ default: m.StudentAttendancePage }))
+);
+const TeacherAttendancePage = lazy(() =>
+  import("./teacher-attendance-page").then((m) => ({ default: m.TeacherAttendancePage }))
+);
+const LeaveRequestsPage = lazy(() =>
+  import("./leave-requests-page").then((m) => ({ default: m.LeaveRequestsPage }))
+);
 const DummyPage = lazy(() =>
   import("./dummy-page").then((m) => ({ default: m.DummyPage }))
 );
@@ -174,6 +183,40 @@ const router = createBrowserRouter([
           {
             path: "/academics",
             element: <Navigate to="/academics/classes" replace />,
+          },
+          {
+            path: "/attendance/students",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource="attendance" action="read">
+                  <StudentAttendancePage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/attendance/teachers",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource="attendance" action="read">
+                  <TeacherAttendancePage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/attendance/leave-requests",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource="attendance" action="read">
+                  <LeaveRequestsPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/attendance",
+            element: <Navigate to="/attendance/students" replace />,
           },
           {
             path: "/roles",

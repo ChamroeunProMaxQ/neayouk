@@ -22,4 +22,4 @@ import { AuthModule } from '@src/auth/auth.module.js';
   providers: [ClassService, ProgramService],
   exports: [ClassService, ProgramService, TypeOrmModule],
 })
-export class AcademicModule {}
+export class AcademicModule { }

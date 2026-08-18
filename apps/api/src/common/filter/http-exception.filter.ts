@@ -106,7 +106,7 @@ export class HttpExceptionsFilter implements ExceptionFilter {
         messsageArray,
       );
       this.incrementHttpMetric(request, exception.getStatus());
-      return response.json(responseDto);
+      return response.status(exception.getStatus()).json(responseDto);
     }
 
     if (exception instanceof BadRequestException) {
@@ -121,7 +121,7 @@ export class HttpExceptionsFilter implements ExceptionFilter {
         isArrayMsg ? messageArray : [messageArray],
       );
       this.incrementHttpMetric(request, exception.getStatus());
-      return response.json(responseDto);
+      return response.status(exception.getStatus()).json(responseDto);
     }
 
     const extractMessage = (): string => {

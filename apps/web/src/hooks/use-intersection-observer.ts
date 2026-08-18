@@ -16,8 +16,11 @@ export function useInfiniteScroll({
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const sentinel = sentinelRef.current;
+    if (typeof IntersectionObserver === "undefined") {
+      return;
+    }
 
+    const sentinel = sentinelRef.current;
     if (!sentinel || !hasMore || isLoading || isFetching) {
       return;
     }

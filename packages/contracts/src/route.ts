@@ -63,5 +63,20 @@ export const API_ROUTE = {
     DELETE: '/api/v1/admin/teachers/:id',
     CLASSES: '/api/v1/admin/teachers/:id/classes',
   },
+  ATTENDANCE: {
+    STUDENTS: '/api/v1/admin/attendance/students',
+    STUDENTS_BATCH: '/api/v1/admin/attendance/students/batch',
+    STUDENT_SHEET_MATRIX: '/api/v1/admin/attendance/students/matrix',
+    STUDENT_SUMMARY: '/api/v1/admin/attendance/students/summary',
+    TEACHERS: '/api/v1/admin/attendance/teachers',
+    TEACHERS_BATCH: '/api/v1/admin/attendance/teachers/batch',
+    TEACHER_SUMMARY: '/api/v1/admin/attendance/teachers/summary',
+    LEAVE_REQUESTS: '/api/v1/admin/attendance/leave-requests',
+    LEAVE_REQUEST_CREATE: '/api/v1/admin/attendance/leave-requests',
+    LEAVE_REQUEST_GET: '/api/v1/admin/attendance/leave-requests/:id',
+    LEAVE_REQUEST_UPDATE: '/api/v1/admin/attendance/leave-requests/:id',
+    LEAVE_REQUEST_DELETE: '/api/v1/admin/attendance/leave-requests/:id',
+    LEAVE_REQUEST_REVIEW: '/api/v1/admin/attendance/leave-requests/:id/review',
+  },
 };
 

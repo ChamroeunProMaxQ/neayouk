@@ -20,4 +20,7 @@ export * from "./user-token.dto.js";
 export * from "./user-type.enum.js";
 export * from "./user.dto.js";
 export * from "./teacher.dto.js";
+export * from "./attendance-status.enum.js";
+export * from "./attendance.dto.js";
+export * from "./leave-request.dto.js";
 

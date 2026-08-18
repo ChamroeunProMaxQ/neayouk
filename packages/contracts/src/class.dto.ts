@@ -161,7 +161,7 @@ export const FindClassesSchema = PaginationSchema.extend({
       "semester",
       "updatedAt",
     ],
-    "id"
+    "id",
   ),
   search: z.string().optional(),
   academicYear: z.string().optional(),
@@ -171,6 +171,7 @@ export const FindClassesSchema = PaginationSchema.extend({
   programId: z.coerce.number().optional(),
   program: z.string().optional(),
   status: z.string().optional(),
+  teacherId: z.coerce.number().optional(),
 });
 
 export type FindClassesDto = z.infer<typeof FindClassesSchema>;

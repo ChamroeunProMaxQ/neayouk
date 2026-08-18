@@ -1,6 +1,8 @@
-import { type Permissions, Actions, type AuthorizableUser } from 'nest-casl';
+import { type Permissions, Actions } from 'nest-casl';
 import { type InferSubjects } from '@casl/ability';
+import { hasPermission, ResourceEnum } from '@repo/contracts';
 import { Role } from './entity/role.entity.js';
+import type { AppAuthorizableUser } from '../common/config/casl.config.js';
 
 export type Subjects = InferSubjects<typeof Role>;
 
@@ -8,53 +10,40 @@ export const permissions: Permissions<
   string,
   Subjects,
   Actions,
-  AuthorizableUser<string, number>
+  AppAuthorizableUser
 > = {
   ADMIN({ can }) {
     can(Actions.manage, Role);
   },
-  admin({ can }) {
-    can(Actions.manage, Role);
+
+  CMS({ user, can }) {
+    const perms = user?.permissions;
+
+    if (hasPermission(perms, Actions.manage, ResourceEnum.ROLE)) {
+      can(Actions.manage, Role);
+      return;
+    }
+
+    if (hasPermission(perms, Actions.read, ResourceEnum.ROLE)) {
+      can(Actions.read, Role);
+    }
+    if (hasPermission(perms, Actions.create, ResourceEnum.ROLE)) {
+      can(Actions.create, Role);
+    }
+    if (hasPermission(perms, Actions.update, ResourceEnum.ROLE)) {
+      can(Actions.update, Role);
+    }
+    if (hasPermission(perms, Actions.delete, ResourceEnum.ROLE)) {
+      can(Actions.delete, Role);
+    }
   },
 
-  CMS({ can }) {
-    can(Actions.manage, Role);
-  },
-  cms({ can }) {
-    can(Actions.manage, Role);
-  },
-
-  TEACHER({ can }) {
-    can(Actions.read, Role);
-  },
-  teacher({ can }) {
-    can(Actions.read, Role);
-  },
-
-  STAFF({ can }) {
-    can(Actions.read, Role);
-  },
-  staff({ can }) {
-    can(Actions.read, Role);
-  },
-
-  STUDENT() {
-    // No role management access
-  },
-  student() {
-    // No role management access
-  },
-
-  CUSTOMER() {
-    // No role management access
-  },
-  customer() {
-    // No role management access
-  },
   PORTAL_USER() {
     // No role management access
   },
-  portal_user() {
-    // No role management access
+
+  CUSTOMER({ extend }) {
+    extend('PORTAL_USER');
   },
 };
+

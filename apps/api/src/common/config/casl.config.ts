@@ -1,11 +1,13 @@
 import type { JwtPayload } from "@src/auth/dto/jwt-payload.dto.js";
-import { UserTypeEnum } from "@repo/contracts";
+import { UserTypeEnum, type PermissionDto } from "@repo/contracts";
 import type { Request } from "express";
 import { CaslModule, type AuthorizableUser } from "nest-casl";
 
 export interface AppAuthorizableUser extends AuthorizableUser<string, number> {
   id: number;
   roles: string[];
+  userType?: UserTypeEnum;
+  permissions?: PermissionDto[];
 }
 
 export const caslConfig = CaslModule.forRoot<string, AppAuthorizableUser>({
@@ -16,9 +18,9 @@ export const caslConfig = CaslModule.forRoot<string, AppAuthorizableUser>({
     const userType = user.userType ?? user.type;
     const roles: string[] = [];
 
-    if (userType === UserTypeEnum.ADMIN) {
-      roles.push(UserTypeEnum.ADMIN);
-      roles.push('admin');
+    if (userType) {
+      roles.push(userType);
+      roles.push(userType.toUpperCase());
     }
 
     if (user.roles && user.roles.length > 0) {
@@ -27,15 +29,13 @@ export const caslConfig = CaslModule.forRoot<string, AppAuthorizableUser>({
         roles.push(r.toLowerCase());
         roles.push(r.toUpperCase());
       }
-    } else if (userType) {
-      roles.push(userType);
-      roles.push(userType.toLowerCase());
-      roles.push(userType.toUpperCase());
     }
 
     return {
       id: Number(user.sub),
       roles: Array.from(new Set(roles)),
+      userType,
+      permissions: user.permissions ?? [],
     };
   },
 });

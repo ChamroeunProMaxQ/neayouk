@@ -50,6 +50,15 @@ describe('ClassService', () => {
         monthlyFee: 65.0,
       };
 
+      mockClassRepo.findOne
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({
+          id: 1,
+          name: 'Primary - Grade 1A',
+          enrollments: [],
+          timetables: [],
+        });
+
       const result = await service.create(dto as any);
       expect(result).toBeDefined();
       expect((result as any).name).toBe('Primary - Grade 1A');
@@ -73,7 +82,7 @@ describe('ClassService', () => {
       expect(result.name).toBe('Primary - Grade 1A');
       expect(mockClassRepo.findOne).toHaveBeenCalledWith({
         where: { id: 1 },
-        relations: ['enrollments', 'timetables', 'program'],
+        relations: ['enrollments', 'timetables', 'program', 'teacher'],
       });
     });
 
@@ -85,7 +94,7 @@ describe('ClassService', () => {
 
       const result = await service.getStudents(1);
       expect(result).toHaveLength(1);
-      expect(result[0].student.firstName).toBe('Sokha');
+      expect(result?.[0]?.student?.firstName).toBe('Sokha');
     });
 
     it('should create a timetable schedule slot without conflict', async () => {

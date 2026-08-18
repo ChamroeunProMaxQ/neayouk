@@ -43,6 +43,7 @@ export class ClassService {
       programId,
       program,
       status,
+      teacherId,
       sortBy = 'id',
       sortOrder = 'DESC',
     } = dto;
@@ -79,6 +80,10 @@ export class ClassService {
 
     if (programId) {
       query.andWhere('class.programId = :programId', { programId });
+    }
+
+    if (teacherId) {
+      query.andWhere('teacher.id = :teacherId', { teacherId });
     }
 
     if (program) {

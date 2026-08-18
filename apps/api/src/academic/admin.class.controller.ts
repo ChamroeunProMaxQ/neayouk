@@ -33,7 +33,7 @@ import {
 @ApiBearerAuth()
 @Controller('admin/classes')
 export class AdminClassController {
-  constructor(private readonly classService: ClassService) {}
+  constructor(private readonly classService: ClassService) { }
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
   @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)

@@ -101,10 +101,22 @@ export const adminNavGroups: NavGroup[] = [
         isCollapsible: true,
         requiredPermission: { action: "read", resource: "academic" },
         subItems: [
-          { label: "Programs & Curriculum Books", path: "/academics/programs", requiredPermission: { action: "read", resource: "academic" } },
-          { label: "Classes & Cohorts", path: "/academics/classes" },
-          { label: "Academic Years & Terms", path: "/academics/academic-years" },
-          // { label: "Class Timetable", path: "/academics/timetable" },
+          {
+            label: "Programs & Curriculum Books",
+            path: "/academics/programs",
+            requiredPermission: { action: "read", resource: "program" },
+          },
+          {
+            label: "Classes & Cohorts",
+            path: "/academics/classes",
+            requiredPermission: { action: "read", resource: "class" },
+          },
+          {
+            label: "Academic Years & Terms",
+            path: "/academics/academic-years",
+            requiredPermission: { action: "read", resource: "academic_year" },
+          },
+          // { label: "Class Timetable", path: "/academics/timetable", requiredPermission: { action: "read", resource: "timetable" } },
         ],
       },
       {
@@ -115,9 +127,21 @@ export const adminNavGroups: NavGroup[] = [
         isCollapsible: true,
         requiredPermission: { action: "read", resource: "attendance" },
         subItems: [
-          { label: "Student Attendance", path: "/attendance/students" },
-          { label: "Teacher Attendance", path: "/attendance/teachers" },
-          { label: "Leave Requests", path: "/attendance/leave-requests" },
+          {
+            label: "Student Attendance",
+            path: "/attendance/students",
+            requiredPermission: { action: "read", resource: "student_attendance" },
+          },
+          {
+            label: "Teacher Attendance",
+            path: "/attendance/teachers",
+            requiredPermission: { action: "read", resource: "teacher_attendance" },
+          },
+          {
+            label: "Leave Requests",
+            path: "/attendance/leave-requests",
+            requiredPermission: { action: "read", resource: "leave_request" },
+          },
         ],
       },
       {
@@ -263,11 +287,34 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({
   const { can, isUserType } = usePermission();
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
 
+  // Helper to check if a single sub nav item is permitted
+  const checkSubItemPermitted = (sub: string | SubNavItem, parentItem: NavItem): boolean => {
+    if (typeof sub === "object") {
+      if (sub.requiredUserType && !isUserType(sub.requiredUserType)) {
+        return false;
+      }
+      if (sub.requiredPermission) {
+        return can(sub.requiredPermission.action, sub.requiredPermission.resource);
+      }
+    }
+    if (parentItem.requiredPermission) {
+      return can(parentItem.requiredPermission.action, parentItem.requiredPermission.resource);
+    }
+    return true;
+  };
+
   // Helper to check if a nav item is enabled
   const checkItemEnabled = (item: NavItem): boolean => {
     if (item.requiredUserType && !isUserType(item.requiredUserType)) {
       return false;
     }
+
+    // If item has sub-items, enable if parent permission matches OR any sub-item is permitted
+    if (item.subItems && item.subItems.length > 0) {
+      const hasAnyPermittedSub = item.subItems.some((sub) => checkSubItemPermitted(sub, item));
+      if (hasAnyPermittedSub) return true;
+    }
+
     if (item.requiredPermission && !can(item.requiredPermission.action, item.requiredPermission.resource)) {
       return false;
     }
@@ -276,18 +323,10 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({
 
   // Helper to check if a sub nav item is enabled
   const checkSubItemEnabled = (sub: string | SubNavItem, parentItem: NavItem): boolean => {
-    if (!checkItemEnabled(parentItem)) {
+    if (parentItem.requiredUserType && !isUserType(parentItem.requiredUserType)) {
       return false;
     }
-    if (typeof sub === "object") {
-      if (sub.requiredUserType && !isUserType(sub.requiredUserType)) {
-        return false;
-      }
-      if (sub.requiredPermission && !can(sub.requiredPermission.action, sub.requiredPermission.resource)) {
-        return false;
-      }
-    }
-    return true;
+    return checkSubItemPermitted(sub, parentItem);
   };
 
   // Expand parent section if current route matches any child path

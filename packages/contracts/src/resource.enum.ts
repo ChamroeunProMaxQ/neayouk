@@ -6,7 +6,14 @@ export enum ResourceEnum {
   DASHBOARD = "dashboard",
   ANNOUNCEMENT = "announcement",
   ACADEMIC = "academic",
+  CLASS = "class",
+  PROGRAM = "program",
+  ACADEMIC_YEAR = "academic_year",
+  TIMETABLE = "timetable",
   ATTENDANCE = "attendance",
+  STUDENT_ATTENDANCE = "student_attendance",
+  TEACHER_ATTENDANCE = "teacher_attendance",
+  LEAVE_REQUEST = "leave_request",
   EXAMINATION = "examination",
   ASSIGNMENT = "assignment",
   FEE = "fee",
@@ -18,3 +25,4 @@ export enum ResourceEnum {
   REPORT = "report",
   SETTING = "setting",
 }
+

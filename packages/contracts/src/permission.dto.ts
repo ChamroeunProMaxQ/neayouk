@@ -55,8 +55,23 @@ export function hasPermission(
     return false;
   }
 
+  const umbrellaParents: Record<string, string[]> = {
+    [ResourceEnum.CLASS]: [ResourceEnum.ACADEMIC],
+    [ResourceEnum.PROGRAM]: [ResourceEnum.ACADEMIC],
+    [ResourceEnum.TIMETABLE]: [ResourceEnum.ACADEMIC, ResourceEnum.CLASS],
+    [ResourceEnum.ACADEMIC_YEAR]: [ResourceEnum.ACADEMIC, ResourceEnum.CLASS],
+    [ResourceEnum.STUDENT_ATTENDANCE]: [ResourceEnum.ATTENDANCE],
+    [ResourceEnum.TEACHER_ATTENDANCE]: [ResourceEnum.ATTENDANCE, ResourceEnum.HR],
+    [ResourceEnum.LEAVE_REQUEST]: [ResourceEnum.ATTENDANCE, ResourceEnum.HR],
+  };
+
   return permissions.some((p) => {
-    const isResourceMatch = p.resource === ResourceEnum.ALL || p.resource === resource || p.resource === "*";
+    const parents = umbrellaParents[resource] || [];
+    const isResourceMatch =
+      p.resource === ResourceEnum.ALL ||
+      p.resource === resource ||
+      p.resource === "*" ||
+      parents.includes(p.resource as ResourceEnum);
     const isActionMatch = p.action === DefaultActions.manage || p.action === action || p.action === "*";
     return isResourceMatch && isActionMatch;
   });

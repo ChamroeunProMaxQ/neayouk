@@ -140,7 +140,7 @@ const router = createBrowserRouter([
             path: "/academics/academic-years",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="academic" action="read">
+                <PermissionRoute resource="academic_year" action="read">
                   <AcademicYearsPage />
                 </PermissionRoute>
               </Suspense>
@@ -150,7 +150,7 @@ const router = createBrowserRouter([
             path: "/academics/programs",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="academic" action="read">
+                <PermissionRoute resource="program" action="read">
                   <ProgramsPage />
                 </PermissionRoute>
               </Suspense>
@@ -160,7 +160,7 @@ const router = createBrowserRouter([
             path: "/academics/classes",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="academic" action="read">
+                <PermissionRoute resource="class" action="read">
                   <ClassesPage />
                 </PermissionRoute>
               </Suspense>
@@ -174,7 +174,7 @@ const router = createBrowserRouter([
             path: "/academics/timetable",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="academic" action="read">
+                <PermissionRoute resource="timetable" action="read">
                   <TimetablePage />
                 </PermissionRoute>
               </Suspense>
@@ -188,7 +188,7 @@ const router = createBrowserRouter([
             path: "/attendance/students",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="attendance" action="read">
+                <PermissionRoute resource="student_attendance" action="read">
                   <StudentAttendancePage />
                 </PermissionRoute>
               </Suspense>
@@ -198,7 +198,7 @@ const router = createBrowserRouter([
             path: "/attendance/teachers",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="attendance" action="read">
+                <PermissionRoute resource="teacher_attendance" action="read">
                   <TeacherAttendancePage />
                 </PermissionRoute>
               </Suspense>
@@ -208,7 +208,7 @@ const router = createBrowserRouter([
             path: "/attendance/leave-requests",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="attendance" action="read">
+                <PermissionRoute resource="leave_request" action="read">
                   <LeaveRequestsPage />
                 </PermissionRoute>
               </Suspense>

@@ -139,4 +139,69 @@ describe("AdminSidebar RBAC", () => {
     expect(screen.getByText("Classes & Cohorts")).toBeInTheDocument();
     expect(screen.getByText("Academic Years & Terms")).toBeInTheDocument();
   });
+
+  it("enables only permitted subItems for granular attendance permissions", async () => {
+    const user = userEvent.setup();
+
+    useAuthStore.setState({
+      user: {
+        id: 5,
+        username: "teacher_tom",
+        userType: UserTypeEnum.CMS,
+        roles: ["teacher"],
+        permissions: [
+          { resource: "student_attendance", action: "read" },
+        ],
+      },
+      isAuthenticated: true,
+    });
+
+    renderSidebar();
+
+    const attendanceButton = screen.getByRole("button", { name: /attendance/i });
+    expect(attendanceButton).not.toBeDisabled();
+
+    await user.click(attendanceButton);
+
+    const studentSubItem = screen.getByRole("button", { name: /student attendance/i });
+    const teacherSubItem = screen.getByRole("button", { name: /teacher attendance/i });
+    const leaveSubItem = screen.getByRole("button", { name: /leave requests/i });
+
+    expect(studentSubItem).not.toBeDisabled();
+    expect(teacherSubItem).toBeDisabled();
+    expect(leaveSubItem).toBeDisabled();
+  });
+
+  it("enables only permitted subItems for granular academic permissions", async () => {
+    const user = userEvent.setup();
+
+    useAuthStore.setState({
+      user: {
+        id: 6,
+        username: "curriculum_officer",
+        userType: UserTypeEnum.CMS,
+        roles: ["officer"],
+        permissions: [
+          { resource: "program", action: "read" },
+        ],
+      },
+      isAuthenticated: true,
+    });
+
+    renderSidebar();
+
+    const academicsButton = screen.getByRole("button", { name: /academics & classes/i });
+    expect(academicsButton).not.toBeDisabled();
+
+    await user.click(academicsButton);
+
+    const programsSubItem = screen.getByRole("button", { name: /programs & curriculum books/i });
+    const classesSubItem = screen.getByRole("button", { name: /classes & cohorts/i });
+    const academicYearsSubItem = screen.getByRole("button", { name: /academic years & terms/i });
+
+    expect(programsSubItem).not.toBeDisabled();
+    expect(classesSubItem).toBeDisabled();
+    expect(academicYearsSubItem).toBeDisabled();
+  });
 });
+

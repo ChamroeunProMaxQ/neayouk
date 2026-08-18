@@ -17,8 +17,12 @@ describe("RoleForm", () => {
 
     // Verify static permission resources rendered
     expect(screen.getByText("User Management")).toBeInTheDocument();
-    expect(screen.getByText("Academic Management")).toBeInTheDocument();
-    expect(screen.getByText("Student & Staff Attendance")).toBeInTheDocument();
+    expect(screen.getByText("Academic Management (All)")).toBeInTheDocument();
+    expect(screen.getByText("Classes & Cohorts")).toBeInTheDocument();
+    expect(screen.getByText("Programs & Curriculum")).toBeInTheDocument();
+    expect(screen.getByText("Student Attendance")).toBeInTheDocument();
+    expect(screen.getByText("Teacher Attendance")).toBeInTheDocument();
+    expect(screen.getByText("Leave Requests & Reports")).toBeInTheDocument();
     expect(screen.getByText("Fee & Billing")).toBeInTheDocument();
   });
 

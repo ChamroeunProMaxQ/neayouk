@@ -25,32 +25,113 @@ export const permissions: Permissions<
   CMS({ user, can }) {
     const perms = user?.permissions;
 
-    if (hasPermission(perms, Actions.manage, ResourceEnum.ATTENDANCE)) {
+    // Student Attendance
+    if (
+      hasPermission(perms, Actions.manage, ResourceEnum.STUDENT_ATTENDANCE) ||
+      hasPermission(perms, Actions.manage, ResourceEnum.ATTENDANCE)
+    ) {
       can(Actions.manage, StudentAttendance);
-      can(Actions.manage, TeacherAttendance);
-      can(Actions.manage, LeaveRequest);
-      return;
+    } else {
+      if (
+        hasPermission(perms, Actions.read, ResourceEnum.STUDENT_ATTENDANCE) ||
+        hasPermission(perms, Actions.read, ResourceEnum.ATTENDANCE)
+      ) {
+        can(Actions.read, StudentAttendance);
+      }
+      if (
+        hasPermission(perms, Actions.create, ResourceEnum.STUDENT_ATTENDANCE) ||
+        hasPermission(perms, Actions.create, ResourceEnum.ATTENDANCE)
+      ) {
+        can(Actions.create, StudentAttendance);
+      }
+      if (
+        hasPermission(perms, Actions.update, ResourceEnum.STUDENT_ATTENDANCE) ||
+        hasPermission(perms, Actions.update, ResourceEnum.ATTENDANCE)
+      ) {
+        can(Actions.update, StudentAttendance);
+      }
+      if (
+        hasPermission(perms, Actions.delete, ResourceEnum.STUDENT_ATTENDANCE) ||
+        hasPermission(perms, Actions.delete, ResourceEnum.ATTENDANCE)
+      ) {
+        can(Actions.delete, StudentAttendance);
+      }
     }
 
-    if (hasPermission(perms, Actions.read, ResourceEnum.ATTENDANCE)) {
-      can(Actions.read, StudentAttendance);
-      can(Actions.read, TeacherAttendance);
-      can(Actions.read, LeaveRequest);
+    // Teacher Attendance
+    if (
+      hasPermission(perms, Actions.manage, ResourceEnum.TEACHER_ATTENDANCE) ||
+      hasPermission(perms, Actions.manage, ResourceEnum.ATTENDANCE) ||
+      hasPermission(perms, Actions.manage, ResourceEnum.HR)
+    ) {
+      can(Actions.manage, TeacherAttendance);
+    } else {
+      if (
+        hasPermission(perms, Actions.read, ResourceEnum.TEACHER_ATTENDANCE) ||
+        hasPermission(perms, Actions.read, ResourceEnum.ATTENDANCE) ||
+        hasPermission(perms, Actions.read, ResourceEnum.HR)
+      ) {
+        can(Actions.read, TeacherAttendance);
+      }
+      if (
+        hasPermission(perms, Actions.create, ResourceEnum.TEACHER_ATTENDANCE) ||
+        hasPermission(perms, Actions.create, ResourceEnum.ATTENDANCE) ||
+        hasPermission(perms, Actions.create, ResourceEnum.HR)
+      ) {
+        can(Actions.create, TeacherAttendance);
+      }
+      if (
+        hasPermission(perms, Actions.update, ResourceEnum.TEACHER_ATTENDANCE) ||
+        hasPermission(perms, Actions.update, ResourceEnum.ATTENDANCE) ||
+        hasPermission(perms, Actions.update, ResourceEnum.HR)
+      ) {
+        can(Actions.update, TeacherAttendance);
+      }
+      if (
+        hasPermission(perms, Actions.delete, ResourceEnum.TEACHER_ATTENDANCE) ||
+        hasPermission(perms, Actions.delete, ResourceEnum.ATTENDANCE) ||
+        hasPermission(perms, Actions.delete, ResourceEnum.HR)
+      ) {
+        can(Actions.delete, TeacherAttendance);
+      }
     }
-    if (hasPermission(perms, Actions.create, ResourceEnum.ATTENDANCE)) {
-      can(Actions.create, StudentAttendance);
-      can(Actions.create, TeacherAttendance);
-      can(Actions.create, LeaveRequest);
-    }
-    if (hasPermission(perms, Actions.update, ResourceEnum.ATTENDANCE)) {
-      can(Actions.update, StudentAttendance);
-      can(Actions.update, TeacherAttendance);
-      can(Actions.update, LeaveRequest);
-    }
-    if (hasPermission(perms, Actions.delete, ResourceEnum.ATTENDANCE)) {
-      can(Actions.delete, StudentAttendance);
-      can(Actions.delete, TeacherAttendance);
-      can(Actions.delete, LeaveRequest);
+
+    // Leave Requests
+    if (
+      hasPermission(perms, Actions.manage, ResourceEnum.LEAVE_REQUEST) ||
+      hasPermission(perms, Actions.manage, ResourceEnum.ATTENDANCE) ||
+      hasPermission(perms, Actions.manage, ResourceEnum.HR)
+    ) {
+      can(Actions.manage, LeaveRequest);
+    } else {
+      if (
+        hasPermission(perms, Actions.read, ResourceEnum.LEAVE_REQUEST) ||
+        hasPermission(perms, Actions.read, ResourceEnum.ATTENDANCE) ||
+        hasPermission(perms, Actions.read, ResourceEnum.HR)
+      ) {
+        can(Actions.read, LeaveRequest);
+      }
+      if (
+        hasPermission(perms, Actions.create, ResourceEnum.LEAVE_REQUEST) ||
+        hasPermission(perms, Actions.create, ResourceEnum.ATTENDANCE) ||
+        hasPermission(perms, Actions.create, ResourceEnum.HR)
+      ) {
+        can(Actions.create, LeaveRequest);
+      }
+      if (
+        hasPermission(perms, Actions.update, ResourceEnum.LEAVE_REQUEST) ||
+        hasPermission(perms, Actions.update, ResourceEnum.ATTENDANCE) ||
+        hasPermission(perms, Actions.update, ResourceEnum.HR)
+      ) {
+        can(Actions.update, LeaveRequest);
+      }
+      if (
+        hasPermission(perms, Actions.delete, ResourceEnum.LEAVE_REQUEST) ||
+        hasPermission(perms, Actions.delete, ResourceEnum.ATTENDANCE) ||
+        hasPermission(perms, Actions.delete, ResourceEnum.HR)
+      ) {
+        can(Actions.delete, LeaveRequest);
+      }
     }
   },
 

@@ -61,4 +61,88 @@ describe("usePermission", () => {
     expect(result.current.isUserType(UserTypeEnum.CMS)).toBe(true);
     expect(result.current.isUserType(UserTypeEnum.CUSTOMER)).toBe(false);
   });
+
+  it("handles granular attendance permissions and umbrella hierarchy", () => {
+    // Case 1: User only has student_attendance permission
+    useAuthStore.setState({
+      user: {
+        id: 3,
+        username: "teacher_jane",
+        userType: UserTypeEnum.CMS,
+        roles: ["teacher"],
+        permissions: [
+          { resource: "student_attendance", action: "read" },
+          { resource: "student_attendance", action: "create" },
+        ],
+      },
+      isAuthenticated: true,
+    });
+
+    const { result: r1, unmount: unmount1 } = renderHook(() => usePermission());
+    expect(r1.current.can("read", "student_attendance")).toBe(true);
+    expect(r1.current.can("create", "student_attendance")).toBe(true);
+    expect(r1.current.can("read", "teacher_attendance")).toBe(false);
+    expect(r1.current.can("read", "leave_request")).toBe(false);
+    unmount1();
+
+    // Case 2: User with umbrella attendance permission gets access to sub-resources
+    useAuthStore.setState({
+      user: {
+        id: 4,
+        username: "dean",
+        userType: UserTypeEnum.CMS,
+        roles: ["dean"],
+        permissions: [
+          { resource: "attendance", action: "manage" },
+        ],
+      },
+      isAuthenticated: true,
+    });
+
+    const { result: r2, unmount: unmount2 } = renderHook(() => usePermission());
+    expect(r2.current.can("read", "student_attendance")).toBe(true);
+    expect(r2.current.can("read", "teacher_attendance")).toBe(true);
+    expect(r2.current.can("read", "leave_request")).toBe(true);
+    unmount2();
+
+    // Case 3: User only has program permission (cannot access class)
+    useAuthStore.setState({
+      user: {
+        id: 5,
+        username: "curriculum_lead",
+        userType: UserTypeEnum.CMS,
+        roles: ["lead"],
+        permissions: [
+          { resource: "program", action: "read" },
+        ],
+      },
+      isAuthenticated: true,
+    });
+
+    const { result: r3, unmount: unmount3 } = renderHook(() => usePermission());
+    expect(r3.current.can("read", "program")).toBe(true);
+    expect(r3.current.can("read", "class")).toBe(false);
+    expect(r3.current.can("read", "academic_year")).toBe(false);
+    unmount3();
+
+    // Case 4: User with umbrella academic permission gets access to class & program
+    useAuthStore.setState({
+      user: {
+        id: 6,
+        username: "academic_director",
+        userType: UserTypeEnum.CMS,
+        roles: ["director"],
+        permissions: [
+          { resource: "academic", action: "manage" },
+        ],
+      },
+      isAuthenticated: true,
+    });
+
+    const { result: r4, unmount: unmount4 } = renderHook(() => usePermission());
+    expect(r4.current.can("read", "program")).toBe(true);
+    expect(r4.current.can("read", "class")).toBe(true);
+    expect(r4.current.can("read", "academic_year")).toBe(true);
+    unmount4();
+  });
 });

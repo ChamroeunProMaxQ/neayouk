@@ -102,9 +102,7 @@ export class ExaminationService {
     const rankedRows = GradebookMapper.assignRanks(rows);
     const classStats = GradebookMapper.calculateClassStats(rankedRows);
 
-    const teacherName = classEntity.teacher
-      ? `${classEntity.teacher.firstName} ${classEntity.teacher.lastName}`.trim()
-      : null;
+    const teacherName = classEntity.teacher ? classEntity.teacher.name : null;
 
     return {
       classId: classEntity.id,

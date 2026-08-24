@@ -84,7 +84,7 @@ export class LeaveRequest {
   @JoinColumn({ name: 'reviewer_id' })
   declare reviewer?: User | null;
 
-  @Column({ name: 'reviewed_at', type: 'datetime', nullable: true })
+  @Column({ name: 'reviewed_at', type: 'timestamp', nullable: true })
   reviewedAt!: Date | null;
 
   @Column({ name: 'rejection_reason', type: 'text', nullable: true })

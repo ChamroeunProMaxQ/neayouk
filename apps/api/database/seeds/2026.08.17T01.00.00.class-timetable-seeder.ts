@@ -9,7 +9,7 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
   // Update existing classes with default room, shift, start_time, end_time, start_date, end_date
   await dataSource.query(`
     UPDATE classes
-    SET room = COALESCE(room, CONCAT('Room ', id + 100)),
+    SET room = COALESCE(room, 'Room ' || (id + 100)),
         shift = COALESCE(shift, 'MORNING'),
         start_time = COALESCE(start_time, '07:30'),
         end_time = COALESCE(end_time, '11:30'),
@@ -40,15 +40,16 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
 
   for (const cls of classes) {
     for (const t of moduleTemplates) {
+      const roomStr = `Room ${cls.id + 100}`;
       await dataSource.query(`
         INSERT INTO class_timetables (uuid, class_id, day_of_week, subject, subject_code, teacher_name, room, start_time, end_time, color_tag, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, 'Mr. Sokha', CONCAT('Room ', ? + 100), ?, ?, ?, NOW(), NOW());
-      `, [randomUUID(), cls.id, t.day, t.subject, t.code, cls.id, t.startTime, t.endTime, t.colorTag]);
+        VALUES ($1, $2, $3, $4, $5, 'Mr. Sokha', $6, $7, $8, $9, NOW(), NOW())
+      `, [randomUUID(), cls.id, t.day, t.subject, t.code, roomStr, t.startTime, t.endTime, t.colorTag]);
     }
   }
 };
 
 export const down: MigrationFn<DataSource> = async ({ context }) => {
   const dataSource = await (typeof context === 'function' ? (context as () => Promise<DataSource>)() : context);
-  await dataSource.query(`DELETE FROM class_timetables;`);
+  await dataSource.query(`TRUNCATE TABLE class_timetables CASCADE;`);
 };

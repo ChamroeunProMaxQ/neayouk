@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { StudentStatusEnum, ClassEnrollmentStatusEnum } from '@repo/contracts';
+import { StudentStatusEnum } from '@repo/contracts';
 import type { StudentClass } from './student-class.entity.js';
 import type { StudentPayment } from './student-payment.entity.js';
 
@@ -87,7 +87,7 @@ export class Student {
 
   @Column({
     name: 'registered_at',
-    type: 'datetime',
+    type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
   })
   registeredAt!: Date;

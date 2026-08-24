@@ -15,13 +15,13 @@ dotenv.config({
 });
 
 const DB_HOST = process.env.DB_HOST ?? 'localhost';
-const DB_PORT = process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306;
+const DB_PORT = process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432;
 const DB_NAME = process.env.DB_NAME;
 const DB_USER = process.env.DB_USER;
 const DB_PASSWORD = process.env.DB_PASSWORD?.toString();
 
 export const dataSource = new DataSource({
-  type: 'mysql',
+  type: 'postgres',
   host: DB_HOST,
   port: DB_PORT,
   database: DB_NAME,
@@ -48,30 +48,30 @@ function getTypeOrmStorage(tableName: string): UmzugStorage<DataSource> {
     async logMigration({ name }) {
       await ensureInitialized();
       await dataSource.query(
-        `CREATE TABLE IF NOT EXISTS \`${tableName}\` (\`name\` VARCHAR(255) NOT NULL PRIMARY KEY)`,
+        `CREATE TABLE IF NOT EXISTS "${tableName}" ("name" VARCHAR(255) NOT NULL PRIMARY KEY)`,
       );
       await dataSource.query(
-        `INSERT IGNORE INTO \`${tableName}\` (\`name\`) VALUES (?)`,
+        `INSERT INTO "${tableName}" ("name") VALUES ($1) ON CONFLICT ("name") DO NOTHING`,
         [name],
       );
     },
     async unlogMigration({ name }) {
       await ensureInitialized();
       await dataSource.query(
-        `CREATE TABLE IF NOT EXISTS \`${tableName}\` (\`name\` VARCHAR(255) NOT NULL PRIMARY KEY)`,
+        `CREATE TABLE IF NOT EXISTS "${tableName}" ("name" VARCHAR(255) NOT NULL PRIMARY KEY)`,
       );
       await dataSource.query(
-        `DELETE FROM \`${tableName}\` WHERE \`name\` = ?`,
+        `DELETE FROM "${tableName}" WHERE "name" = $1`,
         [name],
       );
     },
     async executed() {
       await ensureInitialized();
       await dataSource.query(
-        `CREATE TABLE IF NOT EXISTS \`${tableName}\` (\`name\` VARCHAR(255) NOT NULL PRIMARY KEY)`,
+        `CREATE TABLE IF NOT EXISTS "${tableName}" ("name" VARCHAR(255) NOT NULL PRIMARY KEY)`,
       );
       const records: { name: string }[] = await dataSource.query(
-        `SELECT \`name\` FROM \`${tableName}\` ORDER BY \`name\` ASC`,
+        `SELECT "name" FROM "${tableName}" ORDER BY "name" ASC`,
       );
       return records.map((r) => r.name);
     },

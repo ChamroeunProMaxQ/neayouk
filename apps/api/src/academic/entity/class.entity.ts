@@ -11,11 +11,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import {
-  ClassEnrollmentStatusEnum,
-  SemesterEnum,
-  ShiftEnum,
-} from '@repo/contracts';
+import { SemesterEnum, ShiftEnum } from '@repo/contracts';
 import type { Program } from './program.entity.js';
 import type { StudentClass } from '@src/student/entity/student-class.entity.js';
 import type { StudentPayment } from '@src/student/entity/student-payment.entity.js';
@@ -97,8 +93,7 @@ export class Class {
 
   @Column({
     name: 'teacher_id',
-    type: 'bigint',
-    unsigned: true,
+    type: 'int',
     nullable: true,
   })
   teacherId!: number | null;

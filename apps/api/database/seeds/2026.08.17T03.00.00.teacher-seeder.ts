@@ -17,7 +17,7 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
   if (!teacherRole || teacherRole.length === 0) {
     const roleUuid = randomUUID();
     await dataSource.query(
-      `INSERT INTO roles (uuid, name, slug, description, created_at, updated_at) VALUES (?, 'Teacher', 'teacher', 'Academic teacher role', NOW(), NOW())`,
+      `INSERT INTO roles (uuid, name, slug, description, created_at, updated_at) VALUES ($1, 'Teacher', 'teacher', 'Academic teacher role', NOW(), NOW()) ON CONFLICT (slug) DO NOTHING`,
       [roleUuid]
     );
     const newRole = await dataSource.query(`SELECT id FROM roles WHERE slug = 'teacher' LIMIT 1`);
@@ -104,15 +104,15 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
 
   for (const t of teacherFixtures) {
     // Check if user already exists
-    const existingUser = await dataSource.query(`SELECT id FROM users WHERE username = ? LIMIT 1`, [t.username]);
+    const existingUser = await dataSource.query(`SELECT id FROM users WHERE username = $1 LIMIT 1`, [t.username]);
     let userId: number;
     if (!existingUser || existingUser.length === 0) {
       const userUuid = randomUUID();
       await dataSource.query(
-        `INSERT INTO users (uuid, username, password, user_type, status, created_at, updated_at) VALUES (?, ?, ?, 'CMS', 'ACTIVE', NOW(), NOW())`,
+        `INSERT INTO users (uuid, username, password, user_type, status, created_at, updated_at) VALUES ($1, $2, $3, 'CMS', 'ACTIVE', NOW(), NOW()) ON CONFLICT (username) DO NOTHING`,
         [userUuid, t.username, defaultPasswordHash]
       );
-      const newUser = await dataSource.query(`SELECT id FROM users WHERE username = ? LIMIT 1`, [t.username]);
+      const newUser = await dataSource.query(`SELECT id FROM users WHERE username = $1 LIMIT 1`, [t.username]);
       userId = newUser[0].id;
     } else {
       userId = existingUser[0].id;
@@ -120,7 +120,7 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
 
     // Attach role to user
     await dataSource.query(
-      `INSERT IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)`,
+      `INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
       [userId, teacherRoleId]
     );
 
@@ -128,8 +128,8 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
     const teacherUuid = randomUUID();
     await dataSource.query(
       `INSERT INTO teachers (uuid, user_id, teacher_code, name, name_km, gender, date_of_birth, phone, email, salary_in_hour, specialization, bio, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-       ON DUPLICATE KEY UPDATE name = VALUES(name), salary_in_hour = VALUES(salary_in_hour), status = VALUES(status)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), NOW())
+       ON CONFLICT (teacher_code) DO UPDATE SET name = EXCLUDED.name, salary_in_hour = EXCLUDED.salary_in_hour, status = EXCLUDED.status`,
       [
         teacherUuid,
         userId,
@@ -158,7 +158,7 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
     if (classes && classes.length > 0) {
       for (let i = 0; i < classes.length; i++) {
         const assignedId = i % 2 === 0 ? t1Id : t2Id;
-        await dataSource.query(`UPDATE classes SET teacher_id = ? WHERE id = ?`, [assignedId, classes[i].id]);
+        await dataSource.query(`UPDATE classes SET teacher_id = $1 WHERE id = $2`, [assignedId, classes[i].id]);
       }
     }
   }
@@ -166,9 +166,7 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
 
 export const down: MigrationFn<DataSource> = async ({ context }) => {
   const dataSource = await (typeof context === 'function' ? (context as () => Promise<DataSource>)() : context);
-  await dataSource.query(`SET FOREIGN_KEY_CHECKS = 0;`);
   await dataSource.query(`UPDATE classes SET teacher_id = NULL;`);
-  await dataSource.query(`DELETE FROM teachers;`);
+  await dataSource.query(`TRUNCATE TABLE teachers CASCADE;`);
   await dataSource.query(`DELETE FROM users WHERE username LIKE 'teacher_%';`);
-  await dataSource.query(`SET FOREIGN_KEY_CHECKS = 1;`);
 };

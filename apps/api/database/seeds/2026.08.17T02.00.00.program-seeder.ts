@@ -6,20 +6,9 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
   const dataSource = await (typeof context === 'function' ? (context as () => Promise<DataSource>)() : context);
 
   // Ensure column books exists if table was created previously
-  const cols: Array<{ COLUMN_NAME: string }> = await dataSource.query(`
-    SELECT COLUMN_NAME
-    FROM INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = 'programs'
-      AND COLUMN_NAME = 'books';
+  await dataSource.query(`
+    ALTER TABLE programs ADD COLUMN IF NOT EXISTS books JSON NULL;
   `);
-
-  if (cols.length === 0) {
-    await dataSource.query(`
-      ALTER TABLE programs
-      ADD COLUMN books JSON NULL AFTER code;
-    `);
-  }
 
   // All books and programs have levels 1 to 6
   const levels1to6 = ['1', '2', '3', '4', '5', '6'];
@@ -84,11 +73,11 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
   ];
 
   for (const prog of programs) {
-    const existing = await dataSource.query(`SELECT id FROM programs WHERE code = ? OR name = ?`, [prog.code, prog.name]);
+    const existing = await dataSource.query(`SELECT id FROM programs WHERE code = $1 OR name = $2`, [prog.code, prog.name]);
     if (existing.length === 0) {
       await dataSource.query(
         `INSERT INTO programs (uuid, name, code, books, grade_levels, status, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+         VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
         [
           prog.uuid,
           prog.name,
@@ -101,8 +90,8 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
     } else {
       await dataSource.query(
         `UPDATE programs 
-         SET name = ?, code = ?, books = ?, grade_levels = ?, status = ?, updated_at = NOW() 
-         WHERE id = ?`,
+         SET name = $1, code = $2, books = $3, grade_levels = $4, status = $5, updated_at = NOW() 
+         WHERE id = $6`,
         [prog.name, prog.code, prog.books, prog.gradeLevels, prog.status, existing[0].id],
       );
     }
@@ -115,8 +104,8 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
   for (const prog of insertedPrograms) {
     await dataSource.query(
       `UPDATE classes 
-       SET program_id = ? 
-       WHERE (program LIKE ? OR name LIKE ?) AND (program_id IS NULL OR program_id = 0)`,
+       SET program_id = $1 
+       WHERE (program ILIKE $2 OR name ILIKE $3) AND (program_id IS NULL OR program_id = 0)`,
       [prog.id, `%${prog.name}%`, `%${prog.name}%`],
     );
   }

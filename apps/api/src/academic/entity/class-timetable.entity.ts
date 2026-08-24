@@ -43,8 +43,7 @@ export class ClassTimetable implements ClassTimetableAttribute {
 
   @Column({
     name: 'teacher_id',
-    type: 'bigint',
-    unsigned: true,
+    type: 'int',
     nullable: true,
   })
   teacherId!: number | null;

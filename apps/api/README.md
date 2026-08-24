@@ -7,7 +7,7 @@ A progressive, scalable NestJS server-side application built with Node.js ESM (`
 - **NestJS 12 & Node ESM**: Uses modern ECMAScript Modules with NodeNext module resolution.
 - **Shared Zod Validation**: Consumes DTO schemas from `@repo/contracts` via `nestjs-zod` for single-source-of-truth validation across API and Web client.
 - **Unified API Response Shape**: All endpoint responses and errors are intercepted and normalized into a consistent envelope `{ status, message, data, pagination }`.
-- **Database & Migrations**: TypeORM with MySQL support, alongside Umzug for database migrations and data seeding.
+- **Database & Migrations**: TypeORM with PostgreSQL support, alongside Umzug for database migrations and data seeding.
 - **Auth & Authorization**: Passport JWT authentication coupled with CASL (`nest-casl`) for fine-grained role/attribute-based access control.
 - **Full Observability Suite**:
   - **Tracing**: OpenTelemetry auto-instrumentation exportable via OTLP HTTP.

@@ -54,12 +54,12 @@ export class StudentClass {
 
   @Column({
     name: 'enrolled_at',
-    type: 'datetime',
+    type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
   })
   enrolledAt!: Date;
 
-  @Column({ name: 'completed_at', type: 'datetime', nullable: true })
+  @Column({ name: 'completed_at', type: 'timestamp', nullable: true })
   completedAt!: Date | null;
 
   @Column({ type: 'text', nullable: true })

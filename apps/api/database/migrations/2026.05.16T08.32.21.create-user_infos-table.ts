@@ -5,7 +5,7 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
   const dataSource = await (typeof context === 'function' ? (context as () => Promise<DataSource>)() : context);
   await dataSource.query(`
     CREATE TABLE IF NOT EXISTS user_infos (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       user_id INT NOT NULL,
       image_url VARCHAR(255) NULL,
       thumbnail_url VARCHAR(255) NULL,
@@ -15,16 +15,14 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
       lastname VARCHAR(255) NULL,
       dob DATE NULL,
       gender VARCHAR(12) NULL,
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       CONSTRAINT fk_user_infos_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
-    ) ENGINE=InnoDB;
+    );
   `);
 };
 
 export const down: MigrationFn<DataSource> = async ({ context }) => {
   const dataSource = await (typeof context === 'function' ? (context as () => Promise<DataSource>)() : context);
-  await dataSource.query(`SET FOREIGN_KEY_CHECKS = 0;`);
-  await dataSource.query(`DROP TABLE IF EXISTS user_infos;`);
-  await dataSource.query(`SET FOREIGN_KEY_CHECKS = 1;`);
+  await dataSource.query(`DROP TABLE IF EXISTS user_infos CASCADE;`);
 };

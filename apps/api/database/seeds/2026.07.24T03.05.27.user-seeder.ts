@@ -34,7 +34,7 @@ export async function up({ context }: { context: DataSource | (() => Promise<Dat
   const allUsers = [...users, adminUser];
   for (const u of allUsers) {
     await dataSource.query(
-      `INSERT IGNORE INTO users (username, uuid, password, user_type, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO users (username, uuid, password, user_type, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (username) DO NOTHING`,
       [u.username, u.uuid, u.password, u.user_type, u.status, u.created_at, u.updated_at],
     );
   }
@@ -42,9 +42,5 @@ export async function up({ context }: { context: DataSource | (() => Promise<Dat
 
 export async function down({ context }: { context: DataSource | (() => Promise<DataSource>) }) {
   const dataSource = await (typeof context === 'function' ? context() : context);
-  await dataSource.query(`SET FOREIGN_KEY_CHECKS = 0;`);
-  await dataSource.query(`DELETE FROM user_tokens;`);
-  await dataSource.query(`DELETE FROM user_infos;`);
-  await dataSource.query(`DELETE FROM users;`);
-  await dataSource.query(`SET FOREIGN_KEY_CHECKS = 1;`);
+  await dataSource.query(`TRUNCATE TABLE user_tokens, user_infos, users CASCADE;`);
 }

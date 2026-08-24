@@ -32,8 +32,9 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
 
   for (const c of classesList) {
     await dataSource.query(
-      `INSERT IGNORE INTO classes (uuid, name, code, grade_level, program, section, monthly_fee, semester, academic_year, capacity, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      `INSERT INTO classes (uuid, name, code, grade_level, program, section, monthly_fee, semester, academic_year, capacity, status, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())
+       ON CONFLICT DO NOTHING`,
       [randomUUID(), c.name, c.code, c.gradeLevel, c.program, c.section, c.monthlyFee, c.semester, c.academicYear, c.capacity, StudentStatusEnum.ACTIVE],
     );
   }
@@ -62,8 +63,9 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
 
   for (const s of studentsList) {
     await dataSource.query(
-      `INSERT IGNORE INTO students (uuid, student_code, first_name, last_name, first_name_km, last_name_km, gender, date_of_birth, contact, guardian_name, guardian_phone, payable_date, registered_at, discount, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, NOW(), NOW())`,
+      `INSERT INTO students (uuid, student_code, first_name, last_name, first_name_km, last_name_km, gender, date_of_birth, contact, guardian_name, guardian_phone, payable_date, registered_at, discount, status, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), $13, $14, NOW(), NOW())
+       ON CONFLICT (student_code) DO NOTHING`,
       [randomUUID(), s.code, s.firstName, s.lastName, s.firstNameKm, s.lastNameKm, s.gender, s.dob, s.phone, s.guardian, s.guardianPhone, s.payableDate, s.discount, StudentStatusEnum.ACTIVE],
     );
   }
@@ -82,8 +84,8 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
     const primaryCls = classMap.get(s.primaryClass);
     if (primaryCls) {
       await dataSource.query(
-        `INSERT IGNORE INTO student_classes (student_id, class_id, academic_year, semester, is_primary, status, enrolled_at, created_at, updated_at)
-         VALUES (?, ?, '2025-2026', ?, 1, ?, NOW(), NOW(), NOW())`,
+        `INSERT INTO student_classes (student_id, class_id, academic_year, semester, is_primary, status, enrolled_at, created_at, updated_at)
+         VALUES ($1, $2, '2025-2026', $3, true, $4, NOW(), NOW(), NOW())`,
         [studentInfo.id, primaryCls.id, SemesterEnum.SEMESTER_1, ClassEnrollmentStatusEnum.ENROLLED],
       );
     }
@@ -92,8 +94,8 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
       const extraCls = classMap.get(s.extraClass);
       if (extraCls) {
         await dataSource.query(
-          `INSERT IGNORE INTO student_classes (student_id, class_id, academic_year, semester, is_primary, status, enrolled_at, created_at, updated_at)
-           VALUES (?, ?, '2025-2026', ?, 0, ?, NOW(), NOW(), NOW())`,
+          `INSERT INTO student_classes (student_id, class_id, academic_year, semester, is_primary, status, enrolled_at, created_at, updated_at)
+           VALUES ($1, $2, '2025-2026', $3, false, $4, NOW(), NOW(), NOW())`,
           [studentInfo.id, extraCls.id, SemesterEnum.SEMESTER_1, ClassEnrollmentStatusEnum.ENROLLED],
         );
       }
@@ -115,10 +117,12 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
     // Seed Jan, Feb, Mar as PAID
     for (let month = 1; month <= 3; month++) {
       const receiptNo = `REC-20260${month}-${s.code}`;
+      const paidDate = `2026-0${month}-05 10:30:00`;
       await dataSource.query(
-        `INSERT IGNORE INTO student_payments (uuid, student_id, class_id, billing_year, billing_month, amount_due, amount_paid, discount_applied, status, payment_method, receipt_number, paid_at, notes, created_at, updated_at)
-         VALUES (?, ?, ?, 2026, ?, ?, ?, ?, ?, ?, ?, CONCAT('2026-0', ?, '-05 10:30:00'), 'Tuition fee payment', NOW(), NOW())`,
-        [randomUUID(), studentInfo.id, primaryCls.id, month, amountDue, amountDue, discount, PaymentStatusEnum.PAID, PaymentMethodEnum.CASH, receiptNo, month],
+        `INSERT INTO student_payments (uuid, student_id, class_id, billing_year, billing_month, amount_due, amount_paid, discount_applied, status, payment_method, receipt_number, paid_at, notes, created_at, updated_at)
+         VALUES ($1, $2, $3, 2026, $4, $5, $6, $7, $8, $9, $10, $11, 'Tuition fee payment', NOW(), NOW())
+         ON CONFLICT (student_id, billing_year, billing_month) DO NOTHING`,
+        [randomUUID(), studentInfo.id, primaryCls.id, month, amountDue, amountDue, discount, PaymentStatusEnum.PAID, PaymentMethodEnum.CASH, receiptNo, paidDate],
       );
     }
 
@@ -126,16 +130,18 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
     if (s.code === 'STU2026001' || s.code === 'STU2026002') {
       const receiptNo = `REC-202604-${s.code}`;
       await dataSource.query(
-        `INSERT IGNORE INTO student_payments (uuid, student_id, class_id, billing_year, billing_month, amount_due, amount_paid, discount_applied, status, payment_method, receipt_number, paid_at, notes, created_at, updated_at)
-         VALUES (?, ?, ?, 2026, 4, ?, ?, ?, ?, ?, ?, '2026-04-06 14:15:00', 'Paid via KHQR Bakong', NOW(), NOW())`,
+        `INSERT INTO student_payments (uuid, student_id, class_id, billing_year, billing_month, amount_due, amount_paid, discount_applied, status, payment_method, receipt_number, paid_at, notes, created_at, updated_at)
+         VALUES ($1, $2, $3, 2026, 4, $4, $5, $6, $7, $8, $9, '2026-04-06 14:15:00', 'Paid via KHQR Bakong', NOW(), NOW())
+         ON CONFLICT (student_id, billing_year, billing_month) DO NOTHING`,
         [randomUUID(), studentInfo.id, primaryCls.id, amountDue, amountDue, discount, PaymentStatusEnum.PAID, PaymentMethodEnum.KHQR, receiptNo],
       );
     } else if (s.code === 'STU2026003') {
       const halfPaid = Math.round(amountDue / 2);
       const receiptNo = `REC-202604-${s.code}-PART`;
       await dataSource.query(
-        `INSERT IGNORE INTO student_payments (uuid, student_id, class_id, billing_year, billing_month, amount_due, amount_paid, discount_applied, status, payment_method, receipt_number, paid_at, notes, created_at, updated_at)
-         VALUES (?, ?, ?, 2026, 4, ?, ?, ?, ?, ?, ?, '2026-04-10 09:00:00', 'Partial deposit paid', NOW(), NOW())`,
+        `INSERT INTO student_payments (uuid, student_id, class_id, billing_year, billing_month, amount_due, amount_paid, discount_applied, status, payment_method, receipt_number, paid_at, notes, created_at, updated_at)
+         VALUES ($1, $2, $3, 2026, 4, $4, $5, $6, $7, $8, $9, '2026-04-10 09:00:00', 'Partial deposit paid', NOW(), NOW())
+         ON CONFLICT (student_id, billing_year, billing_month) DO NOTHING`,
         [randomUUID(), studentInfo.id, primaryCls.id, amountDue, halfPaid, discount, PaymentStatusEnum.PARTIAL, PaymentMethodEnum.CASH, receiptNo],
       );
     }
@@ -144,10 +150,5 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
 
 export const down: MigrationFn<DataSource> = async ({ context }) => {
   const dataSource = await (typeof context === 'function' ? (context as () => Promise<DataSource>)() : context);
-  await dataSource.query(`SET FOREIGN_KEY_CHECKS = 0;`);
-  await dataSource.query(`DELETE FROM student_payments;`);
-  await dataSource.query(`DELETE FROM student_classes;`);
-  await dataSource.query(`DELETE FROM students;`);
-  await dataSource.query(`DELETE FROM classes;`);
-  await dataSource.query(`SET FOREIGN_KEY_CHECKS = 1;`);
+  await dataSource.query(`TRUNCATE TABLE student_payments, student_classes, students, classes CASCADE;`);
 };

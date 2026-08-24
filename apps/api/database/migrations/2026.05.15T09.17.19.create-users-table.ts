@@ -5,22 +5,20 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
   const dataSource = await (typeof context === 'function' ? (context as () => Promise<DataSource>)() : context);
   await dataSource.query(`
     CREATE TABLE IF NOT EXISTS users (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       uuid VARCHAR(36) NOT NULL,
       username VARCHAR(255) NOT NULL UNIQUE,
       password VARCHAR(255) NOT NULL,
       user_type VARCHAR(26) NOT NULL,
       status VARCHAR(26) NOT NULL,
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      deleted_at DATETIME NULL
-    ) ENGINE=InnoDB;
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      deleted_at TIMESTAMP NULL
+    );
   `);
 };
 
 export const down: MigrationFn<DataSource> = async ({ context }) => {
   const dataSource = await (typeof context === 'function' ? (context as () => Promise<DataSource>)() : context);
-  await dataSource.query(`SET FOREIGN_KEY_CHECKS = 0;`);
-  await dataSource.query(`DROP TABLE IF EXISTS users;`);
-  await dataSource.query(`SET FOREIGN_KEY_CHECKS = 1;`);
+  await dataSource.query(`DROP TABLE IF EXISTS users CASCADE;`);
 };

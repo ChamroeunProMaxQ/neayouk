@@ -40,7 +40,7 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
 
   for (const perm of permissionsList) {
     await dataSource.query(
-      `INSERT IGNORE INTO permissions (uuid, resource, action, description, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())`,
+      `INSERT INTO permissions (uuid, resource, action, description, created_at, updated_at) VALUES ($1, $2, $3, $4, NOW(), NOW()) ON CONFLICT (resource, action) DO NOTHING`,
       [randomUUID(), perm.resource, perm.action, perm.description],
     );
   }
@@ -56,7 +56,7 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
 
   for (const role of rolesList) {
     await dataSource.query(
-      `INSERT IGNORE INTO roles (uuid, name, slug, description, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())`,
+      `INSERT INTO roles (uuid, name, slug, description, created_at, updated_at) VALUES ($1, $2, $3, $4, NOW(), NOW()) ON CONFLICT (slug) DO NOTHING`,
       [randomUUID(), role.name, role.slug, role.description],
     );
   }
@@ -78,7 +78,7 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
   const rolePermMappings: Record<string, string[]> = {
     admin: allPermissions.map((p) => `${p.resource}:${p.action}`),
     cms: ['user:manage', 'announcement:manage', 'report:read', 'setting:read'],
-    teacher: ['academic:read', 'academic:manage', 'attendance:manage', 'examination:manage', 'assignment:manage', 'library:read', 'report:read'],
+    teacher: ['academic:read', 'attendance:manage', 'examination:manage', 'assignment:manage', 'library:read', 'report:read'],
     staff: ['hr:manage', 'fee:manage', 'transport:manage', 'hostel:manage', 'library:manage'],
     student: ['academic:read', 'attendance:read', 'examination:read', 'assignment:read', 'library:read'],
     customer: ['user:read', 'user:update'],
@@ -91,7 +91,7 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
       const permId = permMap.get(pKey);
       if (permId) {
         await dataSource.query(
-          `INSERT IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)`,
+          `INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
           [roleId, permId],
         );
       }
@@ -107,7 +107,7 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
     const roleId = roleMap.get(targetSlug);
     if (roleId) {
       await dataSource.query(
-        `INSERT IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)`,
+        `INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
         [user.id, roleId],
       );
     }
@@ -116,10 +116,5 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
 
 export const down: MigrationFn<DataSource> = async ({ context }) => {
   const dataSource = await (typeof context === 'function' ? (context as () => Promise<DataSource>)() : context);
-  await dataSource.query(`SET FOREIGN_KEY_CHECKS = 0;`);
-  await dataSource.query(`DELETE FROM role_permissions;`);
-  await dataSource.query(`DELETE FROM user_roles;`);
-  await dataSource.query(`DELETE FROM permissions;`);
-  await dataSource.query(`DELETE FROM roles;`);
-  await dataSource.query(`SET FOREIGN_KEY_CHECKS = 1;`);
+  await dataSource.query(`TRUNCATE TABLE role_permissions, user_roles, permissions, roles CASCADE;`);
 };

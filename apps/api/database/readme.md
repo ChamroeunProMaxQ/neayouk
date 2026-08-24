@@ -1,6 +1,6 @@
 # Database Migrations & Seeders
 
-Database schema migrations and data seeders are managed using **Umzug** with TypeORM & MySQL, transpiled via **SWC**.
+Database schema migrations and data seeders are managed using **Umzug** with TypeORM & PostgreSQL, transpiled via **SWC**.
 
 ## Available Commands
 

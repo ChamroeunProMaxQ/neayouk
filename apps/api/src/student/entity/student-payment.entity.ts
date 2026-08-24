@@ -99,7 +99,7 @@ export class StudentPayment {
 
   @Column({
     name: 'paid_at',
-    type: 'datetime',
+    type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
     nullable: true,
   })

@@ -30,7 +30,7 @@ export class UserToken implements UserTokenAttribute {
   })
   tokenType!: TokenTypeEnum;
 
-  @Column({ name: 'exp_date', type: 'datetime' })
+  @Column({ name: 'exp_date', type: 'timestamp' })
   expDate!: Date;
 
   @Column({

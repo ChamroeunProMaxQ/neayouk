@@ -23,4 +23,5 @@ export * from "./teacher.dto.js";
 export * from "./attendance-status.enum.js";
 export * from "./attendance.dto.js";
 export * from "./leave-request.dto.js";
+export * from "./examination.dto.js";
 

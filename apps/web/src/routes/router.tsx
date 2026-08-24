@@ -47,6 +47,15 @@ const TeacherAttendancePage = lazy(() =>
 const LeaveRequestsPage = lazy(() =>
   import("./leave-requests-page").then((m) => ({ default: m.LeaveRequestsPage }))
 );
+const GradebookPage = lazy(() =>
+  import("./gradebook-page").then((m) => ({ default: m.GradebookPage }))
+);
+const GradingRulesPage = lazy(() =>
+  import("./grading-rules-page").then((m) => ({ default: m.GradingRulesPage }))
+);
+const ReportCardsPage = lazy(() =>
+  import("./report-cards-page").then((m) => ({ default: m.ReportCardsPage }))
+);
 const DummyPage = lazy(() =>
   import("./dummy-page").then((m) => ({ default: m.DummyPage }))
 );
@@ -217,6 +226,40 @@ const router = createBrowserRouter([
           {
             path: "/attendance",
             element: <Navigate to="/attendance/students" replace />,
+          },
+          {
+            path: "/examinations/gradebook",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource="examination" action="read">
+                  <GradebookPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/examinations/rules",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource="examination" action="read">
+                  <GradingRulesPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/examinations/report-cards",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource="examination" action="read">
+                  <ReportCardsPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/examinations",
+            element: <Navigate to="/examinations/gradebook" replace />,
           },
           {
             path: "/roles",

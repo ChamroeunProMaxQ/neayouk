@@ -78,5 +78,17 @@ export const API_ROUTE = {
     LEAVE_REQUEST_DELETE: '/api/v1/admin/attendance/leave-requests/:id',
     LEAVE_REQUEST_REVIEW: '/api/v1/admin/attendance/leave-requests/:id/review',
   },
+  EXAMINATION: {
+    RULES_LIST: '/api/v1/admin/examinations/rules',
+    RULES_CREATE: '/api/v1/admin/examinations/rules',
+    RULES_GET: '/api/v1/admin/examinations/rules/:id',
+    RULES_UPDATE: '/api/v1/admin/examinations/rules/:id',
+    RULES_DELETE: '/api/v1/admin/examinations/rules/:id',
+    RULES_DEFAULT: '/api/v1/admin/examinations/rules/default',
+    MATRIX: '/api/v1/admin/examinations/matrix',
+    GRADEBOOK_SAVE: '/api/v1/admin/examinations/matrix/save',
+    REPORT_CARD: '/api/v1/admin/examinations/report-card/:studentId',
+    EXPORT_CSV: '/api/v1/admin/examinations/matrix/export',
+  },
 };
 

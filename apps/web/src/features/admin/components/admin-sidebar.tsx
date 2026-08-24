@@ -152,7 +152,6 @@ export const adminNavGroups: NavGroup[] = [
         isCollapsible: true,
         requiredPermission: { action: "read", resource: "examination" },
         subItems: [
-          { label: "Exam Schedules", path: "/examinations/schedules" },
           { label: "Gradebook", path: "/examinations/gradebook" },
           { label: "Report Cards", path: "/examinations/report-cards" },
           { label: "Grading Rules", path: "/examinations/rules" },

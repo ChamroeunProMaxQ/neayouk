@@ -58,8 +58,8 @@ export const UpdateLeaveRequestSchema = z
     leaveType: z.nativeEnum(LeaveTypeEnum).optional(),
     startDate: z.string().regex(dateRegex, "Start date must be in YYYY-MM-DD format").optional(),
     endDate: z.string().regex(dateRegex, "End date must be in YYYY-MM-DD format").optional(),
-    totalDays: z.coerce.number().min(0.5).optional(),
-    reason: z.string().min(3).optional(),
+    totalDays: z.coerce.number().min(0.5, "Total days must be at least 0.5").optional(),
+    reason: z.string().min(3, "Reason must be at least 3 characters").optional(),
     attachmentUrl: z.string().optional().nullable(),
   })
   .refine(

@@ -146,7 +146,7 @@ export const adminNavGroups: NavGroup[] = [
       },
       {
         id: "examinations",
-        label: "Examinations & Grades",
+        label: "Exams & Grades",
         icon: Award,
         path: "/examinations",
         isCollapsible: true,

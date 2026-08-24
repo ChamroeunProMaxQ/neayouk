@@ -11,7 +11,8 @@ export class ProgramMapper {
       books: Array.isArray(entity.books) ? entity.books : [],
       gradeLevels: Array.isArray(entity.gradeLevels) ? entity.gradeLevels : [],
       status: entity.status,
-      classCount: entity.classes !== undefined ? entity.classes.length : undefined,
+      classCount:
+        entity.classes !== undefined ? entity.classes.length : undefined,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
       deletedAt: entity.deletedAt,

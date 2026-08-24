@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { ClassService } from './class.service.js';
 import { DayOfWeekEnum, SemesterEnum, ShiftEnum } from '@repo/contracts';
 
@@ -14,7 +18,9 @@ describe('ClassService', () => {
       createQueryBuilder: vi.fn(),
       findOne: vi.fn(),
       create: vi.fn((dto) => ({ id: 1, uuid: 'cls-uuid-1', ...dto })),
-      save: vi.fn((entity) => Promise.resolve({ id: entity.id || 1, ...entity })),
+      save: vi.fn((entity) =>
+        Promise.resolve({ id: entity.id || 1, ...entity }),
+      ),
       softDelete: vi.fn().mockResolvedValue({ affected: 1 }),
     };
 
@@ -23,7 +29,9 @@ describe('ClassService', () => {
       findOne: vi.fn(),
       find: vi.fn(),
       create: vi.fn((dto) => ({ id: 10, uuid: 'slot-uuid-10', ...dto })),
-      save: vi.fn((entity) => Promise.resolve({ id: entity.id || 10, ...entity })),
+      save: vi.fn((entity) =>
+        Promise.resolve({ id: entity.id || 10, ...entity }),
+      ),
       delete: vi.fn().mockResolvedValue({ affected: 1 }),
     };
 
@@ -31,7 +39,11 @@ describe('ClassService', () => {
       find: vi.fn(),
     };
 
-    service = new ClassService(mockClassRepo, mockTimetableRepo, mockStudentClassRepo);
+    service = new ClassService(
+      mockClassRepo,
+      mockTimetableRepo,
+      mockStudentClassRepo,
+    );
   });
 
   // 1. Happy Path
@@ -50,14 +62,12 @@ describe('ClassService', () => {
         monthlyFee: 65.0,
       };
 
-      mockClassRepo.findOne
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce({
-          id: 1,
-          name: 'Primary - Grade 1A',
-          enrollments: [],
-          timetables: [],
-        });
+      mockClassRepo.findOne.mockResolvedValueOnce(null).mockResolvedValueOnce({
+        id: 1,
+        name: 'Primary - Grade 1A',
+        enrollments: [],
+        timetables: [],
+      });
 
       const result = await service.create(dto as any);
       expect(result).toBeDefined();
@@ -71,7 +81,13 @@ describe('ClassService', () => {
         id: 1,
         uuid: 'cls-uuid-1',
         name: 'Primary - Grade 1A',
-        enrollments: [{ id: 1, status: 'ENROLLED', student: { id: 101, firstName: 'Sokha' } }],
+        enrollments: [
+          {
+            id: 1,
+            status: 'ENROLLED',
+            student: { id: 101, firstName: 'Sokha' },
+          },
+        ],
         timetables: [{ id: 10, subject: 'Mathematics' }],
       };
       mockClassRepo.findOne.mockResolvedValue(mockClass);
@@ -89,7 +105,12 @@ describe('ClassService', () => {
     it('should retrieve student roster for a class', async () => {
       mockClassRepo.findOne.mockResolvedValue({ id: 1, name: 'Grade 1A' });
       mockStudentClassRepo.find.mockResolvedValue([
-        { id: 1, studentId: 101, student: { firstName: 'Sokha', lastName: 'Chan' }, status: 'ENROLLED' },
+        {
+          id: 1,
+          studentId: 101,
+          student: { firstName: 'Sokha', lastName: 'Chan' },
+          status: 'ENROLLED',
+        },
       ]);
 
       const result = await service.getStudents(1);
@@ -189,7 +210,9 @@ describe('ClassService', () => {
 
     it('should throw NotFoundException when timetable slot does not exist on delete', async () => {
       mockTimetableRepo.findOne.mockResolvedValue(null);
-      await expect(service.deleteTimetableSlot(99999)).rejects.toThrow(NotFoundException);
+      await expect(service.deleteTimetableSlot(99999)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 

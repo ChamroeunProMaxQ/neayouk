@@ -150,7 +150,9 @@ describe('StudentService (Unit)', () => {
       expect(result.id).toBe(1);
       expect(result.paymentSummary).toBeDefined();
       expect(result.paymentSummary.totalPaidAmount).toBe(50);
-      expect(mockPaymentService.getStudentPaymentSummary).toHaveBeenCalledWith(studentData);
+      expect(mockPaymentService.getStudentPaymentSummary).toHaveBeenCalledWith(
+        studentData,
+      );
     });
   });
 
@@ -158,9 +160,9 @@ describe('StudentService (Unit)', () => {
     it('should throw NotFoundException if student is not found', async () => {
       mockStudentRepo.findOne.mockResolvedValueOnce(null);
 
-      await expect(service.update(999, { firstName: 'Updated' })).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.update(999, { firstName: 'Updated' }),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should update student details and replace active enrollments', async () => {

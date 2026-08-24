@@ -54,7 +54,9 @@ export class UserService {
 
     const searchVal = search || (dto as any).name;
     if (searchVal) {
-      query.andWhere('user.username like :search', { search: `%${searchVal}%` });
+      query.andWhere('user.username like :search', {
+        search: `%${searchVal}%`,
+      });
     }
     query.orderBy(`user.${sortBy}`, sortOrder);
 
@@ -87,7 +89,10 @@ export class UserService {
     return user;
   }
 
-  private async resolveUserRoles(dtoRoles?: string[], dtoRoleIds?: number[]): Promise<Role[]> {
+  private async resolveUserRoles(
+    dtoRoles?: string[],
+    dtoRoleIds?: number[],
+  ): Promise<Role[]> {
     if (dtoRoles && dtoRoles.length > 0) {
       return await this.roleRepo.findBy({ slug: In(dtoRoles) });
     }

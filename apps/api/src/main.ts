@@ -14,12 +14,7 @@ async function bootstrap() {
   });
 
   app.setGlobalPrefix('api', {
-    exclude: [
-      'api/docs',
-      'api/docs/*path',
-      'metrics',
-      'metrics/*path',
-    ],
+    exclude: ['api/docs', 'api/docs/*path', 'metrics', 'metrics/*path'],
   });
 
   app.enableVersioning({

@@ -16,7 +16,11 @@ describe('TeacherAttendanceService', () => {
       find: vi.fn(),
       create: vi.fn((dto) => ({ id: 1, uuid: 'tatt-1', ...dto })),
       save: vi.fn((entity) =>
-        Promise.resolve({ id: entity.id || 1, uuid: entity.uuid || 'tatt-1', ...entity }),
+        Promise.resolve({
+          id: entity.id || 1,
+          uuid: entity.uuid || 'tatt-1',
+          ...entity,
+        }),
       ),
       merge: vi.fn((entity, dto) => Object.assign(entity, dto)),
     };
@@ -31,12 +35,20 @@ describe('TeacherAttendanceService', () => {
       warn: vi.fn(),
     };
 
-    service = new TeacherAttendanceService(mockAttendanceRepo, mockTeacherRepo, mockLogger);
+    service = new TeacherAttendanceService(
+      mockAttendanceRepo,
+      mockTeacherRepo,
+      mockLogger,
+    );
   });
 
   describe('1. Happy Path (200/201 Success)', () => {
     it('should record teacher daily attendance with calculated hours worked', async () => {
-      mockTeacherRepo.findOne.mockResolvedValue({ id: 1, name: 'John Sok', salaryInHour: 15.0 });
+      mockTeacherRepo.findOne.mockResolvedValue({
+        id: 1,
+        name: 'John Sok',
+        salaryInHour: 15.0,
+      });
       mockAttendanceRepo.findOne.mockResolvedValue(null);
 
       const dto = {
@@ -123,7 +135,11 @@ describe('TeacherAttendanceService', () => {
     it('should throw NotFoundException if teacher does not exist', async () => {
       mockTeacherRepo.findOne.mockResolvedValue(null);
       await expect(
-        service.recordAttendance({ teacherId: 999, date: '2026-08-17', status: AttendanceStatusEnum.PRESENT }),
+        service.recordAttendance({
+          teacherId: 999,
+          date: '2026-08-17',
+          status: AttendanceStatusEnum.PRESENT,
+        }),
       ).rejects.toThrow(NotFoundException);
     });
   });

@@ -50,13 +50,24 @@ export class LeaveRequest {
   @Column({ name: 'end_date', type: 'date' })
   endDate!: string;
 
-  @Column({ name: 'total_days', type: 'decimal', precision: 4, scale: 1, default: 1.0 })
+  @Column({
+    name: 'total_days',
+    type: 'decimal',
+    precision: 4,
+    scale: 1,
+    default: 1.0,
+  })
   totalDays!: number;
 
   @Column({ type: 'text' })
   reason!: string;
 
-  @Column({ name: 'attachment_url', type: 'varchar', length: 500, nullable: true })
+  @Column({
+    name: 'attachment_url',
+    type: 'varchar',
+    length: 500,
+    nullable: true,
+  })
   attachmentUrl!: string | null;
 
   @Column({

@@ -8,7 +8,9 @@ config({
 import { migrator, seeder, dataSource } from '../database/umzug.js';
 
 export async function setup() {
-  console.log('--- [Vitest Global Setup] Running database migrations & seeders ---');
+  console.log(
+    '--- [Vitest Global Setup] Running database migrations & seeders ---',
+  );
   await migrator.up();
   await seeder.up();
 }

@@ -141,4 +141,3 @@ export const permissions: Permissions<
     extend('PORTAL_USER');
   },
 };
-

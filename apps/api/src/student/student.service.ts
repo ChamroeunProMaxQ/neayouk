@@ -72,10 +72,13 @@ export class StudentService {
     }
 
     if (classId) {
-      query.andWhere('enrollment.class_id = :classId AND enrollment.status = :enrollmentStatus', {
-        classId,
-        enrollmentStatus: ClassEnrollmentStatusEnum.ENROLLED,
-      });
+      query.andWhere(
+        'enrollment.class_id = :classId AND enrollment.status = :enrollmentStatus',
+        {
+          classId,
+          enrollmentStatus: ClassEnrollmentStatusEnum.ENROLLED,
+        },
+      );
     }
 
     if (search) {
@@ -86,7 +89,7 @@ export class StudentService {
     }
 
     const currentYear = dto.billingYear || new Date().getFullYear();
-    const currentMonth = dto.billingMonth || (new Date().getMonth() + 1);
+    const currentMonth = dto.billingMonth || new Date().getMonth() + 1;
 
     if (dto.paymentStatus) {
       if (dto.paymentStatus === PaymentStatusEnum.PAID) {
@@ -167,7 +170,8 @@ export class StudentService {
     const dataWithSummaries = await Promise.all(
       students.map(async (student) => {
         const dto = StudentMapper.toDto(student);
-        const summary = await this.paymentService.getStudentPaymentSummary(student);
+        const summary =
+          await this.paymentService.getStudentPaymentSummary(student);
         return {
           ...dto,
           paymentSummary: summary,
@@ -225,7 +229,9 @@ export class StudentService {
       const currentYear = `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
 
       const enrollments = classes.map((cls, idx) => {
-        const isPrimary = dto.primaryClassId ? cls.id === dto.primaryClassId : idx === 0;
+        const isPrimary = dto.primaryClassId
+          ? cls.id === dto.primaryClassId
+          : idx === 0;
         return this.studentClassRepo.create({
           studentId: savedStudent.id,
           classId: cls.id,
@@ -258,9 +264,11 @@ export class StudentService {
     if (dto.dateOfBirth !== undefined) student.dateOfBirth = dto.dateOfBirth;
     if (dto.contact !== undefined) student.contact = dto.contact;
     if (dto.guardianName !== undefined) student.guardianName = dto.guardianName;
-    if (dto.guardianPhone !== undefined) student.guardianPhone = dto.guardianPhone;
+    if (dto.guardianPhone !== undefined)
+      student.guardianPhone = dto.guardianPhone;
     if (dto.payableDate !== undefined) student.payableDate = dto.payableDate;
-    if (dto.registeredAt !== undefined) student.registeredAt = new Date(dto.registeredAt);
+    if (dto.registeredAt !== undefined)
+      student.registeredAt = new Date(dto.registeredAt);
     if (dto.discount !== undefined) student.discount = dto.discount;
     if (dto.status !== undefined) student.status = dto.status;
 
@@ -278,7 +286,9 @@ export class StudentService {
         const currentYear = `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
 
         const enrollments = classes.map((cls, idx) => {
-          const isPrimary = dto.primaryClassId ? cls.id === dto.primaryClassId : idx === 0;
+          const isPrimary = dto.primaryClassId
+            ? cls.id === dto.primaryClassId
+            : idx === 0;
           return this.studentClassRepo.create({
             studentId: id,
             classId: cls.id,
@@ -307,7 +317,9 @@ export class StudentService {
   }
 
   async assignClasses(studentId: number, dto: AssignStudentClassesDto) {
-    const student = await this.studentRepo.findOne({ where: { id: studentId } });
+    const student = await this.studentRepo.findOne({
+      where: { id: studentId },
+    });
     if (!student) {
       throw new NotFoundException(`Student with ID ${studentId} not found`);
     }
@@ -335,7 +347,9 @@ export class StudentService {
   }
 
   async promoteStudent(dto: PromoteStudentDto) {
-    const student = await this.studentRepo.findOne({ where: { id: dto.studentId } });
+    const student = await this.studentRepo.findOne({
+      where: { id: dto.studentId },
+    });
     if (!student) {
       throw new NotFoundException(`Student with ID ${dto.studentId} not found`);
     }

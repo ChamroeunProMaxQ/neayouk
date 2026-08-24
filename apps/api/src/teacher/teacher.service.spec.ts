@@ -1,7 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { TeacherService } from './teacher.service.js';
-import { TeacherGenderEnum, UserStatusEnum, UserTypeEnum } from '@repo/contracts';
+import {
+  TeacherGenderEnum,
+  UserStatusEnum,
+  UserTypeEnum,
+} from '@repo/contracts';
 
 describe('TeacherService', () => {
   let service: TeacherService;
@@ -17,7 +21,13 @@ describe('TeacherService', () => {
       findOne: vi.fn(),
       find: vi.fn(),
       create: vi.fn((dto) => ({ id: 1, uuid: 'tch-uuid-1', ...dto })),
-      save: vi.fn((entity) => Promise.resolve({ id: entity.id || 1, uuid: entity.uuid || 'tch-uuid-1', ...entity })),
+      save: vi.fn((entity) =>
+        Promise.resolve({
+          id: entity.id || 1,
+          uuid: entity.uuid || 'tch-uuid-1',
+          ...entity,
+        }),
+      ),
       softDelete: vi.fn().mockResolvedValue({ affected: 1 }),
       count: vi.fn().mockResolvedValue(5),
     };
@@ -25,13 +35,17 @@ describe('TeacherService', () => {
     mockUserRepo = {
       findOne: vi.fn(),
       create: vi.fn((dto) => ({ id: 101, uuid: 'usr-uuid-101', ...dto })),
-      save: vi.fn((entity) => Promise.resolve({ id: entity.id || 101, ...entity })),
+      save: vi.fn((entity) =>
+        Promise.resolve({ id: entity.id || 101, ...entity }),
+      ),
     };
 
     mockRoleRepo = {
       findOne: vi.fn(),
       create: vi.fn((dto) => ({ id: 2, ...dto })),
-      save: vi.fn((entity) => Promise.resolve({ id: entity.id || 2, ...entity })),
+      save: vi.fn((entity) =>
+        Promise.resolve({ id: entity.id || 2, ...entity }),
+      ),
     };
 
     mockClassRepo = {
@@ -108,7 +122,11 @@ describe('TeacherService', () => {
             name: 'Sreymom Chan',
             teacherCode: 'TCH-0002',
             userId: 101,
-            user: { id: 101, username: 'teacher_sreymom', userType: UserTypeEnum.CMS },
+            user: {
+              id: 101,
+              username: 'teacher_sreymom',
+              userType: UserTypeEnum.CMS,
+            },
             classes: [],
           };
         }
@@ -116,7 +134,11 @@ describe('TeacherService', () => {
       });
 
       mockUserRepo.findOne.mockResolvedValue(null); // username check
-      mockRoleRepo.findOne.mockResolvedValue({ id: 2, slug: 'teacher', name: 'Teacher' });
+      mockRoleRepo.findOne.mockResolvedValue({
+        id: 2,
+        slug: 'teacher',
+        name: 'Teacher',
+      });
 
       const result = await service.create(dto);
       expect(result).toBeDefined();
@@ -138,7 +160,9 @@ describe('TeacherService', () => {
         salaryInHour: '15.00',
         gender: 'MALE',
         status: 'ACTIVE',
-        classes: [{ id: 10, uuid: 'cls-10', name: 'Grade 1A', enrollments: [] }],
+        classes: [
+          { id: 10, uuid: 'cls-10', name: 'Grade 1A', enrollments: [] },
+        ],
         user: { id: 101, username: 'teacher_john', userType: 'CMS' },
       };
       mockTeacherRepo.findOne.mockResolvedValue(mockTeacher);
@@ -154,7 +178,12 @@ describe('TeacherService', () => {
     it('should retrieve assigned classes for a teacher', async () => {
       mockTeacherRepo.findOne.mockResolvedValue({ id: 1, name: 'John Sok' });
       mockClassRepo.find.mockResolvedValue([
-        { id: 10, name: 'Grade 1A', program: { name: 'Primary' }, enrollments: [{ id: 1, status: 'ENROLLED' }] },
+        {
+          id: 10,
+          name: 'Grade 1A',
+          program: { name: 'Primary' },
+          enrollments: [{ id: 1, status: 'ENROLLED' }],
+        },
       ]);
 
       const result = await service.getAssignedClasses(1);
@@ -173,7 +202,10 @@ describe('TeacherService', () => {
         };
       });
 
-      const result = await service.update(1, { name: 'John Sok Senior', salaryInHour: 22.0 });
+      const result = await service.update(1, {
+        name: 'John Sok Senior',
+        salaryInHour: 22.0,
+      });
       expect(result.name).toBe('John Sok Senior');
       expect(result.salaryInHour).toBe(22);
     });
@@ -211,16 +243,25 @@ describe('TeacherService', () => {
   // 3. Duplicate & Uniqueness Conflicts (409 Conflict)
   describe('3. Duplicate & Uniqueness Conflicts (409 Conflict)', () => {
     it('should throw ConflictException if teacherCode already exists', async () => {
-      mockTeacherRepo.findOne.mockResolvedValue({ id: 99, teacherCode: 'TCH-DUPLICATE' });
+      mockTeacherRepo.findOne.mockResolvedValue({
+        id: 99,
+        teacherCode: 'TCH-DUPLICATE',
+      });
 
       await expect(
-        service.create({ name: 'Duplicate Teacher', teacherCode: 'TCH-DUPLICATE' }),
+        service.create({
+          name: 'Duplicate Teacher',
+          teacherCode: 'TCH-DUPLICATE',
+        }),
       ).rejects.toThrow(ConflictException);
     });
 
     it('should throw ConflictException if username already taken during account creation', async () => {
       mockTeacherRepo.findOne.mockResolvedValue(null);
-      mockUserRepo.findOne.mockResolvedValue({ id: 50, username: 'existing_user' });
+      mockUserRepo.findOne.mockResolvedValue({
+        id: 50,
+        username: 'existing_user',
+      });
 
       await expect(
         service.create({
@@ -259,7 +300,9 @@ describe('TeacherService', () => {
 
     it('should throw NotFoundException when updating non-existent teacher', async () => {
       mockTeacherRepo.findOne.mockResolvedValue(null);
-      await expect(service.update(999, { name: 'Nobody' })).rejects.toThrow(NotFoundException);
+      await expect(service.update(999, { name: 'Nobody' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw NotFoundException when deleting non-existent teacher', async () => {

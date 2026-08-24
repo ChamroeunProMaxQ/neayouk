@@ -104,7 +104,11 @@ describe('AdminStudentController and AdminClassController (e2e)', () => {
           discount: 10.0,
           classIds: [createdClassId],
           primaryClassId: createdClassId,
-          registeredAt: new Date(new Date().getFullYear(), new Date().getMonth() - 2, 1).toISOString(),
+          registeredAt: new Date(
+            new Date().getFullYear(),
+            new Date().getMonth() - 2,
+            1,
+          ).toISOString(),
         })
         .expect(201);
 
@@ -125,8 +129,12 @@ describe('AdminStudentController and AdminClassController (e2e)', () => {
       expect(res.body.data.id).toBe(createdStudentId);
       expect(res.body.data.paymentSummary).toBeDefined();
       // Should have unpaid months because student registered 2 months ago and has not paid yet
-      expect(res.body.data.paymentSummary.totalUnpaidMonths).toBeGreaterThanOrEqual(2);
-      expect(res.body.data.paymentSummary.totalOutstandingAmount).toBeGreaterThan(0);
+      expect(
+        res.body.data.paymentSummary.totalUnpaidMonths,
+      ).toBeGreaterThanOrEqual(2);
+      expect(
+        res.body.data.paymentSummary.totalOutstandingAmount,
+      ).toBeGreaterThan(0);
     });
 
     it('should update student profile', async () => {
@@ -228,7 +236,9 @@ describe('AdminStudentController and AdminClassController (e2e)', () => {
         .query({ search: 'Sokha' })
         .expect(200);
 
-      expect(listRes.body.data.some((s: any) => s.id === createdStudentId)).toBe(false);
+      expect(
+        listRes.body.data.some((s: any) => s.id === createdStudentId),
+      ).toBe(false);
 
       // Query with onlyDeleted should find deleted student
       const deletedRes = await request(server)
@@ -237,7 +247,9 @@ describe('AdminStudentController and AdminClassController (e2e)', () => {
         .query({ search: 'Sokha', onlyDeleted: true })
         .expect(200);
 
-      expect(deletedRes.body.data.some((s: any) => s.id === createdStudentId)).toBe(true);
+      expect(
+        deletedRes.body.data.some((s: any) => s.id === createdStudentId),
+      ).toBe(true);
     });
   });
 });

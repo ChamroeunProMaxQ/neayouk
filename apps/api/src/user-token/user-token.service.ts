@@ -52,9 +52,10 @@ export class UserTokenService {
   }
 
   async generateAccessToken(user: User) {
-    const roles: string[] = user.roles && user.roles.length > 0
-      ? user.roles.map((r) => (typeof r === 'string' ? r : r.slug))
-      : [user.userType?.toLowerCase() ?? 'customer'];
+    const roles: string[] =
+      user.roles && user.roles.length > 0
+        ? user.roles.map((r) => (typeof r === 'string' ? r : r.slug))
+        : [user.userType?.toLowerCase() ?? 'customer'];
 
     const permMap = new Map<string, PermissionDto>();
     if (user.roles) {

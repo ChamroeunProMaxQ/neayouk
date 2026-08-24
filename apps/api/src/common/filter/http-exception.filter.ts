@@ -55,14 +55,17 @@ export class HttpExceptionsFilter implements ExceptionFilter {
 
     if (
       exception instanceof ForbiddenException ||
-      (exception instanceof HttpException && exception.getStatus() === HttpStatus.FORBIDDEN)
+      (exception instanceof HttpException &&
+        exception.getStatus() === HttpStatus.FORBIDDEN)
     ) {
       const ex = exception as HttpException;
       const exResponse = ex.getResponse();
       const rawMessage =
         typeof exResponse === 'string'
           ? exResponse
-          : typeof exResponse === 'object' && exResponse !== null && 'message' in exResponse
+          : typeof exResponse === 'object' &&
+              exResponse !== null &&
+              'message' in exResponse
             ? (exResponse as { message: string | string[] }).message
             : ex.message;
 
@@ -70,7 +73,8 @@ export class HttpExceptionsFilter implements ExceptionFilter {
 
       const responseDto = new ResponseDto(
         HttpStatus.FORBIDDEN,
-        message || 'You do not have permission to access or modify this resource',
+        message ||
+          'You do not have permission to access or modify this resource',
         null,
       );
       this.incrementHttpMetric(request, HttpStatus.FORBIDDEN);
@@ -153,4 +157,3 @@ export class HttpExceptionsFilter implements ExceptionFilter {
     });
   }
 }
-

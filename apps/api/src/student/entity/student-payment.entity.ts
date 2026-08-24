@@ -27,11 +27,16 @@ export class StudentPayment {
   @Column({ name: 'class_id', type: 'int', nullable: true })
   classId!: number | null;
 
-  @ManyToOne('Student', (student: Student) => student.payments, { onDelete: 'CASCADE' })
+  @ManyToOne('Student', (student: Student) => student.payments, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'student_id' })
   declare student: Student;
 
-  @ManyToOne('Class', (cls: Class) => cls.payments, { onDelete: 'SET NULL', nullable: true })
+  @ManyToOne('Class', (cls: Class) => cls.payments, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
   @JoinColumn({ name: 'class_id' })
   declare class?: Class | null;
 
@@ -41,13 +46,31 @@ export class StudentPayment {
   @Column({ name: 'billing_month', type: 'int' })
   billingMonth!: number;
 
-  @Column({ name: 'amount_due', type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column({
+    name: 'amount_due',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+  })
   amountDue!: number;
 
-  @Column({ name: 'amount_paid', type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column({
+    name: 'amount_paid',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+  })
   amountPaid!: number;
 
-  @Column({ name: 'discount_applied', type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column({
+    name: 'discount_applied',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+  })
   discountApplied!: number;
 
   @Column({
@@ -66,10 +89,20 @@ export class StudentPayment {
   })
   paymentMethod!: PaymentMethodEnum;
 
-  @Column({ name: 'receipt_number', type: 'varchar', length: 100, nullable: true })
+  @Column({
+    name: 'receipt_number',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+  })
   receiptNumber!: string | null;
 
-  @Column({ name: 'paid_at', type: 'datetime', default: () => 'CURRENT_TIMESTAMP', nullable: true })
+  @Column({
+    name: 'paid_at',
+    type: 'datetime',
+    default: () => 'CURRENT_TIMESTAMP',
+    nullable: true,
+  })
   paidAt!: Date | null;
 
   @Column({ type: 'text', nullable: true })

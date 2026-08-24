@@ -24,13 +24,17 @@ export class PermissionService {
     }
 
     if (dto?.resource) {
-      query.andWhere('permission.resource = :resource', { resource: dto.resource });
+      query.andWhere('permission.resource = :resource', {
+        resource: dto.resource,
+      });
     }
 
     if (dto?.sortBy) {
       query.orderBy(`permission.${dto.sortBy}`, dto.sortOrder ?? 'ASC');
     } else {
-      query.orderBy('permission.resource', 'ASC').addOrderBy('permission.action', 'ASC');
+      query
+        .orderBy('permission.resource', 'ASC')
+        .addOrderBy('permission.action', 'ASC');
     }
 
     if (dto?.page && dto?.pageSize) {

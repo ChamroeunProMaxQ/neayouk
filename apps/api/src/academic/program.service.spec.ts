@@ -12,7 +12,9 @@ describe('ProgramService', () => {
       findOne: vi.fn(),
       find: vi.fn(),
       create: vi.fn((dto) => ({ id: 1, uuid: 'prog-uuid-1', ...dto })),
-      save: vi.fn((entity) => Promise.resolve({ id: entity.id || 1, ...entity })),
+      save: vi.fn((entity) =>
+        Promise.resolve({ id: entity.id || 1, ...entity }),
+      ),
       softDelete: vi.fn().mockResolvedValue({ affected: 1 }),
     };
 
@@ -27,7 +29,14 @@ describe('ProgramService', () => {
       const dto = {
         name: 'Primary',
         code: 'PRI',
-        gradeLevels: ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'],
+        gradeLevels: [
+          'Grade 1',
+          'Grade 2',
+          'Grade 3',
+          'Grade 4',
+          'Grade 5',
+          'Grade 6',
+        ],
         status: 'ACTIVE' as const,
       };
 
@@ -106,7 +115,11 @@ describe('ProgramService', () => {
     });
 
     it('should soft delete a program', async () => {
-      mockProgramRepo.findOne.mockResolvedValue({ id: 1, code: 'PRI', classes: [] });
+      mockProgramRepo.findOne.mockResolvedValue({
+        id: 1,
+        code: 'PRI',
+        classes: [],
+      });
 
       const result = await service.delete(1);
       expect(result.success).toBe(true);
@@ -153,7 +166,9 @@ describe('ProgramService', () => {
     it('should throw NotFoundException when updating non-existent program', async () => {
       mockProgramRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.update(999, { name: 'New Name' })).rejects.toThrow(NotFoundException);
+      await expect(service.update(999, { name: 'New Name' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw NotFoundException when deleting non-existent program', async () => {

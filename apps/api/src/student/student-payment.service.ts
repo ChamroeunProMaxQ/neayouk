@@ -52,7 +52,13 @@ export class StudentPaymentService {
   ) {}
 
   async findPayments(studentId: number, dto: FindStudentPaymentsDto) {
-    const { billingYear, billingMonth, status, sortBy = 'billingYear', sortOrder = 'DESC' } = dto;
+    const {
+      billingYear,
+      billingMonth,
+      status,
+      sortBy = 'billingYear',
+      sortOrder = 'DESC',
+    } = dto;
     const query = this.paymentRepo
       .createQueryBuilder('payment')
       .leftJoinAndSelect('payment.class', 'class')
@@ -97,11 +103,19 @@ export class StudentPaymentService {
     });
 
     let defaultClassId = dto.classId;
-    if (!defaultClassId && student.enrollments && student.enrollments.length > 0) {
+    if (
+      !defaultClassId &&
+      student.enrollments &&
+      student.enrollments.length > 0
+    ) {
       const primary = student.enrollments.find(
-        (e) => Boolean(e.isPrimary) && e.status === ClassEnrollmentStatusEnum.ENROLLED,
+        (e) =>
+          Boolean(e.isPrimary) &&
+          e.status === ClassEnrollmentStatusEnum.ENROLLED,
       );
-      defaultClassId = primary ? primary.classId : student.enrollments[0].classId;
+      defaultClassId = primary
+        ? primary.classId
+        : student.enrollments[0].classId;
     }
 
     const targetClass = defaultClassId
@@ -110,9 +124,18 @@ export class StudentPaymentService {
 
     const baseFee = targetClass ? Number(targetClass.monthlyFee) : 50;
     const discount = Number(student.discount || 0);
-    const amountDue = dto.amountDue !== undefined ? dto.amountDue : Math.max(0, baseFee - discount);
+    const amountDue =
+      dto.amountDue !== undefined
+        ? dto.amountDue
+        : Math.max(0, baseFee - discount);
     const amountPaid = dto.amountPaid;
-    const status = dto.status ?? (amountPaid >= amountDue ? PaymentStatusEnum.PAID : amountPaid > 0 ? PaymentStatusEnum.PARTIAL : PaymentStatusEnum.UNPAID);
+    const status =
+      dto.status ??
+      (amountPaid >= amountDue
+        ? PaymentStatusEnum.PAID
+        : amountPaid > 0
+          ? PaymentStatusEnum.PARTIAL
+          : PaymentStatusEnum.UNPAID);
 
     if (!payment) {
       payment = this.paymentRepo.create({
@@ -170,7 +193,9 @@ export class StudentPaymentService {
     return results;
   }
 
-  async getStudentPaymentSummary(studentOrId: number | Student): Promise<StudentPaymentSummary> {
+  async getStudentPaymentSummary(
+    studentOrId: number | Student,
+  ): Promise<StudentPaymentSummary> {
     let student: Student | null;
 
     if (typeof studentOrId === 'number') {
@@ -188,10 +213,15 @@ export class StudentPaymentService {
 
     const payments = student.payments ?? [];
     const activeEnrollments = student.enrollments
-      ? student.enrollments.filter((e) => e.status === ClassEnrollmentStatusEnum.ENROLLED)
+      ? student.enrollments.filter(
+          (e) => e.status === ClassEnrollmentStatusEnum.ENROLLED,
+        )
       : [];
-    const primaryEnrollment = activeEnrollments.find((e) => e.isPrimary) || activeEnrollments[0];
-    const baseFee = primaryEnrollment?.class ? Number(primaryEnrollment.class.monthlyFee) : 0;
+    const primaryEnrollment =
+      activeEnrollments.find((e) => e.isPrimary) || activeEnrollments[0];
+    const baseFee = primaryEnrollment?.class
+      ? Number(primaryEnrollment.class.monthlyFee)
+      : 0;
     const discount = Number(student.discount || 0);
     const monthlyNetDue = Math.max(0, baseFee - discount);
 
@@ -235,7 +265,12 @@ export class StudentPaymentService {
       const existing = paymentMap.get(key);
 
       if (!existing || existing.status !== PaymentStatusEnum.PAID) {
-        const due = existing ? Math.max(0, Number(existing.amountDue) - Number(existing.amountPaid)) : monthlyNetDue;
+        const due = existing
+          ? Math.max(
+              0,
+              Number(existing.amountDue) - Number(existing.amountPaid),
+            )
+          : monthlyNetDue;
         if (due > 0) {
           unpaidMonthsList.push({
             year: iterYear,
@@ -254,7 +289,10 @@ export class StudentPaymentService {
       }
     }
 
-    const totalOutstandingAmount = unpaidMonthsList.reduce((sum, item) => sum + item.amountDue, 0);
+    const totalOutstandingAmount = unpaidMonthsList.reduce(
+      (sum, item) => sum + item.amountDue,
+      0,
+    );
 
     return {
       studentId: student.id,

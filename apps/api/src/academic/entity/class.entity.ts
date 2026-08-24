@@ -42,7 +42,10 @@ export class Class {
   @Column({ name: 'program_id', type: 'int', nullable: true })
   programId!: number | null;
 
-  @ManyToOne('Program', (p: Program) => p.classes, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne('Program', (p: Program) => p.classes, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn({ name: 'program_id' })
   declare program?: Program | null;
 
@@ -59,10 +62,22 @@ export class Class {
   })
   shift!: ShiftEnum;
 
-  @Column({ name: 'start_time', type: 'varchar', length: 10, nullable: true, default: '07:30' })
+  @Column({
+    name: 'start_time',
+    type: 'varchar',
+    length: 10,
+    nullable: true,
+    default: '07:30',
+  })
   startTime!: string | null;
 
-  @Column({ name: 'end_time', type: 'varchar', length: 10, nullable: true, default: '11:30' })
+  @Column({
+    name: 'end_time',
+    type: 'varchar',
+    length: 10,
+    nullable: true,
+    default: '11:30',
+  })
   endTime!: string | null;
 
   @Column({ name: 'start_date', type: 'date', nullable: true })
@@ -71,17 +86,36 @@ export class Class {
   @Column({ name: 'end_date', type: 'date', nullable: true })
   endDate!: string | Date | null;
 
-  @Column({ name: 'monthly_fee', type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column({
+    name: 'monthly_fee',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+  })
   monthlyFee!: number;
 
-  @Column({ name: 'teacher_id', type: 'bigint', unsigned: true, nullable: true })
+  @Column({
+    name: 'teacher_id',
+    type: 'bigint',
+    unsigned: true,
+    nullable: true,
+  })
   teacherId!: number | null;
 
-  @ManyToOne('Teacher', (t: Teacher) => t.classes, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne('Teacher', (t: Teacher) => t.classes, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn({ name: 'teacher_id' })
   declare teacher?: Teacher | null;
 
-  @Column({ name: 'academic_year', type: 'varchar', length: 20, nullable: true })
+  @Column({
+    name: 'academic_year',
+    type: 'varchar',
+    length: 20,
+    nullable: true,
+  })
   academicYear!: string | null;
 
   @Column({

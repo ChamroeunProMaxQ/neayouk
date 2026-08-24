@@ -6,10 +6,18 @@ import {
 } from '@repo/contracts';
 import { createZodDto } from 'nestjs-zod';
 
-export class CreateLeaveRequestDto extends createZodDto(CreateLeaveRequestSchema) {}
+export class CreateLeaveRequestDto extends createZodDto(
+  CreateLeaveRequestSchema,
+) {}
 
-export class UpdateLeaveRequestDto extends createZodDto(UpdateLeaveRequestSchema) {}
+export class UpdateLeaveRequestDto extends createZodDto(
+  UpdateLeaveRequestSchema,
+) {}
 
-export class ReviewLeaveRequestDto extends createZodDto(ReviewLeaveRequestSchema) {}
+export class ReviewLeaveRequestDto extends createZodDto(
+  ReviewLeaveRequestSchema,
+) {}
 
-export class FindLeaveRequestsDto extends createZodDto(FindLeaveRequestsSchema) {}
+export class FindLeaveRequestsDto extends createZodDto(
+  FindLeaveRequestsSchema,
+) {}

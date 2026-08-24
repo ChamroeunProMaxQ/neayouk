@@ -25,7 +25,9 @@ export class StudentClassMapper {
     };
   }
 
-  static toDtoList(entities: StudentClass[]): StudentClassEnrollmentAttribute[] {
+  static toDtoList(
+    entities: StudentClass[],
+  ): StudentClassEnrollmentAttribute[] {
     return entities.map((entity) => this.toDto(entity));
   }
 }
@@ -33,9 +35,12 @@ export class StudentClassMapper {
 export class StudentMapper {
   static toDto(entity: Student): StudentAttribute {
     const activeEnrollments = entity.enrollments
-      ? entity.enrollments.filter((e) => e.status === ClassEnrollmentStatusEnum.ENROLLED)
+      ? entity.enrollments.filter(
+          (e) => e.status === ClassEnrollmentStatusEnum.ENROLLED,
+        )
       : [];
-    const primaryEnrollment = activeEnrollments.find((e) => e.isPrimary) || activeEnrollments[0];
+    const primaryEnrollment =
+      activeEnrollments.find((e) => e.isPrimary) || activeEnrollments[0];
     const classesList = entity.enrollments
       ? entity.enrollments
           .map((e) => (e.class ? ClassMapper.toDto(e.class) : undefined))
@@ -59,9 +64,13 @@ export class StudentMapper {
       registeredAt: entity.registeredAt,
       discount: Number(entity.discount || 0),
       status: entity.status,
-      enrollments: entity.enrollments ? StudentClassMapper.toDtoList(entity.enrollments) : undefined,
+      enrollments: entity.enrollments
+        ? StudentClassMapper.toDtoList(entity.enrollments)
+        : undefined,
       classes: classesList,
-      primaryClass: primaryEnrollment?.class ? ClassMapper.toDto(primaryEnrollment.class) : null,
+      primaryClass: primaryEnrollment?.class
+        ? ClassMapper.toDto(primaryEnrollment.class)
+        : null,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
       deletedAt: entity.deletedAt,

@@ -1,4 +1,8 @@
-import { createParamDecorator, type ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import {
+  createParamDecorator,
+  type ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common';
 import type { Request } from 'express';
 
 export const CurrentUser = createParamDecorator(

@@ -22,7 +22,7 @@ export class RoleService {
 
     @InjectRepository(Permission)
     private readonly permissionRepo: Repository<Permission>,
-  ) { }
+  ) {}
 
   async findAll(dto: FindRolesDto) {
     const query = this.roleRepo
@@ -108,7 +108,9 @@ export class RoleService {
     // Guard clause: Validate slug uniqueness
     const existing = await this.roleRepo.findOneBy({ slug: dto.slug });
     if (existing) {
-      throw new ConflictException(`Role with slug "${dto.slug}" already exists`);
+      throw new ConflictException(
+        `Role with slug "${dto.slug}" already exists`,
+      );
     }
 
     const permissions = await this.resolvePermissions(dto.permissions);
@@ -138,7 +140,9 @@ export class RoleService {
     if (dto.slug && dto.slug !== role.slug) {
       const existing = await this.roleRepo.findOneBy({ slug: dto.slug });
       if (existing && existing.id !== id) {
-        throw new ConflictException(`Role with slug "${dto.slug}" already exists`);
+        throw new ConflictException(
+          `Role with slug "${dto.slug}" already exists`,
+        );
       }
       role.slug = dto.slug;
     }

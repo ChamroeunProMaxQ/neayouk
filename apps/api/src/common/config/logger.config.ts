@@ -1,4 +1,9 @@
-import { ConsoleLogger, Global, Module, type LoggerService } from '@nestjs/common';
+import {
+  ConsoleLogger,
+  Global,
+  Module,
+  type LoggerService,
+} from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { envConfig } from './env.config.js';
 import { winstonConfig } from './winston.config.js';
@@ -20,4 +25,3 @@ const AppLoggerProvider = {
   exports: [APP_LOGGER],
 })
 export class LoggerModule {}
-

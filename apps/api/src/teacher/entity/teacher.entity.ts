@@ -29,7 +29,13 @@ export class Teacher {
   @JoinColumn({ name: 'user_id' })
   declare user?: User | null;
 
-  @Column({ name: 'teacher_code', type: 'varchar', length: 50, unique: true, nullable: true })
+  @Column({
+    name: 'teacher_code',
+    type: 'varchar',
+    length: 50,
+    unique: true,
+    nullable: true,
+  })
   teacherCode!: string | null;
 
   @Column({ type: 'varchar', length: 255 })
@@ -41,7 +47,12 @@ export class Teacher {
   @Column({ type: 'varchar', length: 16, default: 'MALE' })
   gender!: 'MALE' | 'FEMALE' | 'OTHER';
 
-  @Column({ name: 'date_of_birth', type: 'varchar', length: 255, nullable: true })
+  @Column({
+    name: 'date_of_birth',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
   dateOfBirth!: string | null;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
@@ -50,7 +61,13 @@ export class Teacher {
   @Column({ type: 'varchar', length: 255, nullable: true })
   email!: string | null;
 
-  @Column({ name: 'salary_in_hour', type: 'decimal', precision: 8, scale: 2, default: 0 })
+  @Column({
+    name: 'salary_in_hour',
+    type: 'decimal',
+    precision: 8,
+    scale: 2,
+    default: 0,
+  })
   salaryInHour!: number;
 
   @Column({ type: 'varchar', length: 255, nullable: true })

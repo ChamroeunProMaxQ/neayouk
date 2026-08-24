@@ -145,10 +145,7 @@ export class TeacherService {
           'User account is already linked to another teacher',
         );
       }
-    } else if (
-      dto.createAccount ||
-      (dto.username && dto.password)
-    ) {
+    } else if (dto.createAccount || (dto.username && dto.password)) {
       if (!dto.username || !dto.password) {
         throw new ConflictException(
           'Username and password are required to create a user account',
@@ -252,10 +249,7 @@ export class TeacherService {
         }
         teacher.userId = dto.userId;
       }
-    } else if (
-      dto.createAccount ||
-      (dto.username && !teacher.userId)
-    ) {
+    } else if (dto.createAccount || (dto.username && !teacher.userId)) {
       if (!dto.username || !dto.password) {
         throw new ConflictException(
           'Username and password are required to create a user account',
@@ -290,7 +284,9 @@ export class TeacherService {
       const savedUser = await this.userRepo.save(newUser);
       teacher.userId = savedUser.id;
     } else if (teacher.userId && (dto.username || dto.password)) {
-      const user = await this.userRepo.findOne({ where: { id: teacher.userId } });
+      const user = await this.userRepo.findOne({
+        where: { id: teacher.userId },
+      });
       if (user) {
         if (dto.username && dto.username !== user.username) {
           const checkUser = await this.userRepo.findOne({
@@ -315,7 +311,8 @@ export class TeacherService {
     if (dto.phone !== undefined) teacher.phone = dto.phone;
     if (dto.email !== undefined) teacher.email = dto.email;
     if (dto.salaryInHour !== undefined) teacher.salaryInHour = dto.salaryInHour;
-    if (dto.specialization !== undefined) teacher.specialization = dto.specialization;
+    if (dto.specialization !== undefined)
+      teacher.specialization = dto.specialization;
     if (dto.bio !== undefined) teacher.bio = dto.bio;
     if (dto.status !== undefined) teacher.status = dto.status;
 
@@ -335,7 +332,9 @@ export class TeacherService {
   }
 
   async getAssignedClasses(teacherId: number) {
-    const teacher = await this.teacherRepo.findOne({ where: { id: teacherId } });
+    const teacher = await this.teacherRepo.findOne({
+      where: { id: teacherId },
+    });
     if (!teacher) {
       throw new NotFoundException('teacher not found');
     }

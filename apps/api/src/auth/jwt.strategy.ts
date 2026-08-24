@@ -19,9 +19,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   // The object returned here is injected into the Request object as 'req.user'
   async validate(payload: JwtPayload) {
     const userType = payload.userType ?? payload.type;
-    const roles = payload.roles && payload.roles.length > 0
-      ? payload.roles
-      : (userType ? [userType.toLowerCase()] : []);
+    const roles =
+      payload.roles && payload.roles.length > 0
+        ? payload.roles
+        : userType
+          ? [userType.toLowerCase()]
+          : [];
     const permissions = payload.permissions ?? [];
 
     return {

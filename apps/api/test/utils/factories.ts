@@ -13,7 +13,10 @@ export interface UserFixtureOptions {
  */
 export function buildUserData(overrides: UserFixtureOptions = {}) {
   return {
-    username: overrides.username ?? faker.internet.username().toLowerCase() + faker.number.int({ min: 100, max: 9999 }),
+    username:
+      overrides.username ??
+      faker.internet.username().toLowerCase() +
+        faker.number.int({ min: 100, max: 9999 }),
     password: overrides.password ?? 'password123',
     type: overrides.type ?? UserTypeEnum.CUSTOMER,
     status: overrides.status ?? UserStatusEnum.ACTIVE,
@@ -23,11 +26,13 @@ export function buildUserData(overrides: UserFixtureOptions = {}) {
 /**
  * Builds custom token payload options for test authentication.
  */
-export function buildTokenPayload(overrides: {
-  sub?: number;
-  username?: string;
-  type?: UserTypeEnum;
-} = {}) {
+export function buildTokenPayload(
+  overrides: {
+    sub?: number;
+    username?: string;
+    type?: UserTypeEnum;
+  } = {},
+) {
   return {
     sub: overrides.sub ?? faker.number.int({ min: 100, max: 9999 }),
     username: overrides.username ?? faker.internet.username().toLowerCase(),

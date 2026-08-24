@@ -5,8 +5,14 @@ import {
 } from '@repo/contracts';
 import { createZodDto } from 'nestjs-zod';
 
-export class RecordTeacherAttendanceDto extends createZodDto(RecordTeacherAttendanceSchema) {}
+export class RecordTeacherAttendanceDto extends createZodDto(
+  RecordTeacherAttendanceSchema,
+) {}
 
-export class BatchRecordTeacherAttendanceDto extends createZodDto(BatchRecordTeacherAttendanceSchema) {}
+export class BatchRecordTeacherAttendanceDto extends createZodDto(
+  BatchRecordTeacherAttendanceSchema,
+) {}
 
-export class FindTeacherAttendanceDto extends createZodDto(FindTeacherAttendanceSchema) {}
+export class FindTeacherAttendanceDto extends createZodDto(
+  FindTeacherAttendanceSchema,
+) {}

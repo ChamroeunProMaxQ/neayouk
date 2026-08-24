@@ -2,7 +2,11 @@ import type { INestApplication } from '@nestjs/common';
 import { UserTypeEnum } from '@repo/contracts';
 import request from 'supertest';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { setupE2eApp, teardownE2eApp, type E2eTestContext } from './utils/e2e-test.utils.js';
+import {
+  setupE2eApp,
+  teardownE2eApp,
+  type E2eTestContext,
+} from './utils/e2e-test.utils.js';
 
 describe('Forbidden Requests (e2e)', () => {
   let app: INestApplication;

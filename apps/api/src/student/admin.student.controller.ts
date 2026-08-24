@@ -22,7 +22,10 @@ import { StudentService } from './student.service.js';
 import { StudentPaymentService } from './student-payment.service.js';
 import { Student } from './entity/student.entity.js';
 import { StudentPayment } from './entity/student-payment.entity.js';
-import { CreateStudentDto, UpdateStudentDto } from './dto/create-student.dto.js';
+import {
+  CreateStudentDto,
+  UpdateStudentDto,
+} from './dto/create-student.dto.js';
 import { FindStudentsDto } from './dto/find-students.dto.js';
 import {
   AssignStudentClassesDto,
@@ -139,7 +142,10 @@ export class AdminStudentController {
     @Body() dto: RecordPaymentDto,
     @CurrentUser('sub') currentUserId: number,
   ) {
-    return this.paymentService.recordPayment({ ...dto, studentId: id }, currentUserId);
+    return this.paymentService.recordPayment(
+      { ...dto, studentId: id },
+      currentUserId,
+    );
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
@@ -150,6 +156,9 @@ export class AdminStudentController {
     @Body() dto: BatchRecordPaymentDto,
     @CurrentUser('sub') currentUserId: number,
   ) {
-    return this.paymentService.recordBatchPayment({ ...dto, studentId: id }, currentUserId);
+    return this.paymentService.recordBatchPayment(
+      { ...dto, studentId: id },
+      currentUserId,
+    );
   }
 }

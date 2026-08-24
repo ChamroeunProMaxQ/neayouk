@@ -16,11 +16,12 @@ import { map } from 'rxjs/operators';
 import { HTTP_MESSAGE_KEY } from '@src/common/decorator/message.decorator.js';
 
 type RawResponseDataType =
-  [Record<string, any>[], number] | Record<string, any>;
+  | [Record<string, any>[], number]
+  | Record<string, any>;
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
-  constructor(private reflector: Reflector) { }
+  constructor(private reflector: Reflector) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const ctx = context.switchToHttp();
@@ -68,9 +69,11 @@ export class ResponseInterceptor implements NestInterceptor {
   }
 
   private isPaginate(_data: unknown): boolean {
-    return Array.isArray(_data) &&
+    return (
+      Array.isArray(_data) &&
       _data.length === 2 &&
       Array.isArray(_data[0]) &&
-      typeof _data[1] === 'number';
+      typeof _data[1] === 'number'
+    );
   }
 }

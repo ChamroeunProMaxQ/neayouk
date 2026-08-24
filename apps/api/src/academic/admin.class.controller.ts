@@ -33,7 +33,7 @@ import {
 @ApiBearerAuth()
 @Controller('admin/classes')
 export class AdminClassController {
-  constructor(private readonly classService: ClassService) { }
+  constructor(private readonly classService: ClassService) {}
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
   @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
@@ -67,10 +67,7 @@ export class AdminClassController {
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
   @UseAbility(DefaultActions.update, Class)
   @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateClassDto,
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateClassDto) {
     return this.classService.update(id, dto);
   }
 

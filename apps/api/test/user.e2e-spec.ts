@@ -201,9 +201,7 @@ describe('AdminUserController (e2e)', () => {
         })
         .expect(200);
 
-      expect(
-        listRes.body.data.some((u: any) => u.id === userId),
-      ).toBe(false);
+      expect(listRes.body.data.some((u: any) => u.id === userId)).toBe(false);
 
       // 4. onlyDeleted=true query SHOULD include the deleted user
       const deletedListRes = await request(server)
@@ -215,9 +213,9 @@ describe('AdminUserController (e2e)', () => {
         })
         .expect(200);
 
-      expect(
-        deletedListRes.body.data.some((u: any) => u.id === userId),
-      ).toBe(true);
+      expect(deletedListRes.body.data.some((u: any) => u.id === userId)).toBe(
+        true,
+      );
     });
   });
 });

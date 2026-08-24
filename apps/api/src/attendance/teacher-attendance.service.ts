@@ -30,7 +30,10 @@ export class TeacherAttendanceService {
     private readonly logger: LoggerService,
   ) {}
 
-  private calculateHours(checkIn?: string | null, checkOut?: string | null): number {
+  private calculateHours(
+    checkIn?: string | null,
+    checkOut?: string | null,
+  ): number {
     if (!checkIn || !checkOut) return 0;
     const [inH, inM] = checkIn.split(':').map(Number);
     const [outH, outM] = checkOut.split(':').map(Number);
@@ -44,7 +47,9 @@ export class TeacherAttendanceService {
     dto: RecordTeacherAttendanceDto,
     verifiedBy?: number,
   ): Promise<TeacherAttendanceAttribute> {
-    const teacher = await this.teacherRepo.findOne({ where: { id: dto.teacherId } });
+    const teacher = await this.teacherRepo.findOne({
+      where: { id: dto.teacherId },
+    });
     if (!teacher) {
       throw new NotFoundException(`Teacher with ID ${dto.teacherId} not found`);
     }
@@ -67,8 +72,12 @@ export class TeacherAttendanceService {
 
     if (record) {
       this.attendanceRepo.merge(record, {
-        checkInTime: dto.checkInTime !== undefined ? dto.checkInTime : record.checkInTime,
-        checkOutTime: dto.checkOutTime !== undefined ? dto.checkOutTime : record.checkOutTime,
+        checkInTime:
+          dto.checkInTime !== undefined ? dto.checkInTime : record.checkInTime,
+        checkOutTime:
+          dto.checkOutTime !== undefined
+            ? dto.checkOutTime
+            : record.checkOutTime,
         hoursWorked: hours,
         status: dto.status,
         remarks: dto.remarks !== undefined ? dto.remarks : record.remarks,
@@ -122,9 +131,15 @@ export class TeacherAttendanceService {
     return results;
   }
 
-  async findAll(
-    query: FindTeacherAttendanceDto,
-  ): Promise<{ data: TeacherAttendanceAttribute[]; pagination: { totalCount: number; page: number; pageSize: number; pageCount: number } }> {
+  async findAll(query: FindTeacherAttendanceDto): Promise<{
+    data: TeacherAttendanceAttribute[];
+    pagination: {
+      totalCount: number;
+      page: number;
+      pageSize: number;
+      pageCount: number;
+    };
+  }> {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
     const skip = (page - 1) * pageSize;
@@ -135,7 +150,9 @@ export class TeacherAttendanceService {
       .leftJoinAndSelect('att.verifier', 'verifier');
 
     if (query.teacherId) {
-      qb.andWhere('att.teacher_id = :teacherId', { teacherId: query.teacherId });
+      qb.andWhere('att.teacher_id = :teacherId', {
+        teacherId: query.teacherId,
+      });
     }
     if (query.date) {
       qb.andWhere('att.date = :date', { date: query.date });
@@ -156,9 +173,15 @@ export class TeacherAttendanceService {
 
     const sortBy = query.sortBy || 'date';
     const sortOrder = query.sortOrder || 'DESC';
-    qb.orderBy(`att.${sortBy === 'id' ? 'id' : sortBy === 'status' ? 'status' : sortBy === 'hoursWorked' ? 'hours_worked' : 'date'}`, sortOrder);
+    qb.orderBy(
+      `att.${sortBy === 'id' ? 'id' : sortBy === 'status' ? 'status' : sortBy === 'hoursWorked' ? 'hours_worked' : 'date'}`,
+      sortOrder,
+    );
 
-    const [items, totalCount] = await qb.skip(skip).take(pageSize).getManyAndCount();
+    const [items, totalCount] = await qb
+      .skip(skip)
+      .take(pageSize)
+      .getManyAndCount();
 
     return {
       data: AttendanceMapper.toTeacherAttendanceDtoList(items),
@@ -171,8 +194,13 @@ export class TeacherAttendanceService {
     };
   }
 
-  async getTeacherMonthlySummary(teacherId: number, monthStr: string): Promise<TeacherAttendanceSummaryDto> {
-    const teacher = await this.teacherRepo.findOne({ where: { id: teacherId } });
+  async getTeacherMonthlySummary(
+    teacherId: number,
+    monthStr: string,
+  ): Promise<TeacherAttendanceSummaryDto> {
+    const teacher = await this.teacherRepo.findOne({
+      where: { id: teacherId },
+    });
     if (!teacher) {
       throw new NotFoundException(`Teacher with ID ${teacherId} not found`);
     }
@@ -202,11 +230,16 @@ export class TeacherAttendanceService {
       if (r.status === AttendanceStatusEnum.PRESENT) daysPresent++;
       else if (r.status === AttendanceStatusEnum.ABSENT) daysAbsent++;
       else if (r.status === AttendanceStatusEnum.LATE) daysLate++;
-      else if (r.status === AttendanceStatusEnum.ON_LEAVE || r.status === AttendanceStatusEnum.EXCUSED) daysOnLeave++;
+      else if (
+        r.status === AttendanceStatusEnum.ON_LEAVE ||
+        r.status === AttendanceStatusEnum.EXCUSED
+      )
+        daysOnLeave++;
     }
 
     const salaryRate = Number(teacher.salaryInHour || 0);
-    const estimatedSalary = Math.round(totalHoursWorked * salaryRate * 100) / 100;
+    const estimatedSalary =
+      Math.round(totalHoursWorked * salaryRate * 100) / 100;
 
     return {
       teacherId: teacher.id,

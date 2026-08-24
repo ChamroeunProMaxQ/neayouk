@@ -69,7 +69,8 @@ describe('AdminTeacherController (e2e)', () => {
         })
         .expect(201);
 
-      const token = loginRes.body.data?.accessToken || loginRes.body.accessToken;
+      const token =
+        loginRes.body.data?.accessToken || loginRes.body.accessToken;
       expect(token).toBeDefined();
       teacherToken = token;
 
@@ -193,9 +194,7 @@ describe('AdminTeacherController (e2e)', () => {
     });
 
     it('GET /api/v1/admin/teachers - should return 401 without auth header', async () => {
-      await request(server)
-        .get('/api/v1/admin/teachers')
-        .expect(401);
+      await request(server).get('/api/v1/admin/teachers').expect(401);
     });
 
     it('DELETE /api/v1/admin/teachers/:id - should soft delete teacher', async () => {

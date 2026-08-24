@@ -22,7 +22,9 @@ export class StudentClass {
   @Column({ name: 'class_id', type: 'int' })
   classId!: number;
 
-  @ManyToOne('Student', (student: Student) => student.enrollments, { onDelete: 'CASCADE' })
+  @ManyToOne('Student', (student: Student) => student.enrollments, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'student_id' })
   declare student: Student;
 
@@ -50,7 +52,11 @@ export class StudentClass {
   })
   status!: ClassEnrollmentStatusEnum;
 
-  @Column({ name: 'enrolled_at', type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({
+    name: 'enrolled_at',
+    type: 'datetime',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   enrolledAt!: Date;
 
   @Column({ name: 'completed_at', type: 'datetime', nullable: true })

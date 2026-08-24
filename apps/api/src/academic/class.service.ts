@@ -31,7 +31,7 @@ export class ClassService {
     private readonly timetableRepo: Repository<ClassTimetable>,
     @InjectRepository(StudentClass)
     private readonly studentClassRepo: Repository<StudentClass>,
-  ) { }
+  ) {}
 
   async findAll(dto: FindClassesDto) {
     const {
@@ -87,10 +87,13 @@ export class ClassService {
     }
 
     if (program) {
-      query.andWhere('(program.name = :program OR class.programId = :programId)', {
-        program,
-        programId: Number(program) || null,
-      });
+      query.andWhere(
+        '(program.name = :program OR class.programId = :programId)',
+        {
+          program,
+          programId: Number(program) || null,
+        },
+      );
     }
 
     if (status) {
@@ -119,9 +122,13 @@ export class ClassService {
 
   async create(dto: CreateClassDto) {
     if (dto.code) {
-      const existing = await this.classRepo.findOne({ where: { code: dto.code } });
+      const existing = await this.classRepo.findOne({
+        where: { code: dto.code },
+      });
       if (existing) {
-        throw new ConflictException(`Class with code "${dto.code}" already exists`);
+        throw new ConflictException(
+          `Class with code "${dto.code}" already exists`,
+        );
       }
     }
 
@@ -145,9 +152,13 @@ export class ClassService {
     }
 
     if (dto.code && dto.code !== cls.code) {
-      const existing = await this.classRepo.findOne({ where: { code: dto.code } });
+      const existing = await this.classRepo.findOne({
+        where: { code: dto.code },
+      });
       if (existing && existing.id !== id) {
-        throw new ConflictException(`Class with code "${dto.code}" already exists`);
+        throw new ConflictException(
+          `Class with code "${dto.code}" already exists`,
+        );
       }
     }
 
@@ -193,18 +204,24 @@ export class ClassService {
       .where('timetable.classId = :classId', { classId });
 
     if (dto?.dayOfWeek) {
-      query.andWhere('timetable.dayOfWeek = :dayOfWeek', { dayOfWeek: dto.dayOfWeek });
+      query.andWhere('timetable.dayOfWeek = :dayOfWeek', {
+        dayOfWeek: dto.dayOfWeek,
+      });
     }
 
     if (dto?.teacherId) {
-      query.andWhere('timetable.teacherId = :teacherId', { teacherId: dto.teacherId });
+      query.andWhere('timetable.teacherId = :teacherId', {
+        teacherId: dto.teacherId,
+      });
     }
 
     if (dto?.room) {
       query.andWhere('timetable.room LIKE :room', { room: `%${dto.room}%` });
     }
 
-    query.orderBy('timetable.dayOfWeek', 'ASC').addOrderBy('timetable.startTime', 'ASC');
+    query
+      .orderBy('timetable.dayOfWeek', 'ASC')
+      .addOrderBy('timetable.startTime', 'ASC');
 
     const slots = await query.getMany();
     return ClassTimetableMapper.toDtoList(slots);
@@ -251,7 +268,8 @@ export class ClassService {
     const nextDay = dto.dayOfWeek ?? slot.dayOfWeek;
     const nextStart = dto.startTime ?? slot.startTime;
     const nextEnd = dto.endTime ?? slot.endTime;
-    const nextTeacher = dto.teacherId !== undefined ? dto.teacherId : slot.teacherId;
+    const nextTeacher =
+      dto.teacherId !== undefined ? dto.teacherId : slot.teacherId;
     const nextRoom = dto.room !== undefined ? dto.room : slot.room;
 
     if (nextStart >= nextEnd) {
@@ -300,7 +318,9 @@ export class ClassService {
       .andWhere('slot.endTime > :startTime', { startTime });
 
     if (excludeSlotId) {
-      classConflictQuery.andWhere('slot.id != :excludeSlotId', { excludeSlotId });
+      classConflictQuery.andWhere('slot.id != :excludeSlotId', {
+        excludeSlotId,
+      });
     }
 
     const classConflict = await classConflictQuery.getOne();
@@ -321,7 +341,9 @@ export class ClassService {
         .andWhere('slot.endTime > :startTime', { startTime });
 
       if (excludeSlotId) {
-        teacherConflictQuery.andWhere('slot.id != :excludeSlotId', { excludeSlotId });
+        teacherConflictQuery.andWhere('slot.id != :excludeSlotId', {
+          excludeSlotId,
+        });
       }
 
       const teacherConflict = await teacherConflictQuery.getOne();

@@ -6,10 +6,9 @@ import { USER_TYPES_KEY } from '@src/common/decorator/user-type.decorator.js';
 
 @Injectable()
 export class UserTypesGuard implements CanActivate {
-  constructor(private reflector: Reflector) { }
+  constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-
     const handler = context.getHandler();
     if (!handler) {
       return true;

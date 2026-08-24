@@ -5,9 +5,7 @@ import { Student } from './entity/student.entity.js';
 import { StudentPayment } from './entity/student-payment.entity.js';
 import type { AppAuthorizableUser } from '../common/config/casl.config.js';
 
-export type Subjects = InferSubjects<
-  typeof Student | typeof StudentPayment
->;
+export type Subjects = InferSubjects<typeof Student | typeof StudentPayment>;
 
 export const permissions: Permissions<
   string,
@@ -97,4 +95,3 @@ export const permissions: Permissions<
     extend('PORTAL_USER');
   },
 };
-

@@ -1,5 +1,10 @@
 import type { INestApplication } from '@nestjs/common';
-import { UserTypeEnum, AttendanceStatusEnum, LeaveTypeEnum, LeaveStatusEnum } from '@repo/contracts';
+import {
+  UserTypeEnum,
+  AttendanceStatusEnum,
+  LeaveTypeEnum,
+  LeaveStatusEnum,
+} from '@repo/contracts';
 import request from 'supertest';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { setupE2eApp, teardownE2eApp } from './utils/e2e-test.utils.js';
@@ -47,7 +52,8 @@ describe('AdminAttendanceController (e2e)', () => {
       .set('Authorization', `Bearer ${adminToken}`)
       .expect(200);
 
-    const studentList = studentRes.body.data?.data || studentRes.body.data || [];
+    const studentList =
+      studentRes.body.data?.data || studentRes.body.data || [];
     if (studentList.length > 0) {
       testStudentId = studentList[0].id;
     }
@@ -58,7 +64,8 @@ describe('AdminAttendanceController (e2e)', () => {
       .set('Authorization', `Bearer ${adminToken}`)
       .expect(200);
 
-    const teacherList = teacherRes.body.data?.data || teacherRes.body.data || [];
+    const teacherList =
+      teacherRes.body.data?.data || teacherRes.body.data || [];
     if (teacherList.length > 0) {
       testTeacherId = teacherList[0].id;
     }
@@ -92,7 +99,11 @@ describe('AdminAttendanceController (e2e)', () => {
           classId: testClassId,
           date: '2026-08-17',
           records: [
-            { studentId: testStudentId, status: AttendanceStatusEnum.LATE, remarks: 'Late by 10m' },
+            {
+              studentId: testStudentId,
+              status: AttendanceStatusEnum.LATE,
+              remarks: 'Late by 10m',
+            },
           ],
         })
         .expect(201);
@@ -104,7 +115,9 @@ describe('AdminAttendanceController (e2e)', () => {
 
     it('GET /api/v1/admin/attendance/students - should list student attendances with filters', async () => {
       const res = await request(server)
-        .get(`/api/v1/admin/attendance/students?classId=${testClassId}&date=2026-08-17`)
+        .get(
+          `/api/v1/admin/attendance/students?classId=${testClassId}&date=2026-08-17`,
+        )
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -115,7 +128,9 @@ describe('AdminAttendanceController (e2e)', () => {
 
     it('GET /api/v1/admin/attendance/students/matrix - should return sheet matrix for date range', async () => {
       const res = await request(server)
-        .get(`/api/v1/admin/attendance/students/matrix?classId=${testClassId}&startDate=2026-08-15&endDate=2026-08-17`)
+        .get(
+          `/api/v1/admin/attendance/students/matrix?classId=${testClassId}&startDate=2026-08-15&endDate=2026-08-17`,
+        )
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -127,7 +142,9 @@ describe('AdminAttendanceController (e2e)', () => {
 
     it('GET /api/v1/admin/attendance/students/summary - should return class attendance summary', async () => {
       const res = await request(server)
-        .get(`/api/v1/admin/attendance/students/summary?classId=${testClassId}&date=2026-08-17`)
+        .get(
+          `/api/v1/admin/attendance/students/summary?classId=${testClassId}&date=2026-08-17`,
+        )
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -171,7 +188,9 @@ describe('AdminAttendanceController (e2e)', () => {
 
     it('GET /api/v1/admin/attendance/teachers/summary - should return monthly attendance and payroll estimates', async () => {
       const res = await request(server)
-        .get(`/api/v1/admin/attendance/teachers/summary?teacherId=${testTeacherId}&month=2026-08`)
+        .get(
+          `/api/v1/admin/attendance/teachers/summary?teacherId=${testTeacherId}&month=2026-08`,
+        )
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -228,7 +247,9 @@ describe('AdminAttendanceController (e2e)', () => {
 
     it('POST /api/v1/admin/attendance/leave-requests/:id/review - should approve leave and auto-sync ON_LEAVE attendances', async () => {
       const res = await request(server)
-        .post(`/api/v1/admin/attendance/leave-requests/${createdLeaveId}/review`)
+        .post(
+          `/api/v1/admin/attendance/leave-requests/${createdLeaveId}/review`,
+        )
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           status: LeaveStatusEnum.APPROVED,
@@ -240,7 +261,9 @@ describe('AdminAttendanceController (e2e)', () => {
 
       // Verify that teacher attendance records were auto-created for 2026-08-25 with ON_LEAVE
       const attRes = await request(server)
-        .get(`/api/v1/admin/attendance/teachers?teacherId=${testTeacherId}&date=2026-08-25`)
+        .get(
+          `/api/v1/admin/attendance/teachers?teacherId=${testTeacherId}&date=2026-08-25`,
+        )
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 

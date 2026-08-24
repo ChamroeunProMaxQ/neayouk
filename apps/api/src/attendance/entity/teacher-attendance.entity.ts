@@ -32,13 +32,29 @@ export class TeacherAttendance {
   @Column({ type: 'date' })
   date!: string;
 
-  @Column({ name: 'check_in_time', type: 'varchar', length: 10, nullable: true })
+  @Column({
+    name: 'check_in_time',
+    type: 'varchar',
+    length: 10,
+    nullable: true,
+  })
   checkInTime!: string | null;
 
-  @Column({ name: 'check_out_time', type: 'varchar', length: 10, nullable: true })
+  @Column({
+    name: 'check_out_time',
+    type: 'varchar',
+    length: 10,
+    nullable: true,
+  })
   checkOutTime!: string | null;
 
-  @Column({ name: 'hours_worked', type: 'decimal', precision: 5, scale: 2, default: 0 })
+  @Column({
+    name: 'hours_worked',
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    default: 0,
+  })
   hoursWorked!: number;
 
   @Column({

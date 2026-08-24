@@ -8,7 +8,9 @@ import type { TeacherAttendance } from '../entity/teacher-attendance.entity.js';
 import type { LeaveRequest } from '../entity/leave-request.entity.js';
 
 export class AttendanceMapper {
-  static toStudentAttendanceDto(entity: StudentAttendance): StudentAttendanceAttribute {
+  static toStudentAttendanceDto(
+    entity: StudentAttendance,
+  ): StudentAttendanceAttribute {
     return {
       id: entity.id,
       uuid: entity.uuid,
@@ -20,7 +22,11 @@ export class AttendanceMapper {
       studentGender: entity.student?.gender,
       classId: entity.classId,
       className: entity.class?.name,
-      date: typeof entity.date === 'string' ? entity.date : (entity.date as any)?.toISOString?.()?.slice(0, 10) ?? String(entity.date),
+      date:
+        typeof entity.date === 'string'
+          ? entity.date
+          : ((entity.date as any)?.toISOString?.()?.slice(0, 10) ??
+            String(entity.date)),
       status: entity.status,
       sessionSlotId: entity.sessionSlotId ?? null,
       remarks: entity.remarks ?? null,
@@ -32,18 +38,26 @@ export class AttendanceMapper {
     };
   }
 
-  static toStudentAttendanceDtoList(entities: StudentAttendance[]): StudentAttendanceAttribute[] {
+  static toStudentAttendanceDtoList(
+    entities: StudentAttendance[],
+  ): StudentAttendanceAttribute[] {
     return entities.map((e) => this.toStudentAttendanceDto(e));
   }
 
-  static toTeacherAttendanceDto(entity: TeacherAttendance): TeacherAttendanceAttribute {
+  static toTeacherAttendanceDto(
+    entity: TeacherAttendance,
+  ): TeacherAttendanceAttribute {
     return {
       id: entity.id,
       uuid: entity.uuid,
       teacherId: entity.teacherId,
       teacherName: entity.teacher?.name,
       teacherCode: entity.teacher?.teacherCode ?? null,
-      date: typeof entity.date === 'string' ? entity.date : (entity.date as any)?.toISOString?.()?.slice(0, 10) ?? String(entity.date),
+      date:
+        typeof entity.date === 'string'
+          ? entity.date
+          : ((entity.date as any)?.toISOString?.()?.slice(0, 10) ??
+            String(entity.date)),
       checkInTime: entity.checkInTime ?? null,
       checkOutTime: entity.checkOutTime ?? null,
       hoursWorked: Number(entity.hoursWorked || 0),
@@ -57,7 +71,9 @@ export class AttendanceMapper {
     };
   }
 
-  static toTeacherAttendanceDtoList(entities: TeacherAttendance[]): TeacherAttendanceAttribute[] {
+  static toTeacherAttendanceDtoList(
+    entities: TeacherAttendance[],
+  ): TeacherAttendanceAttribute[] {
     return entities.map((e) => this.toTeacherAttendanceDto(e));
   }
 
@@ -70,8 +86,16 @@ export class AttendanceMapper {
       teacherCode: entity.teacher?.teacherCode ?? null,
       userId: entity.userId ?? null,
       leaveType: entity.leaveType,
-      startDate: typeof entity.startDate === 'string' ? entity.startDate : (entity.startDate as any)?.toISOString?.()?.slice(0, 10) ?? String(entity.startDate),
-      endDate: typeof entity.endDate === 'string' ? entity.endDate : (entity.endDate as any)?.toISOString?.()?.slice(0, 10) ?? String(entity.endDate),
+      startDate:
+        typeof entity.startDate === 'string'
+          ? entity.startDate
+          : ((entity.startDate as any)?.toISOString?.()?.slice(0, 10) ??
+            String(entity.startDate)),
+      endDate:
+        typeof entity.endDate === 'string'
+          ? entity.endDate
+          : ((entity.endDate as any)?.toISOString?.()?.slice(0, 10) ??
+            String(entity.endDate)),
       totalDays: Number(entity.totalDays || 1),
       reason: entity.reason,
       attachmentUrl: entity.attachmentUrl ?? null,
@@ -86,7 +110,9 @@ export class AttendanceMapper {
     };
   }
 
-  static toLeaveRequestDtoList(entities: LeaveRequest[]): LeaveRequestAttribute[] {
+  static toLeaveRequestDtoList(
+    entities: LeaveRequest[],
+  ): LeaveRequestAttribute[] {
     return entities.map((e) => this.toLeaveRequestDto(e));
   }
 }

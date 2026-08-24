@@ -56,10 +56,7 @@ export class AdminProgramController {
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
   @UseAbility(DefaultActions.update, Program)
   @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateProgramDto,
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateProgramDto) {
     return this.programService.update(id, dto);
   }
 

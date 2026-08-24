@@ -50,7 +50,7 @@ export class AdminAttendanceController {
     private readonly studentAttendanceService: StudentAttendanceService,
     private readonly teacherAttendanceService: TeacherAttendanceService,
     private readonly leaveRequestService: LeaveRequestService,
-  ) { }
+  ) {}
 
   // ==================== STUDENT ATTENDANCE ====================
 
@@ -102,7 +102,10 @@ export class AdminAttendanceController {
     @Body() dto: BatchRecordStudentAttendanceDto,
     @CurrentUser('sub') currentUserId: number,
   ) {
-    return this.studentAttendanceService.batchRecordAttendance(dto, currentUserId);
+    return this.studentAttendanceService.batchRecordAttendance(
+      dto,
+      currentUserId,
+    );
   }
 
   // ==================== TEACHER ATTENDANCE ====================
@@ -123,7 +126,10 @@ export class AdminAttendanceController {
     @Query('teacherId', ParseIntPipe) teacherId: number,
     @Query('month') month: string,
   ) {
-    return this.teacherAttendanceService.getTeacherMonthlySummary(teacherId, month);
+    return this.teacherAttendanceService.getTeacherMonthlySummary(
+      teacherId,
+      month,
+    );
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
@@ -143,7 +149,10 @@ export class AdminAttendanceController {
     @Body() dto: BatchRecordTeacherAttendanceDto,
     @CurrentUser('sub') currentUserId: number,
   ) {
-    return this.teacherAttendanceService.batchRecordAttendance(dto, currentUserId);
+    return this.teacherAttendanceService.batchRecordAttendance(
+      dto,
+      currentUserId,
+    );
   }
 
   // ==================== LEAVE REQUESTS ====================

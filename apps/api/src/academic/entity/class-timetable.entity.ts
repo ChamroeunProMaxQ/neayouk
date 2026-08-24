@@ -41,10 +41,20 @@ export class ClassTimetable implements ClassTimetableAttribute {
   @Column({ name: 'subject_code', type: 'varchar', length: 50, nullable: true })
   subjectCode!: string | null;
 
-  @Column({ name: 'teacher_id', type: 'bigint', unsigned: true, nullable: true })
+  @Column({
+    name: 'teacher_id',
+    type: 'bigint',
+    unsigned: true,
+    nullable: true,
+  })
   teacherId!: number | null;
 
-  @Column({ name: 'teacher_name', type: 'varchar', length: 255, nullable: true })
+  @Column({
+    name: 'teacher_name',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
   teacherName!: string | null;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
@@ -56,7 +66,13 @@ export class ClassTimetable implements ClassTimetableAttribute {
   @Column({ name: 'end_time', type: 'varchar', length: 10 })
   endTime!: string;
 
-  @Column({ name: 'color_tag', type: 'varchar', length: 50, default: '#45AC5E', nullable: true })
+  @Column({
+    name: 'color_tag',
+    type: 'varchar',
+    length: 50,
+    default: '#45AC5E',
+    nullable: true,
+  })
   colorTag!: string | null;
 
   @Column({ type: 'text', nullable: true })

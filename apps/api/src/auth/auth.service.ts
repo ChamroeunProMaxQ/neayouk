@@ -9,15 +9,12 @@ export class AuthService {
   constructor(
     private readonly userServer: UserService,
     private readonly userTokenSerive: UserTokenService,
-  ) { }
+  ) {}
 
   // Mock login method (replace with database lookup and bcrypt check in real apps)
   async login(dto: LogInDto) {
     const user = await this.userServer.findByUsername(dto.username);
-    const isMatch = comparePassword(
-      dto.password,
-      user.password,
-    );
+    const isMatch = comparePassword(dto.password, user.password);
     if (!isMatch) throw new UnauthorizedException();
 
     const accessToken = await this.userTokenSerive.generateAccessToken(user);

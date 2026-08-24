@@ -35,12 +35,19 @@ export class LeaveRequestService {
     private readonly logger: LoggerService,
   ) {}
 
-  async create(dto: CreateLeaveRequestDto, userId?: number): Promise<LeaveRequestAttribute> {
+  async create(
+    dto: CreateLeaveRequestDto,
+    userId?: number,
+  ): Promise<LeaveRequestAttribute> {
     if (dto.endDate < dto.startDate) {
-      throw new BadRequestException('End date must be greater than or equal to start date');
+      throw new BadRequestException(
+        'End date must be greater than or equal to start date',
+      );
     }
 
-    const teacher = await this.teacherRepo.findOne({ where: { id: dto.teacherId } });
+    const teacher = await this.teacherRepo.findOne({
+      where: { id: dto.teacherId },
+    });
     if (!teacher) {
       throw new NotFoundException(`Teacher with ID ${dto.teacherId} not found`);
     }
@@ -62,7 +69,10 @@ export class LeaveRequestService {
     return AttendanceMapper.toLeaveRequestDto(reloaded!);
   }
 
-  async update(id: number, dto: UpdateLeaveRequestDto): Promise<LeaveRequestAttribute> {
+  async update(
+    id: number,
+    dto: UpdateLeaveRequestDto,
+  ): Promise<LeaveRequestAttribute> {
     const leave = await this.leaveRequestRepo.findOne({
       where: { id },
       relations: ['teacher', 'user', 'reviewer'],
@@ -72,19 +82,27 @@ export class LeaveRequestService {
     }
 
     if (leave.status !== LeaveStatusEnum.PENDING) {
-      throw new BadRequestException('Cannot edit a leave request that has already been reviewed');
+      throw new BadRequestException(
+        'Cannot edit a leave request that has already been reviewed',
+      );
     }
 
     const startDate = dto.startDate ?? leave.startDate;
     const endDate = dto.endDate ?? leave.endDate;
     if (endDate < startDate) {
-      throw new BadRequestException('End date must be greater than or equal to start date');
+      throw new BadRequestException(
+        'End date must be greater than or equal to start date',
+      );
     }
 
     if (dto.teacherId) {
-      const teacher = await this.teacherRepo.findOne({ where: { id: dto.teacherId } });
+      const teacher = await this.teacherRepo.findOne({
+        where: { id: dto.teacherId },
+      });
       if (!teacher) {
-        throw new NotFoundException(`Teacher with ID ${dto.teacherId} not found`);
+        throw new NotFoundException(
+          `Teacher with ID ${dto.teacherId} not found`,
+        );
       }
     }
 
@@ -95,7 +113,10 @@ export class LeaveRequestService {
       endDate: dto.endDate ?? leave.endDate,
       totalDays: dto.totalDays ?? leave.totalDays,
       reason: dto.reason ?? leave.reason,
-      attachmentUrl: dto.attachmentUrl !== undefined ? dto.attachmentUrl : leave.attachmentUrl,
+      attachmentUrl:
+        dto.attachmentUrl !== undefined
+          ? dto.attachmentUrl
+          : leave.attachmentUrl,
     });
 
     const saved = await this.leaveRequestRepo.save(leave);
@@ -110,9 +131,15 @@ export class LeaveRequestService {
     });
   }
 
-  async findAll(
-    query: FindLeaveRequestsDto,
-  ): Promise<{ data: LeaveRequestAttribute[]; pagination: { totalCount: number; page: number; pageSize: number; pageCount: number } }> {
+  async findAll(query: FindLeaveRequestsDto): Promise<{
+    data: LeaveRequestAttribute[];
+    pagination: {
+      totalCount: number;
+      page: number;
+      pageSize: number;
+      pageCount: number;
+    };
+  }> {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
     const skip = (page - 1) * pageSize;
@@ -124,21 +151,30 @@ export class LeaveRequestService {
       .leftJoinAndSelect('leave.reviewer', 'reviewer');
 
     if (query.teacherId) {
-      qb.andWhere('leave.teacher_id = :teacherId', { teacherId: query.teacherId });
+      qb.andWhere('leave.teacher_id = :teacherId', {
+        teacherId: query.teacherId,
+      });
     }
     if (query.leaveType) {
-      qb.andWhere('leave.leave_type = :leaveType', { leaveType: query.leaveType });
+      qb.andWhere('leave.leave_type = :leaveType', {
+        leaveType: query.leaveType,
+      });
     }
     if (query.status) {
       qb.andWhere('leave.status = :status', { status: query.status });
     }
     if (query.startDate && query.endDate) {
-      qb.andWhere('leave.start_date <= :endDate AND leave.end_date >= :startDate', {
-        startDate: query.startDate,
-        endDate: query.endDate,
-      });
+      qb.andWhere(
+        'leave.start_date <= :endDate AND leave.end_date >= :startDate',
+        {
+          startDate: query.startDate,
+          endDate: query.endDate,
+        },
+      );
     } else if (query.startDate) {
-      qb.andWhere('leave.end_date >= :startDate', { startDate: query.startDate });
+      qb.andWhere('leave.end_date >= :startDate', {
+        startDate: query.startDate,
+      });
     } else if (query.endDate) {
       qb.andWhere('leave.start_date <= :endDate', { endDate: query.endDate });
     }
@@ -150,9 +186,15 @@ export class LeaveRequestService {
 
     const sortBy = query.sortBy || 'id';
     const sortOrder = query.sortOrder || 'DESC';
-    qb.orderBy(`leave.${sortBy === 'status' ? 'status' : sortBy === 'startDate' ? 'startDate' : sortBy === 'endDate' ? 'endDate' : sortBy === 'totalDays' ? 'totalDays' : 'id'}`, sortOrder);
+    qb.orderBy(
+      `leave.${sortBy === 'status' ? 'status' : sortBy === 'startDate' ? 'startDate' : sortBy === 'endDate' ? 'endDate' : sortBy === 'totalDays' ? 'totalDays' : 'id'}`,
+      sortOrder,
+    );
 
-    const [items, totalCount] = await qb.skip(skip).take(pageSize).getManyAndCount();
+    const [items, totalCount] = await qb
+      .skip(skip)
+      .take(pageSize)
+      .getManyAndCount();
 
     return {
       data: AttendanceMapper.toLeaveRequestDtoList(items),
@@ -186,7 +228,10 @@ export class LeaveRequestService {
     const saved = await this.leaveRequestRepo.save(leave);
 
     // Auto-sync attendance if approved
-    if (dto.status === LeaveStatusEnum.APPROVED && dto.syncAttendance !== false) {
+    if (
+      dto.status === LeaveStatusEnum.APPROVED &&
+      dto.syncAttendance !== false
+    ) {
       const start = new Date(leave.startDate);
       const end = new Date(leave.endDate);
 

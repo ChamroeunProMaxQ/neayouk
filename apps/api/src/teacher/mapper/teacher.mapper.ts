@@ -35,7 +35,8 @@ export class TeacherMapper {
       specialization: entity.specialization ?? null,
       bio: entity.bio ?? null,
       status: entity.status,
-      classCount: entity.classes !== undefined ? entity.classes.length : undefined,
+      classCount:
+        entity.classes !== undefined ? entity.classes.length : undefined,
       classes: classesList,
       user: entity.user ? UserMapper.toDto(entity.user) : null,
       createdAt: entity.createdAt,

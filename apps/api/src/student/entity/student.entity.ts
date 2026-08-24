@@ -9,10 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import {
-  StudentStatusEnum,
-  ClassEnrollmentStatusEnum,
-} from '@repo/contracts';
+import { StudentStatusEnum, ClassEnrollmentStatusEnum } from '@repo/contracts';
 import type { StudentClass } from './student-class.entity.js';
 import type { StudentPayment } from './student-payment.entity.js';
 
@@ -24,7 +21,13 @@ export class Student {
   @Column({ type: 'varchar', length: 36 })
   uuid!: string;
 
-  @Column({ name: 'student_code', type: 'varchar', length: 50, unique: true, nullable: true })
+  @Column({
+    name: 'student_code',
+    type: 'varchar',
+    length: 50,
+    unique: true,
+    nullable: true,
+  })
   studentCode!: string | null;
 
   @Column({ name: 'first_name', type: 'varchar', length: 255 })
@@ -33,31 +36,60 @@ export class Student {
   @Column({ name: 'last_name', type: 'varchar', length: 255 })
   lastName!: string;
 
-  @Column({ name: 'first_name_km', type: 'varchar', length: 255, nullable: true })
+  @Column({
+    name: 'first_name_km',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
   firstNameKm!: string | null;
 
-  @Column({ name: 'last_name_km', type: 'varchar', length: 255, nullable: true })
+  @Column({
+    name: 'last_name_km',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
   lastNameKm!: string | null;
 
   @Column({ type: 'varchar', length: 16, default: 'MALE' })
   gender!: 'MALE' | 'FEMALE' | 'OTHER';
 
-  @Column({ name: 'date_of_birth', type: 'varchar', length: 255, nullable: true })
+  @Column({
+    name: 'date_of_birth',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
   dateOfBirth!: string | null;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   contact!: string | null;
 
-  @Column({ name: 'guardian_name', type: 'varchar', length: 255, nullable: true })
+  @Column({
+    name: 'guardian_name',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
   guardianName!: string | null;
 
-  @Column({ name: 'guardian_phone', type: 'varchar', length: 50, nullable: true })
+  @Column({
+    name: 'guardian_phone',
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+  })
   guardianPhone!: string | null;
 
   @Column({ name: 'payable_date', type: 'int', default: 1, nullable: true })
   payableDate!: number;
 
-  @Column({ name: 'registered_at', type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({
+    name: 'registered_at',
+    type: 'datetime',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   registeredAt!: Date;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })

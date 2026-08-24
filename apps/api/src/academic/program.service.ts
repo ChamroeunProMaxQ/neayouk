@@ -24,12 +24,7 @@ export class ProgramService {
   ) {}
 
   async findAll(dto: FindProgramsDto) {
-    const {
-      search,
-      status,
-      sortBy = 'id',
-      sortOrder = 'DESC',
-    } = dto;
+    const { search, status, sortBy = 'id', sortOrder = 'DESC' } = dto;
 
     const query = this.programRepo
       .createQueryBuilder('program')
@@ -52,7 +47,10 @@ export class ProgramService {
     query.skip(skip).take(take);
 
     const [entities, total] = await query.getManyAndCount();
-    return [ProgramMapper.toDtoList(entities), total] as [ProgramAttribute[], number];
+    return [ProgramMapper.toDtoList(entities), total] as [
+      ProgramAttribute[],
+      number,
+    ];
   }
 
   async findOne(id: number) {
@@ -71,7 +69,9 @@ export class ProgramService {
       where: { code: dto.code },
     });
     if (existing) {
-      throw new ConflictException(`Program with code "${dto.code}" already exists`);
+      throw new ConflictException(
+        `Program with code "${dto.code}" already exists`,
+      );
     }
 
     const program = this.programRepo.create({
@@ -98,7 +98,9 @@ export class ProgramService {
         where: { code: dto.code },
       });
       if (existing && existing.id !== id) {
-        throw new ConflictException(`Program with code "${dto.code}" already exists`);
+        throw new ConflictException(
+          `Program with code "${dto.code}" already exists`,
+        );
       }
     }
 

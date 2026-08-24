@@ -50,7 +50,8 @@ export class ClassMapper {
       academicYear: entity.academicYear,
       semester: entity.semester,
       status: entity.status,
-      studentCount: entity.enrollments !== undefined ? activeEnrollments.length : undefined,
+      studentCount:
+        entity.enrollments !== undefined ? activeEnrollments.length : undefined,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
       deletedAt: entity.deletedAt,

@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { StudentAttendanceService } from './student-attendance.service.js';
-import { AttendanceStatusEnum, ClassEnrollmentStatusEnum } from '@repo/contracts';
+import {
+  AttendanceStatusEnum,
+  ClassEnrollmentStatusEnum,
+} from '@repo/contracts';
 
 describe('StudentAttendanceService', () => {
   let service: StudentAttendanceService;
@@ -18,7 +21,11 @@ describe('StudentAttendanceService', () => {
       find: vi.fn(),
       create: vi.fn((dto) => ({ id: 1, uuid: 'att-uuid-1', ...dto })),
       save: vi.fn((entity) =>
-        Promise.resolve({ id: entity.id || 1, uuid: entity.uuid || 'att-uuid-1', ...entity }),
+        Promise.resolve({
+          id: entity.id || 1,
+          uuid: entity.uuid || 'att-uuid-1',
+          ...entity,
+        }),
       ),
       merge: vi.fn((entity, dto) => Object.assign(entity, dto)),
     };
@@ -54,7 +61,11 @@ describe('StudentAttendanceService', () => {
   // 1. Happy Path
   describe('1. Happy Path (200/201 Success)', () => {
     it('should record new student attendance record', async () => {
-      mockStudentRepo.findOne.mockResolvedValue({ id: 1, firstName: 'Sokha', lastName: 'Chan' });
+      mockStudentRepo.findOne.mockResolvedValue({
+        id: 1,
+        firstName: 'Sokha',
+        lastName: 'Chan',
+      });
       mockClassRepo.findOne.mockResolvedValue({ id: 10, name: 'Grade 1A' });
       mockAttendanceRepo.findOne.mockResolvedValue(null);
 
@@ -81,7 +92,11 @@ describe('StudentAttendanceService', () => {
     });
 
     it('should update existing attendance record idempotently', async () => {
-      mockStudentRepo.findOne.mockResolvedValue({ id: 1, firstName: 'Sokha', lastName: 'Chan' });
+      mockStudentRepo.findOne.mockResolvedValue({
+        id: 1,
+        firstName: 'Sokha',
+        lastName: 'Chan',
+      });
       mockClassRepo.findOne.mockResolvedValue({ id: 10, name: 'Grade 1A' });
 
       const existing = {
@@ -120,7 +135,11 @@ describe('StudentAttendanceService', () => {
     it('should batch record attendance for multiple students', async () => {
       mockClassRepo.findOne.mockResolvedValue({ id: 10, name: 'Grade 1A' });
       mockStudentRepo.findOne.mockImplementation(async ({ where }: any) => {
-        return { id: where.id, firstName: `Student${where.id}`, lastName: 'Test' };
+        return {
+          id: where.id,
+          firstName: `Student${where.id}`,
+          lastName: 'Test',
+        };
       });
       mockAttendanceRepo.findOne.mockResolvedValue(null);
 
@@ -129,7 +148,11 @@ describe('StudentAttendanceService', () => {
         date: '2026-08-17',
         records: [
           { studentId: 1, status: AttendanceStatusEnum.PRESENT },
-          { studentId: 2, status: AttendanceStatusEnum.LATE, remarks: 'Traffic' },
+          {
+            studentId: 2,
+            status: AttendanceStatusEnum.LATE,
+            remarks: 'Traffic',
+          },
           { studentId: 3, status: AttendanceStatusEnum.ABSENT },
         ],
       };
@@ -144,13 +167,31 @@ describe('StudentAttendanceService', () => {
         {
           studentId: 1,
           status: ClassEnrollmentStatusEnum.ENROLLED,
-          student: { id: 1, studentCode: 'STU-001', firstName: 'Sokha', lastName: 'Chan', gender: 'FEMALE' },
+          student: {
+            id: 1,
+            studentCode: 'STU-001',
+            firstName: 'Sokha',
+            lastName: 'Chan',
+            gender: 'FEMALE',
+          },
         },
       ]);
 
       mockAttendanceRepo.find.mockResolvedValue([
-        { id: 101, studentId: 1, classId: 10, date: '2026-08-15', status: AttendanceStatusEnum.PRESENT },
-        { id: 102, studentId: 1, classId: 10, date: '2026-08-16', status: AttendanceStatusEnum.LATE },
+        {
+          id: 101,
+          studentId: 1,
+          classId: 10,
+          date: '2026-08-15',
+          status: AttendanceStatusEnum.PRESENT,
+        },
+        {
+          id: 102,
+          studentId: 1,
+          classId: 10,
+          date: '2026-08-16',
+          status: AttendanceStatusEnum.LATE,
+        },
       ]);
 
       const matrix = await service.getMatrix(10, '2026-08-15', '2026-08-17');
@@ -159,7 +200,9 @@ describe('StudentAttendanceService', () => {
       expect(matrix.rows).toHaveLength(1);
       expect(matrix.rows[0].totalPresent).toBe(1);
       expect(matrix.rows[0].totalLate).toBe(1);
-      expect(matrix.rows[0].attendances['2026-08-15']?.status).toBe(AttendanceStatusEnum.PRESENT);
+      expect(matrix.rows[0].attendances['2026-08-15']?.status).toBe(
+        AttendanceStatusEnum.PRESENT,
+      );
     });
 
     it('should compute class daily attendance summary', async () => {
@@ -185,7 +228,12 @@ describe('StudentAttendanceService', () => {
     it('should throw NotFoundException if student does not exist', async () => {
       mockStudentRepo.findOne.mockResolvedValue(null);
       await expect(
-        service.recordAttendance({ studentId: 999, classId: 10, date: '2026-08-17', status: AttendanceStatusEnum.PRESENT }),
+        service.recordAttendance({
+          studentId: 999,
+          classId: 10,
+          date: '2026-08-17',
+          status: AttendanceStatusEnum.PRESENT,
+        }),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -193,7 +241,12 @@ describe('StudentAttendanceService', () => {
       mockStudentRepo.findOne.mockResolvedValue({ id: 1 });
       mockClassRepo.findOne.mockResolvedValue(null);
       await expect(
-        service.recordAttendance({ studentId: 1, classId: 999, date: '2026-08-17', status: AttendanceStatusEnum.PRESENT }),
+        service.recordAttendance({
+          studentId: 1,
+          classId: 999,
+          date: '2026-08-17',
+          status: AttendanceStatusEnum.PRESENT,
+        }),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -201,7 +254,9 @@ describe('StudentAttendanceService', () => {
       mockClassRepo.findOne.mockResolvedValue({ id: 10, name: 'Grade 1A' });
       mockStudentClassRepo.find.mockResolvedValue([]);
 
-      await expect(service.getMatrix(10, '2026-08-20', '2026-08-10')).rejects.toThrow(BadRequestException);
+      await expect(
+        service.getMatrix(10, '2026-08-20', '2026-08-10'),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

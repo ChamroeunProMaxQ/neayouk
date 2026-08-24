@@ -38,13 +38,15 @@ export class StudentAttendanceService {
     private readonly studentClassRepo: Repository<StudentClass>,
     @Inject(APP_LOGGER)
     private readonly logger: LoggerService,
-  ) { }
+  ) {}
 
   async recordAttendance(
     dto: RecordStudentAttendanceDto,
     recordedBy?: number,
   ): Promise<StudentAttendanceAttribute> {
-    const student = await this.studentRepo.findOne({ where: { id: dto.studentId } });
+    const student = await this.studentRepo.findOne({
+      where: { id: dto.studentId },
+    });
     if (!student) {
       throw new NotFoundException(`Student with ID ${dto.studentId} not found`);
     }
@@ -124,9 +126,15 @@ export class StudentAttendanceService {
     return results;
   }
 
-  async findAll(
-    query: FindStudentAttendanceDto,
-  ): Promise<{ data: StudentAttendanceAttribute[]; pagination: { totalCount: number; page: number; pageSize: number; pageCount: number } }> {
+  async findAll(query: FindStudentAttendanceDto): Promise<{
+    data: StudentAttendanceAttribute[];
+    pagination: {
+      totalCount: number;
+      page: number;
+      pageSize: number;
+      pageCount: number;
+    };
+  }> {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
     const skip = (page - 1) * pageSize;
@@ -141,7 +149,9 @@ export class StudentAttendanceService {
       qb.andWhere('att.class_id = :classId', { classId: query.classId });
     }
     if (query.studentId) {
-      qb.andWhere('att.student_id = :studentId', { studentId: query.studentId });
+      qb.andWhere('att.student_id = :studentId', {
+        studentId: query.studentId,
+      });
     }
     if (query.date) {
       qb.andWhere('att.date = :date', { date: query.date });
@@ -162,9 +172,15 @@ export class StudentAttendanceService {
 
     const sortBy = query.sortBy || 'date';
     const sortOrder = query.sortOrder || 'DESC';
-    qb.orderBy(`att.${sortBy === 'id' ? 'id' : sortBy === 'status' ? 'status' : 'date'}`, sortOrder);
+    qb.orderBy(
+      `att.${sortBy === 'id' ? 'id' : sortBy === 'status' ? 'status' : 'date'}`,
+      sortOrder,
+    );
 
-    const [items, totalCount] = await qb.skip(skip).take(pageSize).getManyAndCount();
+    const [items, totalCount] = await qb
+      .skip(skip)
+      .take(pageSize)
+      .getManyAndCount();
 
     return {
       data: AttendanceMapper.toStudentAttendanceDtoList(items),
@@ -201,7 +217,9 @@ export class StudentAttendanceService {
     const end = new Date(endDateStr);
 
     if (curr > end) {
-      throw new BadRequestException('End date must be greater than or equal to start date');
+      throw new BadRequestException(
+        'End date must be greater than or equal to start date',
+      );
     }
 
     while (curr <= end) {
@@ -223,14 +241,21 @@ export class StudentAttendanceService {
       if (!recordMap.has(r.studentId)) {
         recordMap.set(r.studentId, new Map());
       }
-      const d = typeof r.date === 'string' ? r.date : (r.date as any)?.toISOString?.()?.slice(0, 10);
+      const d =
+        typeof r.date === 'string'
+          ? r.date
+          : (r.date as any)?.toISOString?.()?.slice(0, 10);
       recordMap.get(r.studentId)!.set(d, r);
     }
 
     // Build matrix rows
     const rows: StudentAttendanceMatrixRow[] = enrolledStudents.map((stu) => {
-      const stuRecords = recordMap.get(stu.id) || new Map<string, StudentAttendance>();
-      const attendances: Record<string, { id?: number; status: AttendanceStatusEnum; remarks?: string | null }> = {};
+      const stuRecords =
+        recordMap.get(stu.id) || new Map<string, StudentAttendance>();
+      const attendances: Record<
+        string,
+        { id?: number; status: AttendanceStatusEnum; remarks?: string | null }
+      > = {};
 
       let totalPresent = 0;
       let totalAbsent = 0;
@@ -249,15 +274,23 @@ export class StudentAttendanceService {
         if (rec.status === AttendanceStatusEnum.PRESENT) totalPresent++;
         else if (rec.status === AttendanceStatusEnum.ABSENT) totalAbsent++;
         else if (rec.status === AttendanceStatusEnum.LATE) totalLate++;
-        else if (rec.status === AttendanceStatusEnum.EXCUSED || rec.status === AttendanceStatusEnum.ON_LEAVE) totalExcused++;
+        else if (
+          rec.status === AttendanceStatusEnum.EXCUSED ||
+          rec.status === AttendanceStatusEnum.ON_LEAVE
+        )
+          totalExcused++;
         else if (rec.status === AttendanceStatusEnum.HALF_DAY) totalHalfDay++;
-
       }
 
-      const totalRecorded = totalPresent + totalAbsent + totalLate + totalExcused + totalHalfDay;
+      const totalRecorded =
+        totalPresent + totalAbsent + totalLate + totalExcused + totalHalfDay;
       const attendanceRate =
         totalRecorded > 0
-          ? Math.round(((totalPresent + totalLate * 0.5 + totalHalfDay * 0.5) / totalRecorded) * 100)
+          ? Math.round(
+              ((totalPresent + totalLate * 0.5 + totalHalfDay * 0.5) /
+                totalRecorded) *
+                100,
+            )
           : 100;
 
       return {
@@ -289,7 +322,10 @@ export class StudentAttendanceService {
     };
   }
 
-  async getClassSummary(classId: number, dateStr: string): Promise<ClassAttendanceSummaryDto> {
+  async getClassSummary(
+    classId: number,
+    dateStr: string,
+  ): Promise<ClassAttendanceSummaryDto> {
     const cls = await this.classRepo.findOne({ where: { id: classId } });
     if (!cls) {
       throw new NotFoundException(`Class with ID ${classId} not found`);
@@ -313,14 +349,23 @@ export class StudentAttendanceService {
       if (r.status === AttendanceStatusEnum.PRESENT) presentCount++;
       else if (r.status === AttendanceStatusEnum.ABSENT) absentCount++;
       else if (r.status === AttendanceStatusEnum.LATE) lateCount++;
-      else if (r.status === AttendanceStatusEnum.EXCUSED || r.status === AttendanceStatusEnum.ON_LEAVE) excusedCount++;
+      else if (
+        r.status === AttendanceStatusEnum.EXCUSED ||
+        r.status === AttendanceStatusEnum.ON_LEAVE
+      )
+        excusedCount++;
       else if (r.status === AttendanceStatusEnum.HALF_DAY) halfDayCount++;
     }
 
-    const totalRecorded = presentCount + absentCount + lateCount + excusedCount + halfDayCount;
+    const totalRecorded =
+      presentCount + absentCount + lateCount + excusedCount + halfDayCount;
     const attendanceRate =
       totalRecorded > 0
-        ? Math.round(((presentCount + lateCount * 0.5 + halfDayCount * 0.5) / totalRecorded) * 100)
+        ? Math.round(
+            ((presentCount + lateCount * 0.5 + halfDayCount * 0.5) /
+              totalRecorded) *
+              100,
+          )
         : totalEnrolled > 0
           ? 0
           : 100;

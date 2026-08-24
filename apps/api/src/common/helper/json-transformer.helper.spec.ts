@@ -10,7 +10,10 @@ describe('jsonArrayTransformer', () => {
     });
 
     it('parses valid JSON string or wraps unparseable string', () => {
-      expect(jsonArrayTransformer.to('["Book 1", "Book 2"]')).toEqual(['Book 1', 'Book 2']);
+      expect(jsonArrayTransformer.to('["Book 1", "Book 2"]')).toEqual([
+        'Book 1',
+        'Book 2',
+      ]);
       expect(jsonArrayTransformer.to('Single Item')).toEqual(['Single Item']);
     });
 
@@ -27,11 +30,18 @@ describe('jsonArrayTransformer', () => {
     });
 
     it('returns array directly if already parsed by database driver', () => {
-      expect(jsonArrayTransformer.from(['Book 1', 'Book 2'])).toEqual(['Book 1', 'Book 2']);
+      expect(jsonArrayTransformer.from(['Book 1', 'Book 2'])).toEqual([
+        'Book 1',
+        'Book 2',
+      ]);
     });
 
     it('parses JSON string into array', () => {
-      expect(jsonArrayTransformer.from('["1", "2", "3"]')).toEqual(['1', '2', '3']);
+      expect(jsonArrayTransformer.from('["1", "2", "3"]')).toEqual([
+        '1',
+        '2',
+        '3',
+      ]);
       expect(jsonArrayTransformer.from('invalid json')).toEqual([]);
     });
   });

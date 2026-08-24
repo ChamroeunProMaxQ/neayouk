@@ -1,7 +1,7 @@
-import type { JwtPayload } from "@src/auth/dto/jwt-payload.dto.js";
-import { UserTypeEnum, type PermissionDto } from "@repo/contracts";
-import type { Request } from "express";
-import { CaslModule, type AuthorizableUser } from "nest-casl";
+import type { JwtPayload } from '@src/auth/dto/jwt-payload.dto.js';
+import { UserTypeEnum, type PermissionDto } from '@repo/contracts';
+import type { Request } from 'express';
+import { CaslModule, type AuthorizableUser } from 'nest-casl';
 
 export interface AppAuthorizableUser extends AuthorizableUser<string, number> {
   id: number;

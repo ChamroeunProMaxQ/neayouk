@@ -1,7 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { LeaveRequestService } from './leave-request.service.js';
-import { LeaveStatusEnum, LeaveTypeEnum, AttendanceStatusEnum } from '@repo/contracts';
+import {
+  LeaveStatusEnum,
+  LeaveTypeEnum,
+  AttendanceStatusEnum,
+} from '@repo/contracts';
 
 describe('LeaveRequestService', () => {
   let service: LeaveRequestService;
@@ -17,7 +21,11 @@ describe('LeaveRequestService', () => {
       find: vi.fn(),
       create: vi.fn((dto) => ({ id: 1, uuid: 'leave-1', ...dto })),
       save: vi.fn((entity) =>
-        Promise.resolve({ id: entity.id || 1, uuid: entity.uuid || 'leave-1', ...entity }),
+        Promise.resolve({
+          id: entity.id || 1,
+          uuid: entity.uuid || 'leave-1',
+          ...entity,
+        }),
       ),
       merge: vi.fn((entity, dto) => Object.assign(entity, dto)),
       softDelete: vi.fn().mockResolvedValue({ affected: 1 }),
@@ -92,7 +100,11 @@ describe('LeaveRequestService', () => {
       mockLeaveRepo.findOne.mockResolvedValue(leave);
       mockAttendanceRepo.findOne.mockResolvedValue(null);
 
-      const result = await service.review(1, { status: LeaveStatusEnum.APPROVED, syncAttendance: true }, 99);
+      const result = await service.review(
+        1,
+        { status: LeaveStatusEnum.APPROVED, syncAttendance: true },
+        99,
+      );
       expect(result).toBeDefined();
       expect(mockAttendanceRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -112,7 +124,11 @@ describe('LeaveRequestService', () => {
       };
       mockLeaveRepo.findOne.mockResolvedValue(leave);
 
-      await service.review(1, { status: LeaveStatusEnum.REJECTED, rejectionReason: 'Short notice' }, 99);
+      await service.review(
+        1,
+        { status: LeaveStatusEnum.REJECTED, rejectionReason: 'Short notice' },
+        99,
+      );
       expect(leave.status).toBe(LeaveStatusEnum.REJECTED);
       expect(leave.rejectionReason).toBe('Short notice');
     });
@@ -140,12 +156,16 @@ describe('LeaveRequestService', () => {
         status: LeaveStatusEnum.APPROVED,
       });
 
-      await expect(service.update(1, { reason: 'Try to edit' })).rejects.toThrow(BadRequestException);
+      await expect(
+        service.update(1, { reason: 'Try to edit' }),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw NotFoundException if leave request does not exist', async () => {
       mockLeaveRepo.findOne.mockResolvedValue(null);
-      await expect(service.review(999, { status: LeaveStatusEnum.APPROVED })).rejects.toThrow(NotFoundException);
+      await expect(
+        service.review(999, { status: LeaveStatusEnum.APPROVED }),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

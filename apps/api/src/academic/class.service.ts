@@ -363,8 +363,8 @@ export class ClassService {
       studentCount: string | number;
     }> = await this.classRepo
       .createQueryBuilder('class')
-      .select('COALESCE(class.academicYear, "2025-2026")', 'academicYear')
-      .addSelect('COALESCE(class.semester, "SEMESTER_1")', 'semester')
+      .select('class.academicYear', 'academicYear')
+      .addSelect('class.semester', 'semester')
       .addSelect('COUNT(DISTINCT class.id)', 'classCount')
       .leftJoin(
         'class.enrollments',
@@ -373,14 +373,16 @@ export class ClassService {
         { enrolledStatus: ClassEnrollmentStatusEnum.ENROLLED },
       )
       .addSelect('COUNT(DISTINCT enrollment.studentId)', 'studentCount')
+      .where('class.academicYear IS NOT NULL')
       .groupBy('class.academicYear')
       .addGroupBy('class.semester')
-      .orderBy('academicYear', 'DESC')
+      .orderBy('class.academicYear', 'DESC')
+      .addOrderBy('class.semester', 'ASC')
       .getRawMany();
 
     return raw.map((r) => ({
-      academicYear: r.academicYear || '2025-2026',
-      semester: r.semester || 'SEMESTER_1',
+      academicYear: r.academicYear,
+      semester: r.semester,
       classCount: Number(r.classCount) || 0,
       studentCount: Number(r.studentCount) || 0,
     }));

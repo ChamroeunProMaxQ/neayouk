@@ -34,7 +34,7 @@ export type LeaveRequestAttribute = z.infer<typeof LeaveRequestSchema>;
 
 export const CreateLeaveRequestSchema = z
   .object({
-    teacherId: z.coerce.number(),
+    teacherId: z.coerce.number().min(1, "Please select an instructor / teacher"),
     leaveType: z.nativeEnum(LeaveTypeEnum).default(LeaveTypeEnum.CASUAL),
     startDate: z.string().regex(dateRegex, "Start date must be in YYYY-MM-DD format"),
     endDate: z.string().regex(dateRegex, "End date must be in YYYY-MM-DD format"),

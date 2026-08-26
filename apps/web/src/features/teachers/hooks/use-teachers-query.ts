@@ -15,7 +15,7 @@ export function useTeachersQuery(params?: { status?: string; search?: string }) 
       const query = queryString.stringify(
         {
           pageSize: 100,
-          status: params?.status ?? "ACTIVE",
+          status: params?.status,
           search: params?.search,
         },
         { skipNull: true, skipEmptyString: true }

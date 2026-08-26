@@ -131,15 +131,7 @@ export class LeaveRequestService {
     });
   }
 
-  async findAll(query: FindLeaveRequestsDto): Promise<{
-    data: LeaveRequestAttribute[];
-    pagination: {
-      totalCount: number;
-      page: number;
-      pageSize: number;
-      pageCount: number;
-    };
-  }> {
+  async findAll(query: FindLeaveRequestsDto) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
     const skip = (page - 1) * pageSize;
@@ -196,15 +188,7 @@ export class LeaveRequestService {
       .take(pageSize)
       .getManyAndCount();
 
-    return {
-      data: AttendanceMapper.toLeaveRequestDtoList(items),
-      pagination: {
-        totalCount,
-        page,
-        pageSize,
-        pageCount: Math.ceil(totalCount / pageSize),
-      },
-    };
+    return [AttendanceMapper.toLeaveRequestDtoList(items), totalCount] as const;
   }
 
   async review(

@@ -22,6 +22,8 @@ export const permissions: Permissions<
     if (
       hasPermission(perms, Actions.manage, ResourceEnum.TEACHER) ||
       hasPermission(perms, Actions.manage, ResourceEnum.ACADEMIC) ||
+      hasPermission(perms, Actions.manage, ResourceEnum.ATTENDANCE) ||
+      hasPermission(perms, Actions.manage, ResourceEnum.EXAMINATION) ||
       hasPermission(perms, Actions.manage, ResourceEnum.HR)
     ) {
       can(Actions.manage, Teacher);
@@ -31,6 +33,8 @@ export const permissions: Permissions<
     if (
       hasPermission(perms, Actions.read, ResourceEnum.TEACHER) ||
       hasPermission(perms, Actions.read, ResourceEnum.ACADEMIC) ||
+      hasPermission(perms, Actions.read, ResourceEnum.ATTENDANCE) ||
+      hasPermission(perms, Actions.read, ResourceEnum.EXAMINATION) ||
       hasPermission(perms, Actions.read, ResourceEnum.HR)
     ) {
       can(Actions.read, Teacher);

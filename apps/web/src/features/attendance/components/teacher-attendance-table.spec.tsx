@@ -95,10 +95,8 @@ describe("TeacherAttendanceTable", () => {
           data: {
             status: 200,
             message: "success",
-            data: {
-              data: mockTeacherAttendances,
-              pagination: { page: 1, pageSize: 100, totalCount: 1, pageCount: 1 },
-            },
+            data: mockTeacherAttendances,
+            pagination: { page: 1, pageSize: 100, totalCount: 1, totalPage: 1 },
           },
         } as any);
       }
@@ -135,10 +133,8 @@ describe("TeacherAttendanceTable", () => {
           data: {
             status: 200,
             message: "success",
-            data: {
-              data: [],
-              pagination: { page: 1, pageSize: 100, totalCount: 0, pageCount: 0 },
-            },
+            data: [],
+            pagination: { page: 1, pageSize: 100, totalCount: 0, totalPage: 0 },
           },
         } as any);
       }

@@ -42,7 +42,7 @@ export function LeaveRequestFormDialog({
   const createMutation = useCreateLeaveRequestMutation();
   const updateMutation = useUpdateLeaveRequestMutation();
 
-  const { data: teachersData } = useTeachersQuery({ status: "ACTIVE" });
+  const { data: teachersData, isLoading: isLoadingTeachers } = useTeachersQuery();
   const teachers = Array.isArray(teachersData) ? teachersData : [];
 
   const today = new Date().toISOString().slice(0, 10);
@@ -59,7 +59,7 @@ export function LeaveRequestFormDialog({
     resolver: zodResolver<CreateLeaveRequestDto>(activeSchema),
     mode: "onChange",
     defaultValues: {
-      teacherId: teachers[0]?.id || 1,
+      teacherId: leaveRequest?.teacherId || teachers[0]?.id || undefined,
       leaveType: LeaveTypeEnum.CASUAL,
       startDate: today,
       endDate: today,
@@ -97,7 +97,7 @@ export function LeaveRequestFormDialog({
         });
       } else {
         reset({
-          teacherId: teachers[0]?.id || 1,
+          teacherId: teachers[0]?.id || undefined,
           leaveType: LeaveTypeEnum.CASUAL,
           startDate: today,
           endDate: today,
@@ -107,7 +107,7 @@ export function LeaveRequestFormDialog({
         });
       }
     }
-  }, [leaveRequest, open, reset, today]);
+  }, [leaveRequest, open, reset, today, teachers]);
 
   const onSubmit = async (data: CreateLeaveRequestDto) => {
     try {
@@ -185,17 +185,27 @@ export function LeaveRequestFormDialog({
             <select
               id="teacherId"
               {...register("teacherId", { valueAsNumber: true })}
+              disabled={isLoadingTeachers}
               className={`h-9 w-full rounded-md border bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs focus:outline-none focus:ring-1 ${
                 errors.teacherId
                   ? "border-rose-500 focus:ring-rose-500"
                   : "border-slate-200 focus:ring-[#45AC5E]"
               }`}
             >
-              {teachers.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name} ({t.teacherCode || `ID:${t.id}`})
-                </option>
-              ))}
+              {isLoadingTeachers ? (
+                <option value="">Loading teachers...</option>
+              ) : teachers.length === 0 ? (
+                <option value="">No teachers available</option>
+              ) : (
+                <>
+                  <option value="">-- Select Instructor / Teacher --</option>
+                  {teachers.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name} {t.nameKm ? `(${t.nameKm})` : ""} {t.teacherCode ? `[${t.teacherCode}]` : `ID:${t.id}`}
+                    </option>
+                  ))}
+                </>
+              )}
             </select>
             {errors.teacherId && (
               <p className="text-xs text-rose-500">{errors.teacherId.message}</p>

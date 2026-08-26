@@ -20,14 +20,14 @@ export const TEACHER_ATTENDANCE_QUERY_KEYS = {
 };
 
 export function useTeacherAttendanceQuery(params: FindTeacherAttendanceDto) {
-  return useQuery<{ data: TeacherAttendanceAttribute[]; pagination: { totalCount: number; page: number; pageSize: number; pageCount: number } }>({
+  return useQuery<ResponseDto<TeacherAttendanceAttribute[]>>({
     queryKey: TEACHER_ATTENDANCE_QUERY_KEYS.list(params as Record<string, unknown>),
     queryFn: async () => {
       const query = queryString.stringify(params, { skipNull: true, skipEmptyString: true });
-      const res = await apiClient.get<ResponseDto<{ data: TeacherAttendanceAttribute[]; pagination: any }>>(
+      const res = await apiClient.get<ResponseDto<TeacherAttendanceAttribute[]>>(
         `${API_ROUTE.ATTENDANCE.TEACHERS}?${query}`
       );
-      return res.data.data as { data: TeacherAttendanceAttribute[]; pagination: { totalCount: number; page: number; pageSize: number; pageCount: number } };
+      return res.data;
     },
   });
 }

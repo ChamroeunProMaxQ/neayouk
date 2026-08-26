@@ -126,15 +126,7 @@ export class StudentAttendanceService {
     return results;
   }
 
-  async findAll(query: FindStudentAttendanceDto): Promise<{
-    data: StudentAttendanceAttribute[];
-    pagination: {
-      totalCount: number;
-      page: number;
-      pageSize: number;
-      pageCount: number;
-    };
-  }> {
+  async findAll(query: FindStudentAttendanceDto) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
     const skip = (page - 1) * pageSize;
@@ -182,15 +174,10 @@ export class StudentAttendanceService {
       .take(pageSize)
       .getManyAndCount();
 
-    return {
-      data: AttendanceMapper.toStudentAttendanceDtoList(items),
-      pagination: {
-        totalCount,
-        page,
-        pageSize,
-        pageCount: Math.ceil(totalCount / pageSize),
-      },
-    };
+    return [
+      AttendanceMapper.toStudentAttendanceDtoList(items),
+      totalCount,
+    ] as const;
   }
 
   async getMatrix(

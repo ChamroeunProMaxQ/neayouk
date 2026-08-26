@@ -131,15 +131,7 @@ export class TeacherAttendanceService {
     return results;
   }
 
-  async findAll(query: FindTeacherAttendanceDto): Promise<{
-    data: TeacherAttendanceAttribute[];
-    pagination: {
-      totalCount: number;
-      page: number;
-      pageSize: number;
-      pageCount: number;
-    };
-  }> {
+  async findAll(query: FindTeacherAttendanceDto) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
     const skip = (page - 1) * pageSize;
@@ -183,15 +175,10 @@ export class TeacherAttendanceService {
       .take(pageSize)
       .getManyAndCount();
 
-    return {
-      data: AttendanceMapper.toTeacherAttendanceDtoList(items),
-      pagination: {
-        totalCount,
-        page,
-        pageSize,
-        pageCount: Math.ceil(totalCount / pageSize),
-      },
-    };
+    return [
+      AttendanceMapper.toTeacherAttendanceDtoList(items),
+      totalCount,
+    ] as const;
   }
 
   async getTeacherMonthlySummary(

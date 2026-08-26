@@ -67,7 +67,7 @@ export const LeaveRequestListTable: FC = () => {
     isFetchingNextPage,
   } = useLeaveRequestsInfiniteQuery(queryParams);
 
-  const { data: teachersData } = useTeachersQuery({ status: "ACTIVE" });
+  const { data: teachersData } = useTeachersQuery();
   const teachers = Array.isArray(teachersData) ? teachersData : [];
   const deleteMutation = useDeleteLeaveRequestMutation();
 
@@ -170,7 +170,7 @@ export const LeaveRequestListTable: FC = () => {
             <option value="">All Teachers</option>
             {teachers.map((t) => (
               <option key={t.id} value={String(t.id)}>
-                {t.name}
+                {t.name} {t.teacherCode ? `[${t.teacherCode}]` : ""}
               </option>
             ))}
           </select>

@@ -56,6 +56,15 @@ const GradingRulesPage = lazy(() =>
 const ReportCardsPage = lazy(() =>
   import("./report-cards-page").then((m) => ({ default: m.ReportCardsPage }))
 );
+const FeeStructuresPage = lazy(() =>
+  import("./fee-structures-page").then((m) => ({ default: m.FeeStructuresPage }))
+);
+const InvoicesPage = lazy(() =>
+  import("./invoices-page").then((m) => ({ default: m.InvoicesPage }))
+);
+const ExpensesPage = lazy(() =>
+  import("./expenses-page").then((m) => ({ default: m.ExpensesPage }))
+);
 const DummyPage = lazy(() =>
   import("./dummy-page").then((m) => ({ default: m.DummyPage }))
 );
@@ -260,6 +269,40 @@ const router = createBrowserRouter([
           {
             path: "/examinations",
             element: <Navigate to="/examinations/gradebook" replace />,
+          },
+          {
+            path: "/fee-management/structures",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource="fee" action="read">
+                  <FeeStructuresPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/fee-management/invoices",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource="fee" action="read">
+                  <InvoicesPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/fee-management/expenses",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource="fee" action="read">
+                  <ExpensesPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/fee-management",
+            element: <Navigate to="/fee-management/invoices" replace />,
           },
           {
             path: "/roles",

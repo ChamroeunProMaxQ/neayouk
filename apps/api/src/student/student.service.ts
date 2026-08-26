@@ -83,7 +83,7 @@ export class StudentService {
 
     if (search) {
       query.andWhere(
-        '(student.first_name LIKE :search OR student.last_name LIKE :search OR student.first_name_km LIKE :search OR student.last_name_km LIKE :search OR student.student_code LIKE :search OR student.contact LIKE :search)',
+        '(student.first_name ilike :search OR student.last_name ilike :search OR student.first_name_km ilike :search OR student.last_name_km ilike :search OR student.student_code ilike :search OR student.contact ilike :search)',
         { search: `%${search}%` },
       );
     }

@@ -6,12 +6,14 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { PaymentStatusEnum, PaymentMethodEnum } from '@repo/contracts';
 import type { Class } from '@src/academic/entity/class.entity.js';
 import type { Student } from './student.entity.js';
+import type { PaymentItem } from './payment-item.entity.js';
 
 @Entity({ name: 'student_payments' })
 export class StudentPayment {
@@ -20,6 +22,9 @@ export class StudentPayment {
 
   @Column({ type: 'varchar', length: 36 })
   uuid!: string;
+
+  @Column({ name: 'payment_number', type: 'varchar', length: 100, nullable: true })
+  paymentNumber!: string | null;
 
   @Column({ name: 'student_id', type: 'int' })
   studentId!: number;
@@ -40,11 +45,42 @@ export class StudentPayment {
   @JoinColumn({ name: 'class_id' })
   declare class?: Class | null;
 
+  @OneToMany('PaymentItem', (item: PaymentItem) => item.payment, {
+    cascade: true,
+  })
+  declare items?: PaymentItem[];
+
   @Column({ name: 'billing_year', type: 'int' })
   billingYear!: number;
 
   @Column({ name: 'billing_month', type: 'int' })
   billingMonth!: number;
+
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+  })
+  subtotal!: number;
+
+  @Column({
+    name: 'discount_amount',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+  })
+  discountAmount!: number;
+
+  @Column({
+    name: 'total_amount',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+  })
+  totalAmount!: number;
 
   @Column({
     name: 'amount_due',
@@ -96,6 +132,12 @@ export class StudentPayment {
     nullable: true,
   })
   receiptNumber!: string | null;
+
+  @Column({ name: 'issue_date', type: 'date', nullable: true })
+  issueDate!: Date | string | null;
+
+  @Column({ name: 'due_date', type: 'date', nullable: true })
+  dueDate!: Date | string | null;
 
   @Column({
     name: 'paid_at',

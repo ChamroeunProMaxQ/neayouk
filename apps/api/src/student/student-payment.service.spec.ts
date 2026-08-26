@@ -10,6 +10,7 @@ import { StudentPaymentService } from './student-payment.service.js';
 describe('StudentPaymentService (Unit)', () => {
   let service: StudentPaymentService;
   let mockPaymentRepo: any;
+  let mockItemRepo: any;
   let mockStudentRepo: any;
   let mockClassRepo: any;
   let mockStudentClassRepo: any;
@@ -20,6 +21,12 @@ describe('StudentPaymentService (Unit)', () => {
       findOne: vi.fn(),
       create: vi.fn((data) => ({ ...data, id: 1 })),
       save: vi.fn(async (entity) => ({ ...entity, id: entity.id ?? 1 })),
+    };
+
+    mockItemRepo = {
+      create: vi.fn((data) => ({ ...data, id: 100 })),
+      save: vi.fn(async (entity) => ({ ...entity, id: entity.id ?? 100 })),
+      delete: vi.fn().mockResolvedValue({ affected: 1 }),
     };
 
     mockStudentRepo = {
@@ -36,6 +43,7 @@ describe('StudentPaymentService (Unit)', () => {
 
     service = new StudentPaymentService(
       mockPaymentRepo,
+      mockItemRepo,
       mockStudentRepo,
       mockClassRepo,
       mockStudentClassRepo,
@@ -93,6 +101,14 @@ describe('StudentPaymentService (Unit)', () => {
           paymentMethod: PaymentMethodEnum.KHQR,
         }),
       );
+      expect(mockItemRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          paymentId: 1,
+          title: expect.stringContaining('Tuition Fee'),
+          amount: 50,
+        }),
+      );
+      expect(mockItemRepo.save).toHaveBeenCalled();
       expect(result).toBeDefined();
     });
 
@@ -126,6 +142,47 @@ describe('StudentPaymentService (Unit)', () => {
           status: PaymentStatusEnum.PARTIAL,
         }),
       );
+      expect(mockItemRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          paymentId: 1,
+          amount: 60,
+        }),
+      );
+    });
+
+    it('should delete previous items when updating an existing payment', async () => {
+      const student = {
+        id: 1,
+        discount: 0,
+        enrollments: [
+          {
+            isPrimary: true,
+            classId: 10,
+            status: ClassEnrollmentStatusEnum.ENROLLED,
+          },
+        ],
+      };
+      const existingPayment = {
+        id: 5,
+        studentId: 1,
+        billingYear: 2026,
+        billingMonth: 4,
+        subtotal: 50,
+        amountPaid: 0,
+      };
+      mockStudentRepo.findOne.mockResolvedValueOnce(student);
+      mockPaymentRepo.findOne.mockResolvedValueOnce(existingPayment);
+      mockClassRepo.findOne.mockResolvedValueOnce({ id: 10, monthlyFee: 50.0 });
+
+      await service.recordPayment({
+        studentId: 1,
+        billingYear: 2026,
+        billingMonth: 4,
+        amountPaid: 50,
+      });
+
+      expect(mockItemRepo.delete).toHaveBeenCalledWith({ paymentId: 5 });
+      expect(mockItemRepo.save).toHaveBeenCalled();
     });
   });
 

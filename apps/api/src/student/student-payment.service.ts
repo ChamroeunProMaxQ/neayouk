@@ -9,6 +9,7 @@ import {
   type UnpaidMonthItem,
 } from '@repo/contracts';
 import { StudentPayment } from './entity/student-payment.entity.js';
+import { PaymentItem } from './entity/payment-item.entity.js';
 import { Student } from './entity/student.entity.js';
 import { Class } from '@src/academic/entity/class.entity.js';
 import { StudentClass } from './entity/student-class.entity.js';
@@ -41,6 +42,9 @@ export class StudentPaymentService {
     @InjectRepository(StudentPayment)
     private readonly paymentRepo: Repository<StudentPayment>,
 
+    @InjectRepository(PaymentItem)
+    private readonly itemRepo: Repository<PaymentItem>,
+
     @InjectRepository(Student)
     private readonly studentRepo: Repository<Student>,
 
@@ -61,7 +65,9 @@ export class StudentPaymentService {
     } = dto;
     const query = this.paymentRepo
       .createQueryBuilder('payment')
+      .leftJoinAndSelect('payment.student', 'student')
       .leftJoinAndSelect('payment.class', 'class')
+      .leftJoinAndSelect('payment.items', 'items')
       .where('payment.studentId = :studentId', { studentId });
 
     if (billingYear) {
@@ -123,7 +129,7 @@ export class StudentPaymentService {
       : null;
 
     const baseFee = targetClass ? Number(targetClass.monthlyFee) : 50;
-    const discount = Number(student.discount || 0);
+    const discount = Number(dto.discountApplied ?? student.discount ?? 0);
     const amountDue =
       dto.amountDue !== undefined
         ? dto.amountDue
@@ -137,37 +143,69 @@ export class StudentPaymentService {
           ? PaymentStatusEnum.PARTIAL
           : PaymentStatusEnum.UNPAID);
 
+    const receiptNo =
+      dto.receiptNumber ||
+      `REC-${dto.billingYear}${String(dto.billingMonth).padStart(2, '0')}-${String(dto.studentId).padStart(4, '0')}`;
+
     if (!payment) {
       payment = this.paymentRepo.create({
+        paymentNumber: receiptNo,
+        receiptNumber: receiptNo,
         studentId: dto.studentId,
         classId: defaultClassId,
         billingYear: dto.billingYear,
         billingMonth: dto.billingMonth,
+        subtotal: baseFee,
+        discountAmount: discount,
+        totalAmount: amountDue,
         amountDue,
         amountPaid,
         discountApplied: discount,
         status,
         paymentMethod: dto.paymentMethod ?? PaymentMethodEnum.CASH,
-        receiptNumber: dto.receiptNumber,
         notes: dto.notes,
         paidAt: dto.paidAt ? new Date(dto.paidAt) : new Date(),
         recordedBy: currentUserId,
       });
     } else {
+      payment.subtotal = baseFee;
+      payment.discountAmount = discount;
+      payment.totalAmount = amountDue;
       payment.amountDue = amountDue;
       payment.amountPaid = amountPaid;
       payment.discountApplied = discount;
       payment.status = status;
       if (dto.paymentMethod) payment.paymentMethod = dto.paymentMethod;
-      if (dto.receiptNumber) payment.receiptNumber = dto.receiptNumber;
+      payment.receiptNumber = receiptNo;
+      payment.paymentNumber = receiptNo;
       if (dto.notes) payment.notes = dto.notes;
       if (dto.paidAt) payment.paidAt = new Date(dto.paidAt);
       if (currentUserId) payment.recordedBy = currentUserId;
       if (defaultClassId) payment.classId = defaultClassId;
+
+      await this.itemRepo.delete({ paymentId: payment.id });
     }
 
     const saved = await this.paymentRepo.save(payment);
-    return StudentPaymentMapper.toDto(saved);
+
+    const itemTitle = targetClass
+      ? `Tuition Fee - ${targetClass.name}`
+      : `Tuition Fee (${MONTH_NAMES[dto.billingMonth - 1]} ${dto.billingYear})`;
+
+    const lineItem = this.itemRepo.create({
+      paymentId: saved.id,
+      feeStructureId: null,
+      title: itemTitle,
+      amount: baseFee,
+    });
+    await this.itemRepo.save(lineItem);
+
+    const savedWithRelations = await this.paymentRepo.findOne({
+      where: { id: saved.id },
+      relations: ['student', 'class', 'items'],
+    });
+
+    return StudentPaymentMapper.toDto(savedWithRelations ?? saved);
   }
 
   async recordBatchPayment(dto: BatchRecordPaymentDto, currentUserId?: number) {
@@ -202,7 +240,13 @@ export class StudentPaymentService {
       student = await this.studentRepo.findOne({
         where: { id: studentOrId },
         withDeleted: true,
-        relations: ['enrollments', 'enrollments.class', 'payments'],
+        relations: [
+          'enrollments',
+          'enrollments.class',
+          'payments',
+          'payments.items',
+          'payments.class',
+        ],
       });
       if (!student) {
         throw new NotFoundException(`Student with ID ${studentOrId} not found`);

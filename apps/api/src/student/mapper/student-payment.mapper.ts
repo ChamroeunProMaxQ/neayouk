@@ -1,5 +1,5 @@
 import type { StudentPaymentAttribute } from '@repo/contracts';
-import { StudentPayment } from '../entity/student-payment.entity.js';
+import type { StudentPayment } from '../entity/student-payment.entity.js';
 
 export class StudentPaymentMapper {
   static toDto(entity: StudentPayment): StudentPaymentAttribute {
@@ -7,18 +7,18 @@ export class StudentPaymentMapper {
       id: entity.id,
       uuid: entity.uuid,
       studentId: entity.studentId,
-      classId: entity.classId,
+      classId: entity.classId ?? null,
       billingYear: entity.billingYear,
       billingMonth: entity.billingMonth,
-      amountDue: Number(entity.amountDue || 0),
-      amountPaid: Number(entity.amountPaid || 0),
-      discountApplied: Number(entity.discountApplied || 0),
+      amountDue: Number(entity.amountDue ?? entity.totalAmount ?? 0),
+      amountPaid: Number(entity.amountPaid ?? 0),
+      discountApplied: Number(entity.discountApplied ?? entity.discountAmount ?? 0),
       status: entity.status,
       paymentMethod: entity.paymentMethod,
-      receiptNumber: entity.receiptNumber,
-      paidAt: entity.paidAt,
-      notes: entity.notes,
-      recordedBy: entity.recordedBy,
+      receiptNumber: entity.receiptNumber ?? entity.paymentNumber ?? null,
+      paidAt: entity.paidAt ?? null,
+      notes: entity.notes ?? null,
+      recordedBy: entity.recordedBy ?? null,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     };
@@ -28,3 +28,4 @@ export class StudentPaymentMapper {
     return entities.map((entity) => this.toDto(entity));
   }
 }
+

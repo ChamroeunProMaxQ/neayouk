@@ -185,7 +185,7 @@ export const adminNavGroups: NavGroup[] = [
         subItems: [
           { label: "Fee Structures", path: "/fee-management/structures" },
           { label: "Invoices & Payments", path: "/fee-management/invoices" },
-          { label: "Scholarships & Discounts", path: "/fee-management/scholarships" },
+          { label: "Operational Expenses", path: "/fee-management/expenses" },
         ],
       },
       {

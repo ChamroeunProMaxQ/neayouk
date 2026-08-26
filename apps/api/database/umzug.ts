@@ -78,6 +78,25 @@ function getTypeOrmStorage(tableName: string): UmzugStorage<DataSource> {
   };
 }
 
+const safeLogger = {
+  info: (msg: unknown) => {
+    if (process.env.NODE_ENV === 'test') return;
+    console.log(typeof msg === 'string' ? msg : JSON.stringify(msg));
+  },
+  warn: (msg: unknown) => {
+    if (process.env.NODE_ENV === 'test') return;
+    console.warn(typeof msg === 'string' ? msg : JSON.stringify(msg));
+  },
+  error: (msg: unknown) => {
+    if (process.env.NODE_ENV === 'test') return;
+    console.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+  },
+  debug: (msg: unknown) => {
+    if (process.env.NODE_ENV === 'test') return;
+    console.debug(typeof msg === 'string' ? msg : JSON.stringify(msg));
+  },
+};
+
 export const migrator = new Umzug({
   migrations: {
     glob: [`*.${ext}`, { cwd: migrationsPath }],
@@ -87,7 +106,7 @@ export const migrator = new Umzug({
     return dataSource;
   },
   storage: getTypeOrmStorage('MigrationMeta'),
-  logger: console,
+  logger: safeLogger,
   create: {
     folder: migrationsPath,
     template: generateTemplate,
@@ -103,7 +122,7 @@ export const seeder = new Umzug({
     return dataSource;
   },
   storage: getTypeOrmStorage('SeederMeta'),
-  logger: console,
+  logger: safeLogger,
   create: {
     folder: seederPath,
     template: generateSeederTemplate,

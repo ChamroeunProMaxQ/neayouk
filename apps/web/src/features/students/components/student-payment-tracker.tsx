@@ -11,11 +11,14 @@ import {
   Loader2,
   Calendar,
   Receipt,
+  Printer,
 } from "lucide-react";
 import { useStudentSummaryQuery } from "../hooks/use-student-summary-query";
 import { RecordPaymentDialog } from "./record-payment-dialog";
+import { SchoolReceiptModal } from "@/features/fee-management/components/school-receipt-modal";
+import { type SchoolReceiptData } from "@/features/fee-management/components/school-receipt";
 import { usePermission } from "@/features/auth";
-import { PaymentStatusEnum, type StudentAttribute } from "@repo/contracts";
+import { PaymentStatusEnum, PaymentMethodEnum, type StudentAttribute } from "@repo/contracts";
 
 interface StudentPaymentTrackerProps {
   student: StudentAttribute;
@@ -36,6 +39,8 @@ export const StudentPaymentTracker: FC<StudentPaymentTrackerProps> = ({
   const [isRecordDialogOpen, setIsRecordDialogOpen] = useState(false);
   const [selectedMonthForPayment, setSelectedMonthForPayment] = useState<number | null>(null);
   const [selectedYearForPayment, setSelectedYearForPayment] = useState<number>(new Date().getFullYear());
+  const [receiptDataForPrint, setReceiptDataForPrint] = useState<SchoolReceiptData | null>(null);
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
@@ -287,6 +292,7 @@ export const StudentPaymentTracker: FC<StudentPaymentTrackerProps> = ({
                     <th className="py-2.5 px-4 font-semibold">Status</th>
                     <th className="py-2.5 px-4 font-semibold">Payment Date</th>
                     <th className="py-2.5 px-4 font-semibold">Notes</th>
+                    <th className="py-2.5 px-4 font-semibold text-right">Receipt</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -317,6 +323,51 @@ export const StudentPaymentTracker: FC<StudentPaymentTrackerProps> = ({
                       <td className="py-2.5 px-4 text-slate-500 italic max-w-xs truncate">
                         {p.notes || "-"}
                       </td>
+                      <td className="py-2.5 px-4 text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const grossFee = Number(student.primaryClass?.monthlyFee || p.amountPaid || 16);
+                            const discountVal = Number(p.discountApplied || student.discount || 0);
+                            const netPaid = Number(p.amountPaid || 0);
+                            setReceiptDataForPrint({
+                              studentName: `${student.firstName} ${student.lastName}`,
+                              className: student.primaryClass?.name || "General English",
+                              level: "5",
+                              date: p.paidAt
+                                ? new Date(p.paidAt).toLocaleDateString("en-GB", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  })
+                                : new Date().toLocaleDateString("en-GB", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  }),
+                              receiptNumber: p.receiptNumber || `REC-${p.id}`,
+                              paymentMethod: p.paymentMethod || PaymentMethodEnum.CASH,
+                              items: [
+                                {
+                                  description: `Tuition Fee (${MONTH_NAMES[p.billingMonth - 1]} ${p.billingYear})`,
+                                  quantity: 1,
+                                  price: grossFee,
+                                  total: grossFee,
+                                },
+                              ],
+                              total: grossFee,
+                              discount: discountVal,
+                              subtotal: netPaid,
+                            });
+                            setIsReceiptModalOpen(true);
+                          }}
+                          className="h-7 px-2 text-xs font-semibold text-slate-600 hover:text-slate-900 gap-1 hover:bg-slate-100"
+                        >
+                          <Printer className="w-3.5 h-3.5 text-slate-500" />
+                          Print A5
+                        </Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -337,6 +388,16 @@ export const StudentPaymentTracker: FC<StudentPaymentTrackerProps> = ({
           refetch();
           onPaymentRecorded?.();
         }}
+      />
+
+      {/* School Receipt Print Modal */}
+      <SchoolReceiptModal
+        isOpen={isReceiptModalOpen}
+        onClose={() => {
+          setIsReceiptModalOpen(false);
+          setReceiptDataForPrint(null);
+        }}
+        receiptData={receiptDataForPrint}
       />
     </div>
   );

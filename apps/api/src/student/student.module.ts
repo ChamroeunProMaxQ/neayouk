@@ -4,6 +4,7 @@ import { CaslModule } from 'nest-casl';
 import { Student } from './entity/student.entity.js';
 import { StudentClass } from './entity/student-class.entity.js';
 import { StudentPayment } from './entity/student-payment.entity.js';
+import { PaymentItem } from './entity/payment-item.entity.js';
 import { Class } from '@src/academic/entity/class.entity.js';
 import { StudentService } from './student.service.js';
 import { StudentPaymentService } from './student-payment.service.js';
@@ -13,7 +14,13 @@ import { AuthModule } from '@src/auth/auth.module.js';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Student, StudentClass, StudentPayment, Class]),
+    TypeOrmModule.forFeature([
+      Student,
+      StudentClass,
+      StudentPayment,
+      PaymentItem,
+      Class,
+    ]),
     CaslModule.forFeature({ permissions }),
     AuthModule,
   ],

@@ -19,7 +19,9 @@ import {
 } from "@/components/ui/select";
 import { useRecordPaymentMutation } from "../hooks/use-payment-mutations";
 import { PaymentMethodEnum, type StudentAttribute } from "@repo/contracts";
-import { DollarSign, Loader2, Receipt } from "lucide-react";
+import { DollarSign, Loader2, Receipt, Printer } from "lucide-react";
+import { SchoolReceiptModal } from "@/features/fee-management/components/school-receipt-modal";
+import { type SchoolReceiptData } from "@/features/fee-management/components/school-receipt";
 
 interface RecordPaymentDialogProps {
   isOpen: boolean;
@@ -63,6 +65,8 @@ export const RecordPaymentDialog: FC<RecordPaymentDialogProps> = ({
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodEnum>(PaymentMethodEnum.CASH);
   const [receiptNumber, setReceiptNumber] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
+  const [showReceiptAfterPay, setShowReceiptAfterPay] = useState(false);
+  const [receiptDataForPrint, setReceiptDataForPrint] = useState<SchoolReceiptData | null>(null);
 
   const baseFee = Number(student.primaryClass?.monthlyFee || 0);
   const discount = Number(student.discount || 0);
@@ -76,14 +80,17 @@ export const RecordPaymentDialog: FC<RecordPaymentDialogProps> = ({
       setPaymentMethod(PaymentMethodEnum.CASH);
       setReceiptNumber(`REC-${Date.now().toString().slice(-6)}`);
       setNotes("");
+      setShowReceiptAfterPay(false);
     }
   }, [isOpen, defaultMonth, defaultYear, netDue]);
 
   const recordPaymentMutation = useRecordPaymentMutation();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = (printReceipt: boolean) => {
     if (!amountPaid || isNaN(Number(amountPaid))) return;
+
+    const paidNum = Number(amountPaid);
+    const recNum = receiptNumber || `REC-${Date.now().toString().slice(-6)}`;
 
     recordPaymentMutation.mutate(
       {
@@ -91,19 +98,51 @@ export const RecordPaymentDialog: FC<RecordPaymentDialogProps> = ({
         classId: student.primaryClass?.id,
         billingYear: Number(billingYear),
         billingMonth: Number(billingMonth),
-        amountPaid: Number(amountPaid),
+        amountPaid: paidNum,
         discountApplied: discount,
         paymentMethod,
-        receiptNumber: receiptNumber || undefined,
+        receiptNumber: recNum,
         notes: notes || undefined,
       },
       {
         onSuccess: () => {
           onSuccess?.();
-          onClose();
+          if (printReceipt) {
+            setReceiptDataForPrint({
+              studentName: `${student.firstName} ${student.lastName}`,
+              className: student.primaryClass?.name || "General English",
+              level: "5",
+              date: new Date().toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              }),
+              receiptNumber: recNum,
+              paymentMethod,
+              items: [
+                {
+                  description: `Tuition Fee (${MONTHS.find((m) => m.value === Number(billingMonth))?.label} ${billingYear})`,
+                  quantity: 1,
+                  price: baseFee > 0 ? baseFee : paidNum,
+                  total: baseFee > 0 ? baseFee : paidNum,
+                },
+              ],
+              total: baseFee > 0 ? baseFee : paidNum,
+              discount,
+              subtotal: paidNum,
+            });
+            setShowReceiptAfterPay(true);
+          } else {
+            onClose();
+          }
         },
       }
     );
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSave(false);
   };
 
   return (
@@ -226,7 +265,7 @@ export const RecordPaymentDialog: FC<RecordPaymentDialogProps> = ({
             />
           </div>
 
-          <DialogFooter className="pt-2">
+          <DialogFooter className="pt-2 flex items-center justify-between sm:justify-between w-full">
             <Button
               type="button"
               variant="outline"
@@ -235,19 +274,41 @@ export const RecordPaymentDialog: FC<RecordPaymentDialogProps> = ({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={recordPaymentMutation.isPending}
-              className="bg-[#45AC5E] hover:bg-[#389350] text-white text-xs font-semibold h-9"
-            >
-              {recordPaymentMutation.isPending && (
-                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-              )}
-              Confirm & Save Payment
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={recordPaymentMutation.isPending}
+                onClick={() => handleSave(true)}
+                className="text-xs font-semibold h-9 border-slate-300 text-slate-700 hover:bg-slate-50 gap-1.5"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                Save &amp; Print A5
+              </Button>
+              <Button
+                type="submit"
+                disabled={recordPaymentMutation.isPending}
+                className="bg-[#45AC5E] hover:bg-[#389350] text-white text-xs font-semibold h-9"
+              >
+                {recordPaymentMutation.isPending && (
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                )}
+                Save Payment
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>
+
+      {/* Instant School Receipt Print Modal */}
+      <SchoolReceiptModal
+        isOpen={showReceiptAfterPay}
+        onClose={() => {
+          setShowReceiptAfterPay(false);
+          onClose();
+        }}
+        receiptData={receiptDataForPrint}
+      />
     </Dialog>
   );
 };

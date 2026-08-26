@@ -22,10 +22,11 @@ export interface SelectProps {
   value?: string;
   onValueChange?: (val: string) => void;
   disabled?: boolean;
+  className?: string;
   children: React.ReactNode;
 }
 
-export function Select({ value, onValueChange, children }: SelectProps) {
+export function Select({ value, onValueChange, className, children }: SelectProps) {
   const [open, setOpen] = React.useState(false);
   const [labels, setLabels] = React.useState<Record<string, React.ReactNode>>({});
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -53,7 +54,7 @@ export function Select({ value, onValueChange, children }: SelectProps) {
 
   return (
     <SelectContext.Provider value={{ value, onValueChange, open, setOpen, labels, registerLabel }}>
-      <div ref={containerRef} className="relative inline-block w-full">
+      <div ref={containerRef} className={cn("relative block w-full", className)}>
         {children}
       </div>
     </SelectContext.Provider>
@@ -113,7 +114,7 @@ export const SelectContent = ({
   return (
     <div
       className={cn(
-        "absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md bg-white animate-in fade-in-80",
+        "absolute left-0 top-full z-50 mt-1 max-h-60 min-w-full w-max overflow-auto rounded-md border bg-white p-1 text-popover-foreground shadow-lg animate-in fade-in-80",
         className
       )}
     >

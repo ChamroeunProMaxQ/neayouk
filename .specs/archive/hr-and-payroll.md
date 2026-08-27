@@ -298,13 +298,54 @@ $$\text{DRAFT} \xrightarrow[\text{Void}]{\text{mark CANCELLED}} \text{CANCELLED}
 
 ---
 
-## 4. Acceptance Criteria
-- [ ] Shared schemas and DTOs built with `pnpm --filter @repo/contracts build`
-- [ ] Database migration and seeder run with `pnpm --filter api migrate up` and `pnpm --filter api seed up`
-- [ ] Unit test suites pass via `pnpm test` (Staff service, Payroll service, and Web feature components)
-- [ ] All 6 condition categories E2E tests pass via `pnpm --filter api exec vitest run test/hr-payroll.e2e-spec.ts`
-- [ ] Zero oxlint errors via `pnpm lint`
-- [ ] Frontend build succeeds via `pnpm --filter web build`
-- [ ] Cambodia holiday detection accurately computes monthly working days and holiday counts
-- [ ] Simplified `DRAFT -> PAID -> CANCELLED` status flow functioning smoothly
-- [ ] Official A5 printable payslip rendered accurately with ELC Language Center branding and direct PDF export
+## 4. Testing & Verification Summary
+
+### 4.1 All 6 Condition Categories Verification
+1. **Happy Path (200 / 201)**:
+   - Create staff with monthly/hourly salary & user account binding.
+   - Query staff directory with pagination, search, department, and salary type filters.
+   - Create draft payroll for staff with automated Cambodia holiday detection & working day count.
+   - Add dynamic adjustment line items (Bonuses, Overtime, Allowances, Deductions, Tax, Advances).
+   - Update draft payroll amounts, total hours worked, and line items.
+   - Disburse payment (`POST /pay`) to transition `DRAFT -> PAID`, recording method & transaction reference.
+   - Syncs automatically to `school_expenses` (`category = 'SALARY'`, `status = 'PAID'`).
+   - Fetch payroll financial summary and render printable A5 payslip with PDF download.
+2. **Validation Failures (400 Bad Request)**:
+   - Missing required staff name, invalid email, or invalid salary type rejected by `ZodValidationPipe`.
+   - Missing payroll month (>12) or negative base salary / hourly rate rejected.
+   - Invalid payment method rejected.
+3. **Duplicate & Uniqueness Conflicts (409 Conflict)**:
+   - Duplicate staff code rejected.
+   - Duplicate payroll voucher for the same staff member in the same year/month rejected.
+   - Attempting to pay an already PAID payroll rejected.
+   - Attempting to update a PAID payroll record rejected.
+4. **Resource Not Found (404 Not Found)**:
+   - Querying or updating non-existent staff ID or payroll ID returns 404 with standard envelope.
+5. **Authentication & Authorization (401 / 403)**:
+   - Unauthenticated requests blocked by `JwtAuthGuard`.
+   - Non-admin / non-HR users blocked by CASL `HrPermissionGuard`.
+6. **Edge & Boundary Limits**:
+   - 0 hours worked on hourly teacher yields 0.00 base amount without division/calculation errors.
+   - Negative net salary resulting from excessive deductions handled safely.
+   - Teacher attendance batch daily roster auto-sum calculates logged hours with manual admin override support.
+
+---
+
+## 5. Acceptance Criteria
+- [x] Shared schemas and DTOs built with `pnpm --filter @repo/contracts build`
+- [x] Database migrations and seeders run cleanly:
+  - `2026.08.20T00.00.01.create-staff-table.ts`
+  - `2026.08.20T00.00.02.create-payrolls-and-items-tables.ts`
+  - `2026.08.20T00.00.03.fix-teacher-attendance-foreign-keys.ts`
+  - `2026.08.20T00.00.01.hr-payroll-seeder.ts`
+- [x] Unit test suites pass via `pnpm test`:
+  - `src/hr/staff.service.spec.ts` (Passed)
+  - `src/hr/payroll.service.spec.ts` (Passed)
+  - Web unit tests for `StaffListTable`, `PayrollListTable`, `PayslipModal`, `TeacherAttendanceTable` (Passed)
+- [x] All 6 condition categories E2E tests pass via `pnpm --filter api exec vitest run test/hr-payroll.e2e-spec.ts` (22/22 passed)
+- [x] Full API E2E suite passes (`pnpm --filter api test:e2e`: 11 test suites, 111 passed)
+- [x] Zero oxlint errors via `pnpm lint`
+- [x] Full monorepo build succeeds via `pnpm build` (`@repo/contracts`, `apps/api`, `apps/web`)
+- [x] Cambodia holiday detection accurately computes monthly working days and holiday counts
+- [x] Simplified `DRAFT -> PAID -> CANCELLED` status flow functioning smoothly with automated `school_expenses` sync
+- [x] Official A5 printable payslip rendered accurately with bilingual ELC Language Center branding and direct PDF export

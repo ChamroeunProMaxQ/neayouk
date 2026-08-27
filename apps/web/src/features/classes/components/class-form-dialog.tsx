@@ -63,8 +63,8 @@ export function ClassFormDialog({
   const isEdit = !!cls;
   const createMutation = useCreateClassMutation();
   const updateMutation = useUpdateClassMutation();
-  const { data: programsData } = useProgramsQuery({ status: "ACTIVE" });
-  const programsList = programsData?.programs ?? [];
+  const { data: programsData } = useProgramsQuery();
+  const programsList = programsData?.data ?? [];
   const { data: teachersList = [] } = useTeachersQuery({ status: "ACTIVE" });
 
   const activeSchema = isEdit ? UpdateClassSchema : CreateClassSchema;

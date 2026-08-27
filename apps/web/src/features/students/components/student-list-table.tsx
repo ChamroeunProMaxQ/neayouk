@@ -129,17 +129,23 @@ export const StudentListTable: FC = () => {
       {
         accessorKey: "studentCode",
         header: () => (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => handleSort("studentCode")}
-            className="flex items-center gap-1 font-semibold text-slate-700 hover:text-slate-900"
+            className="inline-flex items-center gap-1 hover:text-[#45AC5E] transition-colors font-bold cursor-pointer p-0 h-auto text-xs"
           >
             <span>Student</span>
             {sortBy === "studentCode" ? (
-              sortOrder === "ASC" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />
+              sortOrder === "ASC" ? (
+                <ArrowUp className="w-3.5 h-3.5 text-[#45AC5E]" />
+              ) : (
+                <ArrowDown className="w-3.5 h-3.5 text-[#45AC5E]" />
+              )
             ) : (
-              <ArrowUpDown className="w-3.5 h-3.5 opacity-40" />
+              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
             )}
-          </button>
+          </Button>
         ),
         cell: ({ row }) => {
           const student = row.original;
@@ -168,7 +174,7 @@ export const StudentListTable: FC = () => {
       },
       {
         accessorKey: "gender",
-        header: "Gender / Contact",
+        header: () => <span className="text-xs font-bold text-slate-700">Gender / Contact</span>,
         cell: ({ row }) => {
           const student = row.original;
           return (
@@ -185,7 +191,7 @@ export const StudentListTable: FC = () => {
       },
       {
         accessorKey: "classes",
-        header: "Enrolled Classes",
+        header: () => <span className="text-xs font-bold text-slate-700">Enrolled Classes</span>,
         cell: ({ row }) => {
           const student = row.original;
           return (
@@ -200,17 +206,23 @@ export const StudentListTable: FC = () => {
       {
         accessorKey: "discount",
         header: () => (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => handleSort("discount")}
-            className="flex items-center gap-1 font-semibold text-slate-700 hover:text-slate-900"
+            className="inline-flex items-center gap-1 hover:text-[#45AC5E] transition-colors font-bold cursor-pointer p-0 h-auto text-xs"
           >
             <span>Monthly Fee</span>
             {sortBy === "discount" ? (
-              sortOrder === "ASC" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />
+              sortOrder === "ASC" ? (
+                <ArrowUp className="w-3.5 h-3.5 text-[#45AC5E]" />
+              ) : (
+                <ArrowDown className="w-3.5 h-3.5 text-[#45AC5E]" />
+              )
             ) : (
-              <ArrowUpDown className="w-3.5 h-3.5 opacity-40" />
+              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
             )}
-          </button>
+          </Button>
         ),
         cell: ({ row }) => {
           const student = row.original;
@@ -230,7 +242,7 @@ export const StudentListTable: FC = () => {
       },
       {
         accessorKey: "paymentStatus",
-        header: "Tuition Status",
+        header: () => <span className="text-xs font-bold text-slate-700">Tuition Status</span>,
         cell: ({ row }) => {
           const student = row.original;
           return <PaymentStatusBadge summary={student.paymentSummary} />;
@@ -239,17 +251,23 @@ export const StudentListTable: FC = () => {
       {
         accessorKey: "status",
         header: () => (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => handleSort("status")}
-            className="flex items-center gap-1 font-semibold text-slate-700 hover:text-slate-900"
+            className="inline-flex items-center gap-1 hover:text-[#45AC5E] transition-colors font-bold cursor-pointer p-0 h-auto text-xs"
           >
             <span>Status</span>
             {sortBy === "status" ? (
-              sortOrder === "ASC" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />
+              sortOrder === "ASC" ? (
+                <ArrowUp className="w-3.5 h-3.5 text-[#45AC5E]" />
+              ) : (
+                <ArrowDown className="w-3.5 h-3.5 text-[#45AC5E]" />
+              )
             ) : (
-              <ArrowUpDown className="w-3.5 h-3.5 opacity-40" />
+              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
             )}
-          </button>
+          </Button>
         ),
         cell: ({ row }) => {
           const s = row.original.status;

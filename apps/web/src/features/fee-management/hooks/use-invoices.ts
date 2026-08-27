@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   API_ROUTE,
   type FindInvoicesDto,
@@ -23,6 +23,34 @@ export function useInvoicesQuery(params: Partial<FindInvoicesDto> = {}) {
         signal,
       });
       return response.data;
+    },
+  });
+}
+
+export function useInvoicesInfiniteQuery(params: Partial<FindInvoicesDto> = {}) {
+  const { pageSize = 20, ...queryParams } = params;
+
+  return useInfiniteQuery<ResponseDto<StudentInvoiceAttribute[]>, Error>({
+    queryKey: ["invoices", "infinite", { pageSize, ...queryParams }],
+    queryFn: async ({ pageParam = 1, signal }) => {
+      const qs = queryString.stringify({
+        ...queryParams,
+        page: pageParam,
+        pageSize,
+      });
+      const url = `${API_ROUTE.FEE.INVOICES_LIST}?${qs}`;
+      const response = await apiClient.get<ResponseDto<StudentInvoiceAttribute[]>>(url, {
+        signal,
+      });
+      return response.data;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const pagination = lastPage.pagination;
+      if (!pagination) return undefined;
+      const { page, totalPage } = pagination;
+      if (page >= totalPage) return undefined;
+      return page + 1;
     },
   });
 }

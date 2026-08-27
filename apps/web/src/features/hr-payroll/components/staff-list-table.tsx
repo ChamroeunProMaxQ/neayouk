@@ -1,4 +1,10 @@
 import { useMemo, useState } from "react";
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  type ColumnDef,
+} from "@tanstack/react-table";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useInfiniteScroll } from "@/hooks/use-intersection-observer";
@@ -36,6 +42,10 @@ import {
   Building2,
   DollarSign,
   Clock,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  AlertCircle,
 } from "lucide-react";
 import { usePermission } from "@/features/auth";
 
@@ -47,7 +57,8 @@ export function StaffListTable() {
 
   // 1. URL Filters & Debounced Search
   const { values, setValues } = useUrlFilters(FindStaffSchema);
-  const debouncedSearch = useDebounce(values.search, 800);
+  const { search, department, salaryType, status, sortBy = "id", sortOrder = "DESC" } = values;
+  const debouncedSearch = useDebounce(search, 600);
 
   const queryParams = useMemo(
     () => ({
@@ -62,6 +73,8 @@ export function StaffListTable() {
   const {
     data,
     isLoading,
+    isError,
+    error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -72,6 +85,9 @@ export function StaffListTable() {
     () => data?.pages.flatMap((page) => page.data ?? []) ?? [],
     [data]
   );
+
+  const totalCount =
+    data?.pages[0]?.pagination?.totalCount ?? accumulatedData.length;
 
   // 4. Infinite Scroll Sentinel
   const sentinelRef = useInfiniteScroll({
@@ -109,32 +125,290 @@ export function StaffListTable() {
     setDeleteOpen(true);
   };
 
+  const handleSort = (field: "id" | "name" | "staffCode" | "department" | "baseSalary" | "status" | "createdAt") => {
+    const nextOrder = sortBy === field && sortOrder === "ASC" ? "DESC" : "ASC";
+    setValues({
+      sortBy: field,
+      sortOrder: nextOrder,
+    });
+  };
+
+  const columns = useMemo<ColumnDef<StaffAttribute>[]>(
+    () => [
+      {
+        accessorKey: "staffCode",
+        header: () => (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleSort("staffCode")}
+            className="inline-flex items-center gap-1 hover:text-[#45AC5E] transition-colors font-bold cursor-pointer p-0 h-auto text-xs"
+          >
+            <span>Staff Code</span>
+            {sortBy === "staffCode" ? (
+              sortOrder === "ASC" ? (
+                <ArrowUp className="w-3.5 h-3.5 text-[#45AC5E]" />
+              ) : (
+                <ArrowDown className="w-3.5 h-3.5 text-[#45AC5E]" />
+              )
+            ) : (
+              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+            )}
+          </Button>
+        ),
+        cell: ({ row }) => (
+          <span className="font-mono text-xs font-semibold text-slate-900">
+            {row.original.staffCode || `#${row.original.id}`}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "name",
+        header: () => (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleSort("name")}
+            className="inline-flex items-center gap-1 hover:text-[#45AC5E] transition-colors font-bold cursor-pointer p-0 h-auto text-xs"
+          >
+            <span>Staff Member</span>
+            {sortBy === "name" ? (
+              sortOrder === "ASC" ? (
+                <ArrowUp className="w-3.5 h-3.5 text-[#45AC5E]" />
+              ) : (
+                <ArrowDown className="w-3.5 h-3.5 text-[#45AC5E]" />
+              )
+            ) : (
+              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+            )}
+          </Button>
+        ),
+        cell: ({ row }) => {
+          const staff = row.original;
+          return (
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 font-semibold text-slate-900 text-xs">
+                <span>{staff.name}</span>
+                {staff.nameKm && (
+                  <span className="text-[11px] text-slate-400 font-normal">
+                    ({staff.nameKm})
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
+                {staff.phone && <span>{staff.phone}</span>}
+                {staff.phone && staff.email && <span>•</span>}
+                {staff.email && <span>{staff.email}</span>}
+              </div>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: "department",
+        header: () => (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleSort("department")}
+            className="inline-flex items-center gap-1 hover:text-[#45AC5E] transition-colors font-bold cursor-pointer p-0 h-auto text-xs"
+          >
+            <span>Department & Role</span>
+            {sortBy === "department" ? (
+              sortOrder === "ASC" ? (
+                <ArrowUp className="w-3.5 h-3.5 text-[#45AC5E]" />
+              ) : (
+                <ArrowDown className="w-3.5 h-3.5 text-[#45AC5E]" />
+              )
+            ) : (
+              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+            )}
+          </Button>
+        ),
+        cell: ({ row }) => {
+          const staff = row.original;
+          return (
+            <div className="flex flex-col gap-0.5">
+              <span className="font-medium text-xs text-slate-800">{staff.designation}</span>
+              <div className="flex items-center gap-1.5">
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-slate-100 text-slate-700">
+                  {staff.department}
+                </Badge>
+                {staff.specialization && (
+                  <span className="text-[11px] text-slate-400 truncate max-w-[140px]">
+                    {staff.specialization}
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: "baseSalary",
+        header: () => (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleSort("baseSalary")}
+            className="inline-flex items-center gap-1 hover:text-[#45AC5E] transition-colors font-bold cursor-pointer p-0 h-auto text-xs"
+          >
+            <span>Compensation</span>
+            {sortBy === "baseSalary" ? (
+              sortOrder === "ASC" ? (
+                <ArrowUp className="w-3.5 h-3.5 text-[#45AC5E]" />
+              ) : (
+                <ArrowDown className="w-3.5 h-3.5 text-[#45AC5E]" />
+              )
+            ) : (
+              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+            )}
+          </Button>
+        ),
+        cell: ({ row }) => {
+          const staff = row.original;
+          return (
+            <div className="flex flex-col text-xs">
+              {staff.salaryType === StaffSalaryTypeEnum.HOURLY ? (
+                <div className="flex items-center gap-1 font-semibold text-slate-900">
+                  <Clock className="h-3.5 w-3.5 text-blue-500" />
+                  <span>${staff.hourlyRate?.toFixed(2)} / hr</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 font-semibold text-slate-900">
+                  <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
+                  <span>${staff.baseSalary?.toFixed(2)} / mo</span>
+                </div>
+              )}
+              <span className="text-[10px] text-slate-400">
+                {staff.employmentType?.replace("_", " ")}
+              </span>
+            </div>
+          );
+        },
+      },
+      {
+        id: "account",
+        header: () => <span className="text-xs font-bold text-slate-700">Account</span>,
+        cell: ({ row }) => {
+          const staff = row.original;
+          return staff.user ? (
+            <Badge
+              variant="outline"
+              className="gap-1 border-[#45AC5E]/30 bg-[#45AC5E]/5 text-[#45AC5E] text-[11px]"
+            >
+              <ShieldCheck className="h-3 w-3" />
+              <span>@{staff.user.username}</span>
+            </Badge>
+          ) : (
+            <span className="text-xs text-slate-400 italic">
+              No login
+            </span>
+          );
+        },
+      },
+      {
+        accessorKey: "status",
+        header: () => (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleSort("status")}
+            className="inline-flex items-center gap-1 hover:text-[#45AC5E] transition-colors font-bold cursor-pointer p-0 h-auto text-xs"
+          >
+            <span>Status</span>
+            {sortBy === "status" ? (
+              sortOrder === "ASC" ? (
+                <ArrowUp className="w-3.5 h-3.5 text-[#45AC5E]" />
+              ) : (
+                <ArrowDown className="w-3.5 h-3.5 text-[#45AC5E]" />
+              )
+            ) : (
+              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+            )}
+          </Button>
+        ),
+        cell: ({ getValue }) => <StaffStatusBadge status={getValue<StaffStatusEnum>()} />,
+      },
+      {
+        id: "actions",
+        header: () => <div className="text-right text-xs font-bold text-slate-700">Actions</div>,
+        cell: ({ row }) => {
+          const staff = row.original;
+          return (
+            <div className="flex items-center justify-end gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-slate-500 hover:text-slate-900 cursor-pointer"
+                onClick={() => handleOpenDetail(staff)}
+                title="View Profile"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+              {canUpdateStaff && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-slate-500 hover:text-slate-900 cursor-pointer"
+                  onClick={() => handleOpenEdit(staff)}
+                  title="Edit Staff"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              )}
+              {canDeleteStaff && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                  onClick={() => handleOpenDelete(staff)}
+                  title="Delete Staff"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          );
+        },
+      },
+    ],
+    [sortBy, sortOrder, canUpdateStaff, canDeleteStaff]
+  );
+
+  const table = useReactTable({
+    data: accumulatedData,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    manualSorting: true,
+  });
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-sans">
       {/* Search and Filters Bar */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
         <div className="flex flex-1 flex-wrap items-center gap-2">
-          <div className="relative min-w-[240px] flex-1 md:max-w-xs">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <div className="relative min-w-[220px] flex-1 md:max-w-xs">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 pointer-events-none" />
             <Input
               type="text"
               placeholder="Search staff by name, code, phone..."
-              value={values.search ?? ""}
+              value={search ?? ""}
               onChange={(e) => setValues({ search: e.target.value || undefined })}
-              className="pl-8"
+              className="pl-9 h-9 text-xs"
             />
           </div>
 
           {/* Department Filter */}
           <select
             aria-label="Filter by department"
-            value={values.department ?? ""}
+            value={department ?? ""}
             onChange={(e) =>
               setValues({
                 department: (e.target.value as StaffDepartmentEnum) || undefined,
               })
             }
-            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="h-9 rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
           >
             <option value="">All Departments</option>
             {Object.values(StaffDepartmentEnum).map((dept) => (
@@ -147,13 +421,13 @@ export function StaffListTable() {
           {/* Salary Type Filter */}
           <select
             aria-label="Filter by salary type"
-            value={values.salaryType ?? ""}
+            value={salaryType ?? ""}
             onChange={(e) =>
               setValues({
                 salaryType: (e.target.value as StaffSalaryTypeEnum) || undefined,
               })
             }
-            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="h-9 rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
           >
             <option value="">All Salary Types</option>
             <option value={StaffSalaryTypeEnum.MONTHLY}>Monthly Salary</option>
@@ -163,13 +437,13 @@ export function StaffListTable() {
           {/* Status Filter */}
           <select
             aria-label="Filter by status"
-            value={values.status ?? ""}
+            value={status ?? ""}
             onChange={(e) =>
               setValues({
                 status: (e.target.value as StaffStatusEnum) || undefined,
               })
             }
-            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="h-9 rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
           >
             <option value="">All Statuses</option>
             {Object.values(StaffStatusEnum).map((st) => (
@@ -181,156 +455,68 @@ export function StaffListTable() {
         </div>
 
         {canCreateStaff && (
-          <Button onClick={handleOpenCreate} className="gap-2 shrink-0">
-            <Plus className="h-4 w-4" />
+          <Button
+            onClick={handleOpenCreate}
+            className="bg-[#45AC5E] hover:bg-[#3b9450] text-white font-medium text-xs h-9 px-4 shadow-xs shrink-0 cursor-pointer"
+          >
+            <Plus className="mr-1.5 h-4 w-4" />
             Add Staff Member
           </Button>
         )}
       </div>
 
+      {/* Error state */}
+      {isError && (
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 flex items-center gap-3 text-xs">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{error?.message || "Failed to load staff members."}</span>
+        </div>
+      )}
+
       {/* Staff Table */}
-      <div className="rounded-md border bg-card shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/40 hover:bg-muted/40">
-              <TableHead className="w-[120px]">Staff Code</TableHead>
-              <TableHead>Staff Member</TableHead>
-              <TableHead>Department & Role</TableHead>
-              <TableHead>Compensation</TableHead>
-              <TableHead>Account</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id} className="bg-slate-50/80">
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id} className="py-3 px-4 text-xs font-bold text-slate-700">
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
           </TableHeader>
-          <TableBody>
+          <TableBody className="divide-y divide-slate-100 text-xs">
             {isLoading && accumulatedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-48 text-center">
-                  <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <TableCell colSpan={columns.length} className="h-48 text-center">
+                  <div className="flex flex-col items-center justify-center gap-2 text-slate-500">
+                    <Loader2 className="h-6 w-6 animate-spin text-[#45AC5E]" />
                     <span>Loading staff directory...</span>
                   </div>
                 </TableCell>
               </TableRow>
             ) : accumulatedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-48 text-center">
-                  <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
-                    <Building2 className="h-8 w-8 text-muted-foreground/50" />
-                    <p className="font-medium text-foreground">No staff members found</p>
+                <TableCell colSpan={columns.length} className="h-48 text-center">
+                  <div className="flex flex-col items-center justify-center gap-2 text-slate-400">
+                    <Building2 className="h-8 w-8 text-slate-300" />
+                    <p className="font-semibold text-slate-700 text-sm">No staff members found</p>
                     <p className="text-xs">Try adjusting your search criteria or add a new staff member.</p>
                   </div>
                 </TableCell>
               </TableRow>
             ) : (
-              accumulatedData.map((staff) => (
-                <TableRow key={staff.id} className="hover:bg-muted/30 transition-colors">
-                  <TableCell className="font-mono text-xs font-semibold text-primary">
-                    {staff.staffCode || `#${staff.id}`}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2 font-medium text-foreground">
-                        <span>{staff.name}</span>
-                        {staff.nameKm && (
-                          <span className="text-xs text-muted-foreground">
-                            ({staff.nameKm})
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                        {staff.phone && <span>{staff.phone}</span>}
-                        {staff.phone && staff.email && <span>•</span>}
-                        {staff.email && <span>{staff.email}</span>}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="font-medium text-xs">{staff.designation}</span>
-                      <div className="flex items-center gap-1.5">
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
-                          {staff.department}
-                        </Badge>
-                        {staff.specialization && (
-                          <span className="text-[11px] text-muted-foreground truncate max-w-[140px]">
-                            {staff.specialization}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col text-xs">
-                      {staff.salaryType === StaffSalaryTypeEnum.HOURLY ? (
-                        <div className="flex items-center gap-1 font-semibold text-foreground">
-                          <Clock className="h-3.5 w-3.5 text-blue-500" />
-                          <span>${staff.hourlyRate?.toFixed(2)} / hr</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1 font-semibold text-foreground">
-                          <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
-                          <span>${staff.baseSalary?.toFixed(2)} / mo</span>
-                        </div>
-                      )}
-                      <span className="text-[10px] text-muted-foreground">
-                        {staff.employmentType?.replace("_", " ")}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {staff.user ? (
-                      <Badge
-                        variant="outline"
-                        className="gap-1 border-primary/20 bg-primary/5 text-primary text-[11px]"
-                      >
-                        <ShieldCheck className="h-3 w-3" />
-                        <span>@{staff.user.username}</span>
-                      </Badge>
-                    ) : (
-                      <span className="text-xs text-muted-foreground italic">
-                        No login
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <StaffStatusBadge status={staff.status} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                        onClick={() => handleOpenDetail(staff)}
-                        title="View Profile"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      {canUpdateStaff && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                          onClick={() => handleOpenEdit(staff)}
-                          title="Edit Staff"
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {canDeleteStaff && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                          onClick={() => handleOpenDelete(staff)}
-                          title="Delete Staff"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id} className="hover:bg-slate-50/60 transition-colors">
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className="py-3 px-4">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
                 </TableRow>
               ))
             )}
@@ -340,14 +526,14 @@ export function StaffListTable() {
         {/* Infinite Scroll Indicator */}
         <div ref={sentinelRef} className="py-4 text-center">
           {isFetchingNextPage && (
-            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
+              <Loader2 className="h-4 w-4 animate-spin text-[#45AC5E]" />
               <span>Loading more staff members...</span>
             </div>
           )}
           {!hasNextPage && accumulatedData.length > 0 && (
-            <p className="text-xs text-muted-foreground">
-              All {accumulatedData.length} staff members loaded
+            <p className="text-xs text-slate-400">
+              All {totalCount} staff members loaded
             </p>
           )}
         </div>
@@ -374,3 +560,4 @@ export function StaffListTable() {
     </div>
   );
 }
+

@@ -113,6 +113,42 @@ const handleSort = (field: keyof EntityType) => {
   - *Error State*: Alert banner displaying `error.message` when `isError` is true.
   - *Bottom Sentinel*: Shows `Loader2` when `isFetchingNextPage` or "All {totalCount} items loaded" when `!hasNextPage`.
 
+### 7. Preventing Infinite Re-Render Loops from Query Fallbacks
+- **Anti-Pattern**:
+  ```tsx
+  // ❌ BAD: Creates new array reference every render, causing infinite loops in useEffect
+  const { data } = useTeachersQuery();
+  const teachers = data ?? [];
+  useEffect(() => {
+    if (teachers.length > 0) setValue("teacherId", teachers[0].id);
+  }, [teachers]); // Infinite re-render loop!
+  ```
+- **Recommended Pattern**:
+  ```tsx
+  // ✅ GOOD: Memoize query array or depend directly on data/open flags
+  const { data } = useTeachersQuery();
+  const teachers = useMemo(() => data ?? [], [data]);
+  useEffect(() => {
+    if (teachers.length > 0) setValue("teacherId", teachers[0].id);
+  }, [teachers]);
+  ```
+
+### 8. Safe Numeric Select & Input Handling in React Hook Form
+- **Anti-Pattern**:
+  ```tsx
+  // ❌ BAD: Converts empty string "" to NaN, breaking Zod schema validation ("expected number, received nan")
+  <select {...register("teacherId", { valueAsNumber: true })}>
+  ```
+- **Recommended Pattern**:
+  ```tsx
+  // ✅ GOOD: Empty string becomes undefined, passing optional Zod validation
+  <select
+    {...register("teacherId", {
+      setValueAs: (v) => (v === "" || v === undefined ? undefined : Number(v)),
+    })}
+  >
+  ```
+
 ---
 
 ## Canonical Implementation Reference

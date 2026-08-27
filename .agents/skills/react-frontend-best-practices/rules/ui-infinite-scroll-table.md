@@ -1,6 +1,6 @@
 # Infinite Scroll Data Table Rule
 
-This rule defines mandatory architecture and implementation patterns for data tables using **TanStack Query `useInfiniteQuery`** and **TanStack Table v8** in React frontend applications.
+This rule defines mandatory architecture and implementation patterns for data tables using **TanStack Query `useInfiniteQuery`**, **TanStack Table v8** (`@tanstack/react-table`), and **shadcn UI Table primitives** in React frontend applications.
 
 ---
 
@@ -14,5 +14,27 @@ This rule defines mandatory architecture and implementation patterns for data ta
      [data]
    );
    ```
-3. **Bottom Sentinel**: Attach an `IntersectionObserver` sentinel element (via `useInfiniteScroll`) to trigger `fetchNextPage()` when the user scrolls near the bottom.
-4. **URL Filter Sync**: Sync pagination, search, and sorting states with URL search params using `useUrlFilters`.
+3. **TanStack Table v8 Setup**:
+   ```tsx
+   const columns = useMemo<ColumnDef<EntityAttribute>[]>(() => [ ... ], [deps]);
+   const table = useReactTable({
+     data: accumulatedData,
+     columns,
+     getCoreRowModel: getCoreRowModel(),
+     manualSorting: true,
+   });
+   ```
+4. **Bottom Sentinel**: Attach an `IntersectionObserver` sentinel element (via `useInfiniteScroll`) to trigger `fetchNextPage()` when the user scrolls near the bottom.
+   ```tsx
+   const sentinelRef = useInfiniteScroll({
+     hasMore: !!hasNextPage,
+     isLoading,
+     isFetching: isFetchingNextPage,
+     onLoadMore: fetchNextPage,
+   });
+   ```
+5. **URL Filter Sync**: Sync pagination, search, and sorting states with URL search params using `useUrlFilters(FindSchema)`.
+6. **Server-Side Sortable Headers**:
+   - Use theme green (`#45AC5E`) for active sort arrows (`ArrowUp` / `ArrowDown`).
+   - Use neutral `text-slate-400` with `ArrowUpDown` for inactive sort headers.
+   - Use ghost `Button` with `cursor-pointer font-bold text-xs`.

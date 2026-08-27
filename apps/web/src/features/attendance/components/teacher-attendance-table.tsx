@@ -1,7 +1,14 @@
 import { useState, useMemo, type FC } from "react";
 import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  type ColumnDef,
+} from "@tanstack/react-table";
+import {
   AttendanceStatusEnum,
   type TeacherAttendanceAttribute,
+  type TeacherAttribute,
 } from "@repo/contracts";
 import { useTeachersQuery } from "@/features/teachers/hooks/use-teachers-query";
 import {
@@ -12,6 +19,14 @@ import { usePermission } from "@/features/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+import {
   Save,
   Loader2,
   Calendar,
@@ -20,6 +35,18 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { AttendanceStatusBadge } from "./attendance-status-badge";
+
+interface TeacherRowData {
+  teacher: TeacherAttribute;
+  att?: TeacherAttendanceAttribute;
+  checkInTime: string;
+  checkOutTime: string;
+  status: AttendanceStatusEnum;
+  hoursWorked: number;
+  remarks: string;
+  isRecorded: boolean;
+  isDirty: boolean;
+}
 
 export const TeacherAttendanceTable: FC = () => {
   const { can, isAdmin } = usePermission();
@@ -74,7 +101,7 @@ export const TeacherAttendanceTable: FC = () => {
   >({});
 
   // Merge teachers with attendance records
-  const teacherRows = useMemo(() => {
+  const teacherRows = useMemo<TeacherRowData[]>(() => {
     const attMap = new Map<number, TeacherAttendanceAttribute>();
     attendanceList.forEach((att) => attMap.set(att.teacherId, att));
 
@@ -217,8 +244,169 @@ export const TeacherAttendanceTable: FC = () => {
     setFeedback(null);
   };
 
+  const columns = useMemo<ColumnDef<TeacherRowData>[]>(
+    () => [
+      {
+        id: "index",
+        header: () => <span className="text-xs font-bold text-slate-700 w-12 text-center">#</span>,
+        cell: ({ row }) => <span className="text-slate-400 text-xs text-center block">{row.index + 1}</span>,
+      },
+      {
+        id: "teacherName",
+        header: () => <span className="text-xs font-bold text-slate-700 min-w-[180px]">Instructor Name</span>,
+        cell: ({ row }) => {
+          const { teacher } = row.original;
+          return (
+            <div className="flex flex-col">
+              <span className="font-semibold text-slate-900 text-xs">{teacher.name}</span>
+              <span className="text-[10px] text-slate-400">
+                {teacher.teacherCode || `ID:${teacher.id}`} • {teacher.phone || "No phone"}
+              </span>
+            </div>
+          );
+        },
+      },
+      {
+        id: "specialization",
+        header: () => <span className="text-xs font-bold text-slate-700 min-w-[120px]">Specialization</span>,
+        cell: ({ row }) => (
+          <span className="text-xs text-slate-600">
+            {row.original.teacher.specialization || "General"}
+          </span>
+        ),
+      },
+      {
+        id: "rate",
+        header: () => <span className="text-xs font-bold text-slate-700 w-24">Rate ($/hr)</span>,
+        cell: ({ row }) => (
+          <span className="text-xs font-medium text-slate-700">
+            ${Number(row.original.teacher.salaryInHour || 0).toFixed(2)}
+          </span>
+        ),
+      },
+      {
+        id: "checkIn",
+        header: () => <span className="text-xs font-bold text-slate-700 w-28">Check In</span>,
+        cell: ({ row }) => {
+          const r = row.original;
+          return (
+            <Input
+              type="time"
+              value={r.checkInTime}
+              onChange={(e) =>
+                handleRowChange(r.teacher.id, { checkInTime: e.target.value })
+              }
+              disabled={!canManage || r.status === AttendanceStatusEnum.ON_LEAVE}
+              className="h-7 text-xs font-mono w-24 px-1.5"
+            />
+          );
+        },
+      },
+      {
+        id: "checkOut",
+        header: () => <span className="text-xs font-bold text-slate-700 w-28">Check Out</span>,
+        cell: ({ row }) => {
+          const r = row.original;
+          return (
+            <Input
+              type="time"
+              value={r.checkOutTime}
+              onChange={(e) =>
+                handleRowChange(r.teacher.id, { checkOutTime: e.target.value })
+              }
+              disabled={!canManage || r.status === AttendanceStatusEnum.ON_LEAVE}
+              className="h-7 text-xs font-mono w-24 px-1.5"
+            />
+          );
+        },
+      },
+      {
+        id: "hours",
+        header: () => <span className="text-xs font-bold text-slate-700 w-24">Hours</span>,
+        cell: ({ row }) => {
+          const r = row.original;
+          return canManage && r.status !== AttendanceStatusEnum.ON_LEAVE ? (
+            <div className="flex items-center gap-1">
+              <Input
+                type="number"
+                step="0.5"
+                min="0"
+                max="24"
+                value={r.hoursWorked}
+                onChange={(e) =>
+                  handleRowChange(r.teacher.id, {
+                    hoursWorked: Math.max(0, Number(e.target.value) || 0),
+                  })
+                }
+                aria-label={`Hours worked for ${r.teacher.name}`}
+                className="h-7 text-xs font-bold font-mono w-16 px-1.5 text-center bg-slate-50 focus:bg-white border-slate-300"
+              />
+              <span className="text-[10px] text-slate-500 font-medium">hrs</span>
+            </div>
+          ) : (
+            <span className="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-xs">
+              {r.hoursWorked}h
+            </span>
+          );
+        },
+      },
+      {
+        id: "status",
+        header: () => <span className="text-xs font-bold text-slate-700 w-36">Status</span>,
+        cell: ({ row }) => {
+          const r = row.original;
+          return canManage ? (
+            <select
+              value={r.status}
+              onChange={(e) =>
+                handleRowChange(r.teacher.id, {
+                  status: e.target.value as AttendanceStatusEnum,
+                })
+              }
+              aria-label="Attendance status"
+              className="h-7 text-xs rounded border border-slate-200 bg-white px-2 py-0 font-medium text-slate-700 shadow-xs focus:outline-none focus:ring-1 focus:ring-[#45AC5E]"
+            >
+              <option value={AttendanceStatusEnum.PRESENT}>Present</option>
+              <option value={AttendanceStatusEnum.LATE}>Late</option>
+              <option value={AttendanceStatusEnum.ABSENT}>Absent</option>
+              <option value={AttendanceStatusEnum.HALF_DAY}>Half Day</option>
+              <option value={AttendanceStatusEnum.ON_LEAVE}>On Leave</option>
+            </select>
+          ) : (
+            <AttendanceStatusBadge status={r.status} size="sm" />
+          );
+        },
+      },
+      {
+        id: "remarks",
+        header: () => <span className="text-xs font-bold text-slate-700 min-w-[180px]">Remarks</span>,
+        cell: ({ row }) => {
+          const r = row.original;
+          return (
+            <Input
+              placeholder="Add note..."
+              value={r.remarks}
+              onChange={(e) =>
+                handleRowChange(r.teacher.id, { remarks: e.target.value })
+              }
+              disabled={!canManage}
+              className="h-7 text-xs"
+            />
+          );
+        },
+      },
+    ],
+    [canManage]
+  );
+
+  const table = useReactTable({
+    data: teacherRows,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-sans">
       {/* Feedback Banner */}
       {feedback && (
         <div
@@ -238,7 +426,7 @@ export const TeacherAttendanceTable: FC = () => {
           </div>
           <button
             onClick={() => setFeedback(null)}
-            className="text-xs text-slate-500 hover:text-slate-800 ml-4 font-bold"
+            className="text-xs text-slate-500 hover:text-slate-800 ml-4 font-bold cursor-pointer"
           >
             ✕
           </button>
@@ -253,12 +441,12 @@ export const TeacherAttendanceTable: FC = () => {
             variant="outline"
             size="sm"
             onClick={() => changeDateByDays(-1)}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 cursor-pointer"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <div className="relative">
-            <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
             <Input
               type="date"
               value={selectedDate}
@@ -274,7 +462,7 @@ export const TeacherAttendanceTable: FC = () => {
             variant="outline"
             size="sm"
             onClick={() => changeDateByDays(1)}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 cursor-pointer"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -286,7 +474,7 @@ export const TeacherAttendanceTable: FC = () => {
               setDrafts({});
               setFeedback(null);
             }}
-            className="text-xs text-[#45AC5E] hover:bg-emerald-50 font-medium"
+            className="text-xs text-[#45AC5E] hover:bg-emerald-50 font-medium cursor-pointer"
           >
             Today
           </Button>
@@ -300,7 +488,7 @@ export const TeacherAttendanceTable: FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleMarkAllPresent}
-                className="text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-50 font-medium"
+                className="text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-50 font-medium cursor-pointer"
               >
                 <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
                 Fill Standard Shift (4h)
@@ -309,7 +497,7 @@ export const TeacherAttendanceTable: FC = () => {
                 size="sm"
                 onClick={handleSaveAll}
                 disabled={batchMutation.isPending}
-                className="text-xs font-bold bg-[#45AC5E] hover:bg-[#3d9853] text-white shadow-sm"
+                className="text-xs font-bold bg-[#45AC5E] hover:bg-[#3d9853] text-white shadow-sm cursor-pointer"
               >
                 {batchMutation.isPending ? (
                   <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
@@ -335,129 +523,40 @@ export const TeacherAttendanceTable: FC = () => {
             No active teachers found in the directory.
           </div>
         ) : (
-          <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-slate-50 text-slate-700 border-b border-slate-200">
-              <tr>
-                <th className="px-4 py-3 font-bold w-12">#</th>
-                <th className="px-4 py-3 font-bold min-w-[180px]">Instructor Name</th>
-                <th className="px-3 py-3 font-bold min-w-[120px]">Specialization</th>
-                <th className="px-3 py-3 font-bold w-24">Rate ($/hr)</th>
-                <th className="px-3 py-3 font-bold w-28">Check In</th>
-                <th className="px-3 py-3 font-bold w-28">Check Out</th>
-                <th className="px-3 py-3 font-bold w-24">Hours</th>
-                <th className="px-3 py-3 font-bold w-36">Status</th>
-                <th className="px-4 py-3 font-bold min-w-[180px]">Remarks</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {teacherRows.map((row, idx) => (
-                <tr
-                  key={row.teacher.id}
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id} className="bg-slate-50 border-b border-slate-200">
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id} className="py-3 px-3 text-xs font-bold text-slate-700">
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody className="divide-y divide-slate-100 text-xs">
+              {table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
                   className={`hover:bg-slate-50/80 transition-colors ${
-                    row.isDirty ? "bg-amber-50/40" : ""
+                    row.original.isDirty ? "bg-amber-50/40" : ""
                   }`}
                 >
-                  <td className="px-4 py-3 text-slate-400 text-center">{idx + 1}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col">
-                      <span className="font-semibold text-slate-900">{row.teacher.name}</span>
-                      <span className="text-[10px] text-slate-400">
-                        {row.teacher.teacherCode || `ID:${row.teacher.id}`} • {row.teacher.phone || "No phone"}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-3 py-3 text-slate-600">
-                    {row.teacher.specialization || "General"}
-                  </td>
-                  <td className="px-3 py-3 font-medium text-slate-700">
-                    ${Number(row.teacher.salaryInHour || 0).toFixed(2)}
-                  </td>
-                  <td className="px-3 py-3">
-                    <Input
-                      type="time"
-                      value={row.checkInTime}
-                      onChange={(e) =>
-                        handleRowChange(row.teacher.id, { checkInTime: e.target.value })
-                      }
-                      disabled={!canManage || row.status === AttendanceStatusEnum.ON_LEAVE}
-                      className="h-7 text-xs font-mono w-24 px-1.5"
-                    />
-                  </td>
-                  <td className="px-3 py-3">
-                    <Input
-                      type="time"
-                      value={row.checkOutTime}
-                      onChange={(e) =>
-                        handleRowChange(row.teacher.id, { checkOutTime: e.target.value })
-                      }
-                      disabled={!canManage || row.status === AttendanceStatusEnum.ON_LEAVE}
-                      className="h-7 text-xs font-mono w-24 px-1.5"
-                    />
-                  </td>
-                  <td className="px-3 py-3">
-                    {canManage && row.status !== AttendanceStatusEnum.ON_LEAVE ? (
-                      <div className="flex items-center gap-1">
-                        <Input
-                          type="number"
-                          step="0.5"
-                          min="0"
-                          max="24"
-                          value={row.hoursWorked}
-                          onChange={(e) =>
-                            handleRowChange(row.teacher.id, {
-                              hoursWorked: Math.max(0, Number(e.target.value) || 0),
-                            })
-                          }
-                          aria-label={`Hours worked for ${row.teacher.name}`}
-                          className="h-7 text-xs font-bold font-mono w-16 px-1.5 text-center bg-slate-50 focus:bg-white border-slate-300"
-                        />
-                        <span className="text-[10px] text-slate-500 font-medium">hrs</span>
-                      </div>
-                    ) : (
-                      <span className="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-xs">
-                        {row.hoursWorked}h
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-3 py-3">
-                    {canManage ? (
-                      <select
-                        value={row.status}
-                        onChange={(e) =>
-                          handleRowChange(row.teacher.id, {
-                            status: e.target.value as AttendanceStatusEnum,
-                          })
-                        }
-                        aria-label="Attendance status"
-                        className="h-7 text-xs rounded border border-slate-200 bg-white px-2 py-0 font-medium text-slate-700 shadow-xs focus:outline-none focus:ring-1 focus:ring-[#45AC5E]"
-                      >
-                        <option value={AttendanceStatusEnum.PRESENT}>Present</option>
-                        <option value={AttendanceStatusEnum.LATE}>Late</option>
-                        <option value={AttendanceStatusEnum.ABSENT}>Absent</option>
-                        <option value={AttendanceStatusEnum.HALF_DAY}>Half Day</option>
-                        <option value={AttendanceStatusEnum.ON_LEAVE}>On Leave</option>
-                      </select>
-                    ) : (
-                      <AttendanceStatusBadge status={row.status} size="sm" />
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Input
-                      placeholder="Add note..."
-                      value={row.remarks}
-                      onChange={(e) =>
-                        handleRowChange(row.teacher.id, { remarks: e.target.value })
-                      }
-                      disabled={!canManage}
-                      className="h-7 text-xs"
-                    />
-                  </td>
-                </tr>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className="px-3 py-3">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         )}
       </div>
     </div>
   );
 };
+

@@ -109,7 +109,8 @@ describe("ProgramListTable", () => {
 
     await waitFor(() => {
       expect(getSpy).toHaveBeenCalledWith(
-        expect.stringContaining("search=Primary")
+        expect.stringContaining("search=Primary"),
+        expect.anything()
       );
     });
   });

@@ -1,12 +1,9 @@
 {
-  "categories": {
-    "correctness": "error"
-  },
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
   "rules": {
     "typescript/no-explicit-any": "off",
     "jsx-a11y/click-events-have-key-events": "off",
     "jsx-a11y/heading-has-content": "off",
-    "jsx-a11y/label-has-associated-control": "off",
-    "jsx-a11y/alt-text": "off"
+    "jsx-a11y/label-has-associated-control": "off"
   }
 }

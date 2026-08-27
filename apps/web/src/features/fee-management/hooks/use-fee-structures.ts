@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   API_ROUTE,
   type FindFeeStructuresDto,
@@ -20,6 +20,34 @@ export function useFeeStructuresQuery(params: Partial<FindFeeStructuresDto> = {}
         signal,
       });
       return response.data;
+    },
+  });
+}
+
+export function useFeeStructuresInfiniteQuery(params: Partial<FindFeeStructuresDto> = {}) {
+  const { pageSize = 20, ...queryParams } = params;
+
+  return useInfiniteQuery<ResponseDto<FeeStructureAttribute[]>, Error>({
+    queryKey: ["fee-structures", "infinite", { pageSize, ...queryParams }],
+    queryFn: async ({ pageParam = 1, signal }) => {
+      const qs = queryString.stringify({
+        ...queryParams,
+        page: pageParam,
+        pageSize,
+      });
+      const url = `${API_ROUTE.FEE.STRUCTURES_LIST}?${qs}`;
+      const response = await apiClient.get<ResponseDto<FeeStructureAttribute[]>>(url, {
+        signal,
+      });
+      return response.data;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const pagination = lastPage.pagination;
+      if (!pagination) return undefined;
+      const { page, totalPage } = pagination;
+      if (page >= totalPage) return undefined;
+      return page + 1;
     },
   });
 }

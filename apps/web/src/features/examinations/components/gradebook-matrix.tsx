@@ -213,7 +213,7 @@ export const GradebookMatrix: FC = () => {
     setLocalEdits((prev) => {
       const serverRow = matrixData?.rows.find((r) => r.studentId === studentId);
       const currentStudent = prev[studentId] || {
-        scores: { ...(serverRow?.scores || {}) },
+        scores: { ...serverRow?.scores },
         feedback: serverRow?.feedback || undefined,
       };
 
@@ -248,7 +248,7 @@ export const GradebookMatrix: FC = () => {
     setLocalEdits((prev) => {
       const serverRow = matrixData?.rows.find((r) => r.studentId === studentId);
       const currentStudent = prev[studentId] || {
-        scores: { ...(serverRow?.scores || {}) },
+        scores: { ...serverRow?.scores },
       };
 
       return {

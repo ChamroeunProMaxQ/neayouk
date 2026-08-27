@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@/shared/lib/zod-resolver";
 import {
@@ -32,6 +32,7 @@ interface LeaveRequestFormDialogProps {
   onOpenChange: (open: boolean) => void;
   leaveRequest?: LeaveRequestAttribute | null;
 }
+const today = new Date().toISOString().slice(0, 10);
 
 export function LeaveRequestFormDialog({
   open,
@@ -43,9 +44,7 @@ export function LeaveRequestFormDialog({
   const updateMutation = useUpdateLeaveRequestMutation();
 
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachersQuery();
-  const teachers = Array.isArray(teachersData) ? teachersData : [];
-
-  const today = new Date().toISOString().slice(0, 10);
+  const teachers = useMemo(() => teachersData ?? [], [teachersData]);
   const activeSchema = isEdit ? UpdateLeaveRequestSchema : CreateLeaveRequestSchema;
 
   const {
@@ -84,6 +83,12 @@ export function LeaveRequestFormDialog({
   }, [startDate, endDate, setValue]);
 
   useEffect(() => {
+    if (teachers.length > 0 && !leaveRequest && teachers[0]) {
+      setValue("teacherId", teachers[0].id);
+    }
+  }, [teachers, leaveRequest, setValue]);
+
+  useEffect(() => {
     if (open) {
       if (leaveRequest) {
         reset({
@@ -107,7 +112,7 @@ export function LeaveRequestFormDialog({
         });
       }
     }
-  }, [leaveRequest, open, reset, today, teachers]);
+  }, [leaveRequest?.id, open]);
 
   const onSubmit = async (data: CreateLeaveRequestDto) => {
     try {
@@ -184,13 +189,14 @@ export function LeaveRequestFormDialog({
             </Label>
             <select
               id="teacherId"
-              {...register("teacherId", { valueAsNumber: true })}
+              {...register("teacherId", {
+                setValueAs: (v) => (v === "" || v === undefined ? undefined : Number(v)),
+              })}
               disabled={isLoadingTeachers}
-              className={`h-9 w-full rounded-md border bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs focus:outline-none focus:ring-1 ${
-                errors.teacherId
-                  ? "border-rose-500 focus:ring-rose-500"
-                  : "border-slate-200 focus:ring-[#45AC5E]"
-              }`}
+              className={`h-9 w-full rounded-md border bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs focus:outline-none focus:ring-1 ${errors.teacherId
+                ? "border-rose-500 focus:ring-rose-500"
+                : "border-slate-200 focus:ring-[#45AC5E]"
+                }`}
             >
               {isLoadingTeachers ? (
                 <option value="">Loading teachers...</option>
@@ -220,11 +226,10 @@ export function LeaveRequestFormDialog({
             <select
               id="leaveType"
               {...register("leaveType")}
-              className={`h-9 w-full rounded-md border bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs focus:outline-none focus:ring-1 ${
-                errors.leaveType
-                  ? "border-rose-500 focus:ring-rose-500"
-                  : "border-slate-200 focus:ring-[#45AC5E]"
-              }`}
+              className={`h-9 w-full rounded-md border bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs focus:outline-none focus:ring-1 ${errors.leaveType
+                ? "border-rose-500 focus:ring-rose-500"
+                : "border-slate-200 focus:ring-[#45AC5E]"
+                }`}
             >
               <option value={LeaveTypeEnum.CASUAL}>Casual Leave</option>
               <option value={LeaveTypeEnum.SICK}>Sick / Medical Leave</option>

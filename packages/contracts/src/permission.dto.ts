@@ -3,6 +3,7 @@ import { DefaultActions } from "./action.enum.js";
 import { ResourceEnum } from "./resource.enum.js";
 import { UserTypeEnum } from "./user-type.enum.js";
 import { PaginationSchema } from "./pagination.dto.js";
+import { RESOURCE_PARENTS_MAP } from "./permission-tree.js";
 
 export const PermissionSchema = z.object({
   id: z.number().optional(),
@@ -44,7 +45,7 @@ export type FindPermissionsDto = z.infer<typeof FindPermissionsSchema>;
 
 /**
  * Checks whether an array of permissions includes permission for the given action and resource.
- * Supports wildcard matching for 'manage' action and 'all' resource.
+ * Supports wildcard matching for 'manage' action, 'all' resource, and parent groups.
  */
 export function hasPermission(
   permissions: PermissionDto[] | undefined | null,
@@ -55,24 +56,18 @@ export function hasPermission(
     return false;
   }
 
-  const umbrellaParents: Record<string, string[]> = {
-    [ResourceEnum.CLASS]: [ResourceEnum.ACADEMIC],
-    [ResourceEnum.PROGRAM]: [ResourceEnum.ACADEMIC],
-    [ResourceEnum.TIMETABLE]: [ResourceEnum.ACADEMIC, ResourceEnum.CLASS],
-    [ResourceEnum.ACADEMIC_YEAR]: [ResourceEnum.ACADEMIC, ResourceEnum.CLASS],
-    [ResourceEnum.STUDENT_ATTENDANCE]: [ResourceEnum.ATTENDANCE],
-    [ResourceEnum.TEACHER_ATTENDANCE]: [ResourceEnum.ATTENDANCE, ResourceEnum.HR],
-    [ResourceEnum.LEAVE_REQUEST]: [ResourceEnum.ATTENDANCE, ResourceEnum.HR],
-  };
+  const parents = RESOURCE_PARENTS_MAP[resource] || [];
 
   return permissions.some((p) => {
-    const parents = umbrellaParents[resource] || [];
     const isResourceMatch =
       p.resource === ResourceEnum.ALL ||
       p.resource === resource ||
       p.resource === "*" ||
-      parents.includes(p.resource as ResourceEnum);
-    const isActionMatch = p.action === DefaultActions.manage || p.action === action || p.action === "*";
+      parents.includes(p.resource);
+    const isActionMatch =
+      p.action === DefaultActions.manage ||
+      p.action === action ||
+      p.action === "*";
     return isResourceMatch && isActionMatch;
   });
 }

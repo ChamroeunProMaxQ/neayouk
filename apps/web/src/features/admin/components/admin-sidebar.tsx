@@ -16,12 +16,12 @@ import {
   Lock,
 } from "lucide-react";
 import { usePermission } from "@/features/auth";
-import type { UserTypeEnum } from "@repo/contracts";
+import { ResourceEnum, type UserTypeEnum } from "@repo/contracts";
 
 export interface SubNavItem {
   label: string;
   path: string;
-  requiredPermission?: { action: string; resource: string };
+  requiredPermission?: { action: string; resource: ResourceEnum | string };
   requiredUserType?: UserTypeEnum | string;
 }
 
@@ -32,7 +32,7 @@ export interface NavItem {
   path?: string;
   isCollapsible?: boolean;
   subItems?: (string | SubNavItem)[];
-  requiredPermission?: { action: string; resource: string };
+  requiredPermission?: { action: string; resource: ResourceEnum | string };
   requiredUserType?: UserTypeEnum | string;
 }
 
@@ -55,7 +55,7 @@ export const adminNavGroups: NavGroup[] = [
         label: "Dashboard",
         icon: LayoutDashboard,
         path: "/dashboard",
-        requiredPermission: { action: "read", resource: "dashboard" },
+        requiredPermission: { action: "read", resource: ResourceEnum.DASHBOARD },
       },
       {
         id: "users",
@@ -63,12 +63,12 @@ export const adminNavGroups: NavGroup[] = [
         icon: Users,
         path: "/users",
         isCollapsible: true,
-        requiredPermission: { action: "read", resource: "user" },
+        requiredPermission: { action: "read", resource: ResourceEnum.USER },
         subItems: [
-          { label: "Students", path: "/students", requiredPermission: { action: "read", resource: "student" } },
-          { label: "Teachers", path: "/teachers", requiredPermission: { action: "read", resource: "teacher" } },
-          { label: "Parents", path: "/users/parents", requiredPermission: { action: "read", resource: "user" } },
-          { label: "Roles & Permissions", path: "/users/roles", requiredPermission: { action: "read", resource: "role" } },
+          { label: "Students", path: "/students", requiredPermission: { action: "read", resource: ResourceEnum.STUDENT } },
+          { label: "Teachers", path: "/teachers", requiredPermission: { action: "read", resource: ResourceEnum.TEACHER } },
+          { label: "User Accounts", path: "/users", requiredPermission: { action: "read", resource: ResourceEnum.USER } },
+          { label: "Roles & Permissions", path: "/users/roles", requiredPermission: { action: "read", resource: ResourceEnum.ROLE } },
         ],
       },
       {
@@ -77,11 +77,11 @@ export const adminNavGroups: NavGroup[] = [
         icon: Bell,
         path: "/announcements",
         isCollapsible: true,
-        requiredPermission: { action: "read", resource: "announcement" },
+        requiredPermission: { action: "read", resource: ResourceEnum.ANNOUNCEMENT },
         subItems: [
-          { label: "Notices & Bulletins", path: "/announcements/notices" },
-          { label: "SMS & Email Broadcasts", path: "/announcements/broadcasts" },
-          { label: "School Events", path: "/announcements/events" },
+          { label: "Notices & Bulletins", path: "/announcements/notices", requiredPermission: { action: "read", resource: ResourceEnum.ANNOUNCEMENT } },
+          { label: "SMS & Email Broadcasts", path: "/announcements/broadcasts", requiredPermission: { action: "read", resource: ResourceEnum.ANNOUNCEMENT } },
+          { label: "School Events", path: "/announcements/events", requiredPermission: { action: "read", resource: ResourceEnum.ANNOUNCEMENT } },
         ],
       },
     ],
@@ -95,24 +95,28 @@ export const adminNavGroups: NavGroup[] = [
         icon: GraduationCap,
         path: "/academics",
         isCollapsible: true,
-        requiredPermission: { action: "read", resource: "academic" },
+        requiredPermission: { action: "read", resource: ResourceEnum.ACADEMIC },
         subItems: [
           {
             label: "Programs & Curriculum Books",
             path: "/academics/programs",
-            requiredPermission: { action: "read", resource: "program" },
+            requiredPermission: { action: "read", resource: ResourceEnum.PROGRAM },
           },
           {
             label: "Classes & Cohorts",
             path: "/academics/classes",
-            requiredPermission: { action: "read", resource: "class" },
+            requiredPermission: { action: "read", resource: ResourceEnum.CLASS },
           },
           {
             label: "Academic Years & Terms",
             path: "/academics/academic-years",
-            requiredPermission: { action: "read", resource: "academic_year" },
+            requiredPermission: { action: "read", resource: ResourceEnum.ACADEMIC_YEAR },
           },
-          // { label: "Class Timetable", path: "/academics/timetable", requiredPermission: { action: "read", resource: "timetable" } },
+          {
+            label: "Class Timetable",
+            path: "/academics/timetable",
+            requiredPermission: { action: "read", resource: ResourceEnum.TIMETABLE },
+          },
         ],
       },
       {
@@ -121,22 +125,22 @@ export const adminNavGroups: NavGroup[] = [
         icon: ClipboardCheck,
         path: "/attendance",
         isCollapsible: true,
-        requiredPermission: { action: "read", resource: "attendance" },
+        requiredPermission: { action: "read", resource: ResourceEnum.ATTENDANCE },
         subItems: [
           {
             label: "Student Attendance",
             path: "/attendance/students",
-            requiredPermission: { action: "read", resource: "student_attendance" },
+            requiredPermission: { action: "read", resource: ResourceEnum.STUDENT_ATTENDANCE },
           },
           {
             label: "Teacher Attendance",
             path: "/attendance/teachers",
-            requiredPermission: { action: "read", resource: "teacher_attendance" },
+            requiredPermission: { action: "read", resource: ResourceEnum.TEACHER_ATTENDANCE },
           },
           {
             label: "Leave Requests",
             path: "/attendance/leave-requests",
-            requiredPermission: { action: "read", resource: "leave_request" },
+            requiredPermission: { action: "read", resource: ResourceEnum.LEAVE_REQUEST },
           },
         ],
       },
@@ -146,26 +150,25 @@ export const adminNavGroups: NavGroup[] = [
         icon: Award,
         path: "/examinations",
         isCollapsible: true,
-        requiredPermission: { action: "read", resource: "examination" },
+        requiredPermission: { action: "read", resource: ResourceEnum.EXAMINATION },
         subItems: [
-          { label: "Gradebook", path: "/examinations/gradebook" },
-          { label: "Report Cards", path: "/examinations/report-cards" },
-          { label: "Grading Rules", path: "/examinations/rules" },
+          {
+            label: "Gradebook",
+            path: "/examinations/gradebook",
+            requiredPermission: { action: "read", resource: ResourceEnum.EXAMINATION },
+          },
+          {
+            label: "Report Cards",
+            path: "/examinations/report-cards",
+            requiredPermission: { action: "read", resource: ResourceEnum.REPORT_CARD },
+          },
+          {
+            label: "Grading Rules",
+            path: "/examinations/rules",
+            requiredPermission: { action: "read", resource: ResourceEnum.GRADING_RULE },
+          },
         ],
       },
-      // {
-      //   id: "assignments",
-      //   label: "Assignments & Homework",
-      //   icon: BookOpen,
-      //   path: "/assignments",
-      //   isCollapsible: true,
-      //   requiredPermission: { action: "read", resource: "assignment" },
-      //   subItems: [
-      //     { label: "Class Assignments", path: "/assignments/class-assignments" },
-      //     { label: "Homework Tracker", path: "/assignments/homework-tracker" },
-      //     { label: "Study Resources", path: "/assignments/study-resources" },
-      //   ],
-      // },
     ],
   },
   {
@@ -177,11 +180,23 @@ export const adminNavGroups: NavGroup[] = [
         icon: CreditCard,
         path: "/fee-management",
         isCollapsible: true,
-        requiredPermission: { action: "read", resource: "fee" },
+        requiredPermission: { action: "read", resource: ResourceEnum.FEE },
         subItems: [
-          { label: "Fee Structures", path: "/fee-management/structures" },
-          { label: "Invoices & Payments", path: "/fee-management/invoices" },
-          { label: "Operational Expenses", path: "/fee-management/expenses" },
+          {
+            label: "Fee Structures",
+            path: "/fee-management/structures",
+            requiredPermission: { action: "read", resource: ResourceEnum.FEE_STRUCTURE },
+          },
+          {
+            label: "Invoices & Payments",
+            path: "/fee-management/invoices",
+            requiredPermission: { action: "read", resource: ResourceEnum.INVOICE },
+          },
+          {
+            label: "Operational Expenses",
+            path: "/fee-management/expenses",
+            requiredPermission: { action: "read", resource: ResourceEnum.EXPENSE },
+          },
         ],
       },
       {
@@ -190,51 +205,20 @@ export const adminNavGroups: NavGroup[] = [
         icon: Briefcase,
         path: "/hr-payroll",
         isCollapsible: true,
-        requiredPermission: { action: "read", resource: "hr" },
+        requiredPermission: { action: "read", resource: ResourceEnum.HR },
         subItems: [
-          { label: "Staff Directory", path: "/hr-payroll/staff" },
-          { label: "Payroll & Salary", path: "/hr-payroll/salary" },
+          {
+            label: "Staff Directory",
+            path: "/hr-payroll/staff",
+            requiredPermission: { action: "read", resource: ResourceEnum.STAFF },
+          },
+          {
+            label: "Payroll & Salary",
+            path: "/hr-payroll/salary",
+            requiredPermission: { action: "read", resource: ResourceEnum.PAYROLL },
+          },
         ],
       },
-      // {
-      //   id: "library",
-      //   label: "Library Management",
-      //   icon: Library,
-      //   path: "/library",
-      //   isCollapsible: true,
-      //   requiredPermission: { action: "read", resource: "library" },
-      //   subItems: [
-      //     { label: "Book Catalog", path: "/library/catalog" },
-      //     { label: "Issue & Return", path: "/library/issue-return" },
-      //     { label: "Library Members", path: "/library/members" },
-      //   ],
-      // },
-      // {
-      //   id: "transport",
-      //   label: "Transport & Bus",
-      //   icon: Bus,
-      //   path: "/transport",
-      //   isCollapsible: true,
-      //   requiredPermission: { action: "read", resource: "transport" },
-      //   subItems: [
-      //     { label: "Bus Routes", path: "/transport/routes" },
-      //     { label: "Vehicle Fleet", path: "/transport/fleet" },
-      //     { label: "Driver Management", path: "/transport/drivers" },
-      //   ],
-      // },
-      // {
-      //   id: "hostel",
-      //   label: "Hostel & Dormitory",
-      //   icon: Building2,
-      //   path: "/hostel",
-      //   isCollapsible: true,
-      //   requiredPermission: { action: "read", resource: "hostel" },
-      //   subItems: [
-      //     { label: "Dorm Rooms", path: "/hostel/rooms" },
-      //     { label: "Room Allocation", path: "/hostel/allocation" },
-      //     { label: "Hostel Attendance", path: "/hostel/attendance" },
-      //   ],
-      // },
     ],
   },
   {
@@ -246,11 +230,23 @@ export const adminNavGroups: NavGroup[] = [
         icon: BarChart3,
         path: "/reports",
         isCollapsible: true,
-        requiredPermission: { action: "read", resource: "report" },
+        requiredPermission: { action: "read", resource: ResourceEnum.REPORT },
         subItems: [
-          { label: "Academic Reports", path: "/reports/academic" },
-          { label: "Attendance Analytics", path: "/reports/attendance" },
-          { label: "Financial Reports", path: "/reports/financial" },
+          {
+            label: "Academic Reports",
+            path: "/reports/academic",
+            requiredPermission: { action: "read", resource: ResourceEnum.REPORT },
+          },
+          {
+            label: "Attendance Analytics",
+            path: "/reports/attendance",
+            requiredPermission: { action: "read", resource: ResourceEnum.REPORT },
+          },
+          {
+            label: "Financial Reports",
+            path: "/reports/financial",
+            requiredPermission: { action: "read", resource: ResourceEnum.REPORT },
+          },
         ],
       },
       {
@@ -259,12 +255,28 @@ export const adminNavGroups: NavGroup[] = [
         icon: Settings,
         path: "/settings",
         isCollapsible: true,
-        requiredPermission: { action: "read", resource: "setting" },
+        requiredPermission: { action: "read", resource: ResourceEnum.SETTING },
         subItems: [
-          { label: "School Profile", path: "/settings/profile" },
-          { label: "General Rules", path: "/settings/rules" },
-          { label: "Integrations", path: "/settings/integrations" },
-          { label: "Audit Logs", path: "/settings/audit-logs" },
+          {
+            label: "School Profile",
+            path: "/settings/profile",
+            requiredPermission: { action: "read", resource: ResourceEnum.SETTING },
+          },
+          {
+            label: "General Rules",
+            path: "/settings/rules",
+            requiredPermission: { action: "read", resource: ResourceEnum.SETTING },
+          },
+          {
+            label: "Integrations",
+            path: "/settings/integrations",
+            requiredPermission: { action: "read", resource: ResourceEnum.SETTING },
+          },
+          {
+            label: "Audit Logs",
+            path: "/settings/audit-logs",
+            requiredPermission: { action: "read", resource: ResourceEnum.SETTING },
+          },
         ],
       },
     ],

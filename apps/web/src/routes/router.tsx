@@ -4,6 +4,7 @@ import { LayoutShell } from "@/shared/components/layout-shell";
 import { ProtectedLayout } from "./protected-layout";
 import { PermissionRoute } from "./permission-route";
 import { ForbiddenPage } from "./forbidden-page";
+import { ResourceEnum } from "@repo/contracts";
 
 const LoginPage = lazy(() =>
   import("./login-page").then((m) => ({ default: m.LoginPage }))
@@ -120,7 +121,7 @@ const router = createBrowserRouter([
             path: "/users",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="user" action="read">
+                <PermissionRoute resource={ResourceEnum.USER} action="read">
                   <UsersPage />
                 </PermissionRoute>
               </Suspense>
@@ -130,7 +131,7 @@ const router = createBrowserRouter([
             path: "/users/roles",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="role" action="read">
+                <PermissionRoute resource={ResourceEnum.ROLE} action="read">
                   <RolesPage />
                 </PermissionRoute>
               </Suspense>
@@ -140,7 +141,7 @@ const router = createBrowserRouter([
             path: "/students",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="student" action="read">
+                <PermissionRoute resource={ResourceEnum.STUDENT} action="read">
                   <StudentsPage />
                 </PermissionRoute>
               </Suspense>
@@ -150,7 +151,7 @@ const router = createBrowserRouter([
             path: "/teachers",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="teacher" action="read">
+                <PermissionRoute resource={ResourceEnum.TEACHER} action="read">
                   <TeachersPage />
                 </PermissionRoute>
               </Suspense>
@@ -164,7 +165,7 @@ const router = createBrowserRouter([
             path: "/academics/academic-years",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="academic_year" action="read">
+                <PermissionRoute resource={ResourceEnum.ACADEMIC_YEAR} action="read">
                   <AcademicYearsPage />
                 </PermissionRoute>
               </Suspense>
@@ -174,7 +175,7 @@ const router = createBrowserRouter([
             path: "/academics/programs",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="program" action="read">
+                <PermissionRoute resource={ResourceEnum.PROGRAM} action="read">
                   <ProgramsPage />
                 </PermissionRoute>
               </Suspense>
@@ -184,7 +185,7 @@ const router = createBrowserRouter([
             path: "/academics/classes",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="class" action="read">
+                <PermissionRoute resource={ResourceEnum.CLASS} action="read">
                   <ClassesPage />
                 </PermissionRoute>
               </Suspense>
@@ -198,7 +199,7 @@ const router = createBrowserRouter([
             path: "/academics/timetable",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="timetable" action="read">
+                <PermissionRoute resource={ResourceEnum.TIMETABLE} action="read">
                   <TimetablePage />
                 </PermissionRoute>
               </Suspense>
@@ -212,7 +213,7 @@ const router = createBrowserRouter([
             path: "/attendance/students",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="student_attendance" action="read">
+                <PermissionRoute resource={ResourceEnum.STUDENT_ATTENDANCE} action="read">
                   <StudentAttendancePage />
                 </PermissionRoute>
               </Suspense>
@@ -222,7 +223,7 @@ const router = createBrowserRouter([
             path: "/attendance/teachers",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="teacher_attendance" action="read">
+                <PermissionRoute resource={ResourceEnum.TEACHER_ATTENDANCE} action="read">
                   <TeacherAttendancePage />
                 </PermissionRoute>
               </Suspense>
@@ -232,7 +233,7 @@ const router = createBrowserRouter([
             path: "/attendance/leave-requests",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="leave_request" action="read">
+                <PermissionRoute resource={ResourceEnum.LEAVE_REQUEST} action="read">
                   <LeaveRequestsPage />
                 </PermissionRoute>
               </Suspense>
@@ -246,7 +247,7 @@ const router = createBrowserRouter([
             path: "/examinations/gradebook",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="examination" action="read">
+                <PermissionRoute resource={ResourceEnum.EXAMINATION} action="read">
                   <GradebookPage />
                 </PermissionRoute>
               </Suspense>
@@ -256,7 +257,7 @@ const router = createBrowserRouter([
             path: "/examinations/rules",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="examination" action="read">
+                <PermissionRoute resource={ResourceEnum.GRADING_RULE} action="read">
                   <GradingRulesPage />
                 </PermissionRoute>
               </Suspense>
@@ -266,7 +267,7 @@ const router = createBrowserRouter([
             path: "/examinations/report-cards",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="examination" action="read">
+                <PermissionRoute resource={ResourceEnum.REPORT_CARD} action="read">
                   <ReportCardsPage />
                 </PermissionRoute>
               </Suspense>
@@ -280,7 +281,7 @@ const router = createBrowserRouter([
             path: "/fee-management/structures",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="fee" action="read">
+                <PermissionRoute resource={ResourceEnum.FEE_STRUCTURE} action="read">
                   <FeeStructuresPage />
                 </PermissionRoute>
               </Suspense>
@@ -290,7 +291,7 @@ const router = createBrowserRouter([
             path: "/fee-management/invoices",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="fee" action="read">
+                <PermissionRoute resource={ResourceEnum.INVOICE} action="read">
                   <InvoicesPage />
                 </PermissionRoute>
               </Suspense>
@@ -300,7 +301,7 @@ const router = createBrowserRouter([
             path: "/fee-management/expenses",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="fee" action="read">
+                <PermissionRoute resource={ResourceEnum.EXPENSE} action="read">
                   <ExpensesPage />
                 </PermissionRoute>
               </Suspense>
@@ -314,7 +315,7 @@ const router = createBrowserRouter([
             path: "/hr-payroll/staff",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="hr" action="read">
+                <PermissionRoute resource={ResourceEnum.STAFF} action="read">
                   <StaffDirectoryPage />
                 </PermissionRoute>
               </Suspense>
@@ -324,7 +325,7 @@ const router = createBrowserRouter([
             path: "/hr-payroll/salary",
             element: (
               <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource="hr" action="read">
+                <PermissionRoute resource={ResourceEnum.PAYROLL} action="read">
                   <PayrollSalaryPage />
                 </PermissionRoute>
               </Suspense>

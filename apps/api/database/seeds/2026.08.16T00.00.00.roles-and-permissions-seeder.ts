@@ -1,42 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import type { DataSource } from 'typeorm';
 import type { MigrationFn } from 'umzug';
+import { getAllPermissionsFromContract } from '@repo/contracts';
 
 export const up: MigrationFn<DataSource> = async ({ context }) => {
   const dataSource = await (typeof context === 'function' ? (context as () => Promise<DataSource>)() : context);
 
-  const permissionsList = [
-    { resource: 'all', action: 'manage', description: 'Full system management' },
-    { resource: 'user', action: 'read', description: 'View users' },
-    { resource: 'user', action: 'create', description: 'Create users' },
-    { resource: 'user', action: 'update', description: 'Edit users' },
-    { resource: 'user', action: 'delete', description: 'Delete users' },
-    { resource: 'user', action: 'manage', description: 'Manage all users' },
-    { resource: 'announcement', action: 'read', description: 'View announcements' },
-    { resource: 'announcement', action: 'manage', description: 'Manage announcements' },
-    { resource: 'academic', action: 'read', description: 'View academics' },
-    { resource: 'academic', action: 'manage', description: 'Manage academics' },
-    { resource: 'attendance', action: 'read', description: 'View attendance' },
-    { resource: 'attendance', action: 'manage', description: 'Manage attendance' },
-    { resource: 'examination', action: 'read', description: 'View examinations' },
-    { resource: 'examination', action: 'manage', description: 'Manage examinations' },
-    { resource: 'assignment', action: 'read', description: 'View assignments' },
-    { resource: 'assignment', action: 'manage', description: 'Manage assignments' },
-    { resource: 'fee', action: 'read', description: 'View fees' },
-    { resource: 'fee', action: 'manage', description: 'Manage fees' },
-    { resource: 'hr', action: 'read', description: 'View HR & Payroll' },
-    { resource: 'hr', action: 'manage', description: 'Manage HR & Payroll' },
-    { resource: 'library', action: 'read', description: 'View library' },
-    { resource: 'library', action: 'manage', description: 'Manage library' },
-    { resource: 'transport', action: 'read', description: 'View transport' },
-    { resource: 'transport', action: 'manage', description: 'Manage transport' },
-    { resource: 'hostel', action: 'read', description: 'View hostel' },
-    { resource: 'hostel', action: 'manage', description: 'Manage hostel' },
-    { resource: 'report', action: 'read', description: 'View reports' },
-    { resource: 'report', action: 'manage', description: 'Manage reports' },
-    { resource: 'setting', action: 'read', description: 'View settings' },
-    { resource: 'setting', action: 'manage', description: 'Manage settings' },
-  ];
+  const permissionsList = getAllPermissionsFromContract();
 
   for (const perm of permissionsList) {
     await dataSource.query(
@@ -77,10 +47,59 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
 
   const rolePermMappings: Record<string, string[]> = {
     admin: allPermissions.map((p) => `${p.resource}:${p.action}`),
-    cms: ['user:manage', 'announcement:manage', 'report:read', 'setting:read'],
-    teacher: ['academic:read', 'attendance:manage', 'examination:manage', 'assignment:manage', 'library:read', 'report:read'],
-    staff: ['hr:manage', 'fee:manage', 'transport:manage', 'hostel:manage', 'library:manage'],
-    student: ['academic:read', 'attendance:read', 'examination:read', 'assignment:read', 'library:read'],
+    cms: [
+      'user:manage',
+      'role:manage',
+      'permission:read',
+      'announcement:manage',
+      'report:manage',
+      'setting:manage',
+      'dashboard:read',
+    ],
+    teacher: [
+      'academic:read',
+      'academic_year:read',
+      'program:read',
+      'class:read',
+      'timetable:read',
+      'student:read',
+      'teacher:read',
+      'student_attendance:manage',
+      'teacher_attendance:read',
+      'leave_request:create',
+      'leave_request:read',
+      'examination:manage',
+      'grading_rule:read',
+      'report_card:manage',
+      'assignment:manage',
+      'library:read',
+      'report:read',
+      'dashboard:read',
+    ],
+    staff: [
+      'staff:manage',
+      'payroll:manage',
+      'fee_structure:manage',
+      'invoice:manage',
+      'expense:manage',
+      'transport:manage',
+      'hostel:manage',
+      'library:manage',
+      'teacher_attendance:manage',
+      'leave_request:manage',
+      'dashboard:read',
+    ],
+    student: [
+      'academic:read',
+      'class:read',
+      'timetable:read',
+      'student_attendance:read',
+      'examination:read',
+      'report_card:read',
+      'assignment:read',
+      'library:read',
+      'dashboard:read',
+    ],
     customer: ['user:read', 'user:update'],
   };
 

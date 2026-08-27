@@ -145,6 +145,13 @@ pnpm --filter api exec vitest run -t "user controller"
 - Every search input, filter dropdown, and column header sort toggle MUST push/sync to URL query parameters (`search`, `role`, `status`, `sortBy`, `sortOrder`).
 - Refer to `.agents/skills/react-frontend-best-practices/rules/ui-tanstack-table-primitives.md` for complete guidelines.
 
+### 9. Declarative Hierarchical RBAC & Permission Single Source of Truth
+- **Rule**: All RBAC permissions, module groups, and child resources MUST be centrally declared in `@repo/contracts` (`PERMISSION_GROUPS`, `ResourceEnum`, `permission-tree.ts`).
+- **Database Seeding**: Database seeders MUST dynamically generate permission entries using `getAllPermissionsFromContract()` from `@repo/contracts` rather than hardcoding static permission arrays or SQL literals.
+- **Backend CASL Abilities**: Feature permission modules (`*.permission.ts`) MUST use `registerCaslPermissions(can, perms, Entity, ResourceEnum)` with `@repo/contracts`'s `hasPermission` for automatic cascading permission evaluation (child CRUD, child manage, group manage, superuser manage).
+- **Frontend Role Form**: The Role permission editor MUST present permissions grouped by module cards with group-level master toggles ("Select All / Clear Module") and individual child CRUD action chips (`read`, `create`, `update`, `delete`).
+- **Frontend Navigation & Route Guards**: Sidebar navigation items and `<PermissionRoute>` components MUST use strongly-typed `ResourceEnum` constants to gate access.
+
 ---
 
 ## 🤖 Recommended Workflow for Task Execution

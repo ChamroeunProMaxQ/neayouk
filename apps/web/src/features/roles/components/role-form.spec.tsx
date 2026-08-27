@@ -15,15 +15,15 @@ describe("RoleForm", () => {
     expect(screen.getByLabelText(/role slug/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/description/i)).toBeInTheDocument();
 
-    // Verify static permission resources rendered
-    expect(screen.getByText("User Management")).toBeInTheDocument();
-    expect(screen.getByText("Academic Management (All)")).toBeInTheDocument();
+    // Verify declarative permission groups and child resources rendered
+    expect(screen.getByText("User & Access Management")).toBeInTheDocument();
+    expect(screen.getByText("Academic Management")).toBeInTheDocument();
     expect(screen.getByText("Classes & Cohorts")).toBeInTheDocument();
     expect(screen.getByText("Programs & Curriculum")).toBeInTheDocument();
     expect(screen.getByText("Student Attendance")).toBeInTheDocument();
     expect(screen.getByText("Teacher Attendance")).toBeInTheDocument();
-    expect(screen.getByText("Leave Requests & Reports")).toBeInTheDocument();
-    expect(screen.getByText("Fee & Billing")).toBeInTheDocument();
+    expect(screen.getByText("Leave Requests")).toBeInTheDocument();
+    expect(screen.getByText("Fee & Financials")).toBeInTheDocument();
   });
 
   it("auto-generates slug when typing role name", async () => {

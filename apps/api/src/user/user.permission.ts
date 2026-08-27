@@ -1,8 +1,9 @@
 import { type Permissions, Actions } from 'nest-casl';
 import { type InferSubjects } from '@casl/ability';
-import { hasPermission, ResourceEnum } from '@repo/contracts';
+import { ResourceEnum } from '@repo/contracts';
 import { User } from './entity/user.entity.js';
 import type { AppAuthorizableUser } from '../common/config/casl.config.js';
+import { registerCaslPermissions } from '../common/config/casl.helper.js';
 
 export type Subjects = InferSubjects<typeof User>;
 
@@ -20,24 +21,7 @@ export const permissions: Permissions<
   // 2. CMS: Evaluates dynamic database permissions assigned to the user
   CMS({ user, can }) {
     const perms = user?.permissions;
-
-    if (hasPermission(perms, Actions.manage, ResourceEnum.USER)) {
-      can(Actions.manage, User);
-      return;
-    }
-
-    if (hasPermission(perms, Actions.read, ResourceEnum.USER)) {
-      can(Actions.read, User);
-    }
-    if (hasPermission(perms, Actions.create, ResourceEnum.USER)) {
-      can(Actions.create, User);
-    }
-    if (hasPermission(perms, Actions.update, ResourceEnum.USER)) {
-      can(Actions.update, User);
-    }
-    if (hasPermission(perms, Actions.delete, ResourceEnum.USER)) {
-      can(Actions.delete, User);
-    }
+    registerCaslPermissions(can, perms, User, ResourceEnum.USER);
   },
 
   // 3. Portal User / Customer: Self-service access
@@ -52,3 +36,4 @@ export const permissions: Permissions<
     extend('PORTAL_USER');
   },
 };
+

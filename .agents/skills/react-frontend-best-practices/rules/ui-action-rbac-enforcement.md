@@ -64,20 +64,30 @@ When a user lacks permission for an action:
 ```
 
 ### 3. Resource Mapping Standard (`ResourceEnum`)
-Use standard resource identifiers from `@repo/contracts` matching the backend CASL permissions:
+Use strongly-typed resource identifiers from `@repo/contracts` (`ResourceEnum`) matching the backend CASL permissions and `PERMISSION_GROUPS`:
 
-| Feature / Domain | Resource Name | Applicable Actions |
+| Module Group | Child Resource | Applicable Actions |
 | :--- | :--- | :--- |
-| **Users** | `"user"` | `create`, `read`, `update`, `delete`, `manage` |
-| **Roles & Permissions** | `"role"`, `"permission"` | `create`, `read`, `update`, `delete`, `manage` |
-| **Students** | `"student"` | `create`, `read`, `update`, `delete`, `manage` |
-| **Fees & Payments** | `"fee"` | `create`, `read`, `update`, `delete`, `manage` |
-| **Academic (Classes, Programs, Timetables)** | `"academic"` | `create`, `read`, `update`, `delete`, `manage` |
-| **Teachers** | `"teacher"` | `create`, `read`, `update`, `delete`, `manage` |
-| **Attendance** | `"attendance"` | `create`, `read`, `update`, `delete`, `manage` |
-| **HR & Payroll** | `"hr"` | `create`, `read`, `update`, `delete`, `manage` |
+| **User Management** | `ResourceEnum.USER`, `ResourceEnum.ROLE`, `ResourceEnum.PERMISSION` | `read`, `create`, `update`, `delete`, `manage` |
+| **People & Directory** | `ResourceEnum.STUDENT`, `ResourceEnum.TEACHER` | `read`, `create`, `update`, `delete`, `manage` |
+| **Academic Management** | `ResourceEnum.ACADEMIC_YEAR`, `ResourceEnum.PROGRAM`, `ResourceEnum.CLASS`, `ResourceEnum.TIMETABLE` | `read`, `create`, `update`, `delete`, `manage` |
+| **Attendance Management** | `ResourceEnum.STUDENT_ATTENDANCE`, `ResourceEnum.TEACHER_ATTENDANCE`, `ResourceEnum.LEAVE_REQUEST` | `read`, `create`, `update`, `delete`, `manage` |
+| **Examinations & Grading** | `ResourceEnum.EXAMINATION`, `ResourceEnum.GRADING_RULE`, `ResourceEnum.REPORT_CARD`, `ResourceEnum.ASSIGNMENT` | `read`, `create`, `update`, `delete`, `manage` |
+| **Fee & Financials** | `ResourceEnum.FEE_STRUCTURE`, `ResourceEnum.INVOICE`, `ResourceEnum.EXPENSE` | `read`, `create`, `update`, `delete`, `manage` |
+| **HR & Payroll** | `ResourceEnum.STAFF`, `ResourceEnum.PAYROLL` | `read`, `create`, `update`, `delete`, `manage` |
+| **General & System** | `ResourceEnum.DASHBOARD`, `ResourceEnum.ANNOUNCEMENT`, `ResourceEnum.REPORT`, `ResourceEnum.SETTING` | `read`, `create`, `update`, `delete`, `manage` |
+
+---
+
+### 4. Role Form Hierarchical UI Standard
+When rendering role permission editors (e.g. `RoleForm`):
+- **Module Accordion Cards**: Render each module group from `PERMISSION_GROUPS` (`@repo/contracts`) in a collapsible card.
+- **Group Master Switch**: Provide a "Select All / Clear Module" toggle per card and a counter badge (e.g. `4 of 8 selected`).
+- **Child Resource Rows**: Each child resource contains badge chips for each granular action (`read`, `create`, `update`, `delete`).
+- **Toolbar**: Real-time permission search/filter input, "Expand All / Collapse All", and "Select All / Deselect All".
 
 ---
 
 ## Validation & Automated Testing
-Component test suites for feature list tables **MUST** assert that action buttons correctly respect permission states (e.g. testing disabled state when `usePermission` returns `can: () => false`).
+Component test suites for feature list tables and `RoleForm` **MUST** assert that action buttons and permission toggles correctly respect permission states (e.g. testing disabled state when `usePermission` returns `can: () => false` and form submission with selected permissions).
+

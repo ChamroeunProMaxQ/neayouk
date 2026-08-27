@@ -44,70 +44,87 @@ export class UserController {
 ```typescript
 // 1. Define global CASL config (src/common/config/casl.config.ts)
 import type { JwtPayload } from "@src/auth/dto/jwt-payload.dto.js";
-import { UserTypeEnum } from "@repo/contracts";
+import { UserTypeEnum, type PermissionDto } from "@repo/contracts";
 import type { Request } from "express";
 import { CaslModule, type AuthorizableUser } from "nest-casl";
 
-export const caslConfig = CaslModule.forRoot<UserTypeEnum, AuthorizableUser<UserTypeEnum, number>>({
+export interface AppAuthorizableUser extends AuthorizableUser<string, number> {
+  id: number;
+  roles: string[];
+  userType?: UserTypeEnum;
+  permissions?: PermissionDto[];
+}
+
+export const caslConfig = CaslModule.forRoot<string, AppAuthorizableUser>({
   superuserRole: UserTypeEnum.ADMIN,
   getUserFromRequest: (request) => {
     const user = (request as unknown as Request).user as JwtPayload | undefined;
     if (!user) return undefined;
+    const userType = user.userType ?? user.type;
     return {
       id: Number(user.sub),
-      roles: [user.type as UserTypeEnum],
+      roles: user.roles ?? [userType],
+      userType,
+      permissions: user.permissions ?? [],
     };
   },
 });
 
-// 2. Custom Access Guard (src/common/guard/casl-access.guard.ts)
-import type { ExecutionContext } from '@nestjs/common';
-import { Injectable } from '@nestjs/common';
-import { ModuleRef, Reflector } from '@nestjs/core';
-import { AccessGuard, AccessService } from 'nest-casl';
+// 2. Reusable CASL Registration Helper (src/common/config/casl.helper.ts)
+import { Actions, type AbilityCan } from 'nest-casl';
+import { hasPermission, ResourceEnum, type PermissionDto } from '@repo/contracts';
 
-@Injectable()
-export class CaslAccessGuard extends AccessGuard {
-  constructor(
-    reflectorService: Reflector,
-    accessService: AccessService,
-    moduleRef: ModuleRef,
-  ) {
-    super(reflectorService, accessService, moduleRef);
+export function registerCaslPermissions<Subjects extends object>(
+  can: AbilityCan<Subjects, Actions>,
+  perms: PermissionDto[] | undefined,
+  entity: Subjects,
+  resource: ResourceEnum | string,
+): void {
+  if (hasPermission(perms, Actions.manage, resource)) {
+    can(Actions.manage, entity);
+    return;
   }
-
-  override async canActivate(context: ExecutionContext): Promise<boolean> {
-    return await super.canActivate(context);
+  for (const act of [Actions.read, Actions.create, Actions.update, Actions.delete]) {
+    if (hasPermission(perms, act, resource)) {
+      can(act, entity);
+    }
   }
 }
 
 // 3. Feature Permission Map (src/user/user.permission.ts)
-import { type Permissions, Actions, type AuthorizableUser } from 'nest-casl';
+import { type Permissions, Actions } from 'nest-casl';
 import { type InferSubjects } from '@casl/ability';
 import { User } from './entity/user.entity.js';
-import { UserTypeEnum } from '@repo/contracts';
+import { ResourceEnum } from '@repo/contracts';
+import type { AppAuthorizableUser } from '../common/config/casl.config.js';
+import { registerCaslPermissions } from '../common/config/casl.helper.js';
 
 export type Subjects = InferSubjects<typeof User>;
 
 export const permissions: Permissions<
-  UserTypeEnum,
+  string,
   Subjects,
   Actions,
-  AuthorizableUser<UserTypeEnum, number>
+  AppAuthorizableUser
 > = {
-  CUSTOMER({ user, can, cannot }) {
+  ADMIN({ can }) {
+    can(Actions.manage, User);
+  },
+
+  CMS({ user, can }) {
+    const perms = user?.permissions;
+    registerCaslPermissions(can, perms, User, ResourceEnum.USER);
+  },
+
+  PORTAL_USER({ user, can, cannot }) {
     can(Actions.read, User, { id: user?.id });
     can(Actions.update, User, { id: user?.id });
     cannot(Actions.create, User);
     cannot(Actions.delete, User);
   },
 
-  ADMIN({ can }) {
-    can(Actions.manage, User);
-  },
-
-  CMS({ can }) {
-    can(Actions.manage, User);
+  CUSTOMER({ extend }) {
+    extend('PORTAL_USER');
   },
 };
 

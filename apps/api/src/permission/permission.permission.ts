@@ -1,8 +1,9 @@
 import { type Permissions, Actions } from 'nest-casl';
 import { type InferSubjects } from '@casl/ability';
-import { hasPermission, ResourceEnum } from '@repo/contracts';
+import { ResourceEnum } from '@repo/contracts';
 import { Permission } from './entity/permission.entity.js';
 import type { AppAuthorizableUser } from '../common/config/casl.config.js';
+import { registerCaslPermissions } from '../common/config/casl.helper.js';
 
 export type Subjects = InferSubjects<typeof Permission>;
 
@@ -18,24 +19,7 @@ export const permissions: Permissions<
 
   CMS({ user, can }) {
     const perms = user?.permissions;
-
-    if (hasPermission(perms, Actions.manage, ResourceEnum.PERMISSION)) {
-      can(Actions.manage, Permission);
-      return;
-    }
-
-    if (hasPermission(perms, Actions.read, ResourceEnum.PERMISSION)) {
-      can(Actions.read, Permission);
-    }
-    if (hasPermission(perms, Actions.create, ResourceEnum.PERMISSION)) {
-      can(Actions.create, Permission);
-    }
-    if (hasPermission(perms, Actions.update, ResourceEnum.PERMISSION)) {
-      can(Actions.update, Permission);
-    }
-    if (hasPermission(perms, Actions.delete, ResourceEnum.PERMISSION)) {
-      can(Actions.delete, Permission);
-    }
+    registerCaslPermissions(can, perms, Permission, ResourceEnum.PERMISSION);
   },
 
   PORTAL_USER() {
@@ -46,3 +30,4 @@ export const permissions: Permissions<
     extend('PORTAL_USER');
   },
 };
+

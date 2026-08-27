@@ -157,19 +157,19 @@ export const adminNavGroups: NavGroup[] = [
           { label: "Grading Rules", path: "/examinations/rules" },
         ],
       },
-      {
-        id: "assignments",
-        label: "Assignments & Homework",
-        icon: BookOpen,
-        path: "/assignments",
-        isCollapsible: true,
-        requiredPermission: { action: "read", resource: "assignment" },
-        subItems: [
-          { label: "Class Assignments", path: "/assignments/class-assignments" },
-          { label: "Homework Tracker", path: "/assignments/homework-tracker" },
-          { label: "Study Resources", path: "/assignments/study-resources" },
-        ],
-      },
+      // {
+      //   id: "assignments",
+      //   label: "Assignments & Homework",
+      //   icon: BookOpen,
+      //   path: "/assignments",
+      //   isCollapsible: true,
+      //   requiredPermission: { action: "read", resource: "assignment" },
+      //   subItems: [
+      //     { label: "Class Assignments", path: "/assignments/class-assignments" },
+      //     { label: "Homework Tracker", path: "/assignments/homework-tracker" },
+      //     { label: "Study Resources", path: "/assignments/study-resources" },
+      //   ],
+      // },
     ],
   },
   {
@@ -201,45 +201,45 @@ export const adminNavGroups: NavGroup[] = [
           { label: "Staff Attendance", path: "/hr-payroll/attendance" },
         ],
       },
-      {
-        id: "library",
-        label: "Library Management",
-        icon: Library,
-        path: "/library",
-        isCollapsible: true,
-        requiredPermission: { action: "read", resource: "library" },
-        subItems: [
-          { label: "Book Catalog", path: "/library/catalog" },
-          { label: "Issue & Return", path: "/library/issue-return" },
-          { label: "Library Members", path: "/library/members" },
-        ],
-      },
-      {
-        id: "transport",
-        label: "Transport & Bus",
-        icon: Bus,
-        path: "/transport",
-        isCollapsible: true,
-        requiredPermission: { action: "read", resource: "transport" },
-        subItems: [
-          { label: "Bus Routes", path: "/transport/routes" },
-          { label: "Vehicle Fleet", path: "/transport/fleet" },
-          { label: "Driver Management", path: "/transport/drivers" },
-        ],
-      },
-      {
-        id: "hostel",
-        label: "Hostel & Dormitory",
-        icon: Building2,
-        path: "/hostel",
-        isCollapsible: true,
-        requiredPermission: { action: "read", resource: "hostel" },
-        subItems: [
-          { label: "Dorm Rooms", path: "/hostel/rooms" },
-          { label: "Room Allocation", path: "/hostel/allocation" },
-          { label: "Hostel Attendance", path: "/hostel/attendance" },
-        ],
-      },
+      // {
+      //   id: "library",
+      //   label: "Library Management",
+      //   icon: Library,
+      //   path: "/library",
+      //   isCollapsible: true,
+      //   requiredPermission: { action: "read", resource: "library" },
+      //   subItems: [
+      //     { label: "Book Catalog", path: "/library/catalog" },
+      //     { label: "Issue & Return", path: "/library/issue-return" },
+      //     { label: "Library Members", path: "/library/members" },
+      //   ],
+      // },
+      // {
+      //   id: "transport",
+      //   label: "Transport & Bus",
+      //   icon: Bus,
+      //   path: "/transport",
+      //   isCollapsible: true,
+      //   requiredPermission: { action: "read", resource: "transport" },
+      //   subItems: [
+      //     { label: "Bus Routes", path: "/transport/routes" },
+      //     { label: "Vehicle Fleet", path: "/transport/fleet" },
+      //     { label: "Driver Management", path: "/transport/drivers" },
+      //   ],
+      // },
+      // {
+      //   id: "hostel",
+      //   label: "Hostel & Dormitory",
+      //   icon: Building2,
+      //   path: "/hostel",
+      //   isCollapsible: true,
+      //   requiredPermission: { action: "read", resource: "hostel" },
+      //   subItems: [
+      //     { label: "Dorm Rooms", path: "/hostel/rooms" },
+      //     { label: "Room Allocation", path: "/hostel/allocation" },
+      //     { label: "Hostel Attendance", path: "/hostel/attendance" },
+      //   ],
+      // },
     ],
   },
   {
@@ -413,23 +413,21 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({
                     disabled={!isEnabled}
                     title={!isEnabled ? "Access Restricted" : undefined}
                     aria-disabled={!isEnabled}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150 relative ${
-                      !isEnabled
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150 relative ${!isEnabled
                         ? "opacity-40 text-slate-400 cursor-not-allowed hover:bg-transparent"
                         : isActive
-                        ? "text-[#45AC5E] bg-[#EBF6EE] border-r-4 border-[#45AC5E] cursor-pointer"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 cursor-pointer"
-                    }`}
+                          ? "text-[#45AC5E] bg-[#EBF6EE] border-r-4 border-[#45AC5E] cursor-pointer"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 cursor-pointer"
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <Icon
-                        className={`w-4 h-4 ${
-                          !isEnabled
+                        className={`w-4 h-4 ${!isEnabled
                             ? "text-slate-300"
                             : isActive
-                            ? "text-[#45AC5E]"
-                            : "text-slate-500"
-                        }`}
+                              ? "text-[#45AC5E]"
+                              : "text-slate-500"
+                          }`}
                       />
                       <span>{item.label}</span>
                     </div>
@@ -465,13 +463,12 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({
                             onClick={() => handleSubItemClick(sub, item, idx, isSubEnabled)}
                             disabled={!isSubEnabled}
                             aria-disabled={!isSubEnabled}
-                            className={`flex items-center justify-between w-full text-left py-1.5 px-2 text-xs font-medium rounded transition-colors ${
-                              !isSubEnabled
+                            className={`flex items-center justify-between w-full text-left py-1.5 px-2 text-xs font-medium rounded transition-colors ${!isSubEnabled
                                 ? "opacity-40 text-slate-400 cursor-not-allowed"
                                 : isSubActive
-                                ? "text-[#45AC5E] bg-[#EBF6EE] font-bold cursor-pointer"
-                                : "text-slate-500 hover:text-[#45AC5E] hover:bg-slate-50 cursor-pointer"
-                            }`}
+                                  ? "text-[#45AC5E] bg-[#EBF6EE] font-bold cursor-pointer"
+                                  : "text-slate-500 hover:text-[#45AC5E] hover:bg-slate-50 cursor-pointer"
+                              }`}
                           >
                             <span>{subLabel}</span>
                             {!isSubEnabled && <Lock className="w-3 h-3 text-slate-400" />}

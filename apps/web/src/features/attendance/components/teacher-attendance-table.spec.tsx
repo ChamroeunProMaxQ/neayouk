@@ -88,7 +88,7 @@ describe("TeacherAttendanceTable", () => {
             message: "success",
             data: mockTeachers,
           },
-        } as any);
+        } as never);
       }
       if (url.includes("/api/v1/admin/attendance/teachers")) {
         return Promise.resolve({
@@ -98,9 +98,9 @@ describe("TeacherAttendanceTable", () => {
             data: mockTeacherAttendances,
             pagination: { page: 1, pageSize: 100, totalCount: 1, totalPage: 1 },
           },
-        } as any);
+        } as never);
       }
-      return Promise.resolve({ data: { data: [] } } as any);
+      return Promise.resolve({ data: { data: [] } } as never);
     });
 
     render(<TeacherAttendanceTable />, { wrapper: createWrapper() });
@@ -126,7 +126,7 @@ describe("TeacherAttendanceTable", () => {
             message: "success",
             data: mockTeachers,
           },
-        } as any);
+        } as never);
       }
       if (url.includes("/api/v1/admin/attendance/teachers")) {
         return Promise.resolve({
@@ -136,9 +136,9 @@ describe("TeacherAttendanceTable", () => {
             data: [],
             pagination: { page: 1, pageSize: 100, totalCount: 0, totalPage: 0 },
           },
-        } as any);
+        } as never);
       }
-      return Promise.resolve({ data: { data: [] } } as any);
+      return Promise.resolve({ data: { data: [] } } as never);
     });
 
     render(<TeacherAttendanceTable />, { wrapper: createWrapper() });
@@ -150,6 +150,57 @@ describe("TeacherAttendanceTable", () => {
     const fillBtn = screen.getByRole("button", { name: /fill standard shift/i });
     await user.click(fillBtn);
 
-    expect(screen.getAllByText("4h").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByLabelText("Hours worked for John Sok")).toHaveValue(4);
+    expect(screen.getByLabelText("Hours worked for Sreymom Chan")).toHaveValue(4);
+  });
+
+  it("submits batch daily roster and displays success banner", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(apiClient, "get").mockImplementation((url: string) => {
+      if (url.includes("/api/v1/admin/teachers")) {
+        return Promise.resolve({
+          data: {
+            status: 200,
+            message: "success",
+            data: mockTeachers,
+          },
+        } as never);
+      }
+      if (url.includes("/api/v1/admin/attendance/teachers")) {
+        return Promise.resolve({
+          data: {
+            status: 200,
+            message: "success",
+            data: [],
+            pagination: { page: 1, pageSize: 100, totalCount: 0, totalPage: 0 },
+          },
+        } as never);
+      }
+      return Promise.resolve({ data: { data: [] } } as never);
+    });
+
+    const postSpy = vi.spyOn(apiClient, "post").mockResolvedValue({
+      data: {
+        status: 200,
+        message: "success",
+        data: [],
+      },
+    } as never);
+
+    render(<TeacherAttendanceTable />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("John Sok")).toBeInTheDocument();
+    });
+
+    const saveBtn = screen.getByRole("button", { name: /save daily roster/i });
+    await user.click(saveBtn);
+
+    expect(postSpy).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Daily roster for .* saved successfully/i)
+      ).toBeInTheDocument();
+    });
   });
 });

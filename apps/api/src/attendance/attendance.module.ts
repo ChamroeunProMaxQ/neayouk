@@ -7,7 +7,7 @@ import { LeaveRequest } from './entity/leave-request.entity.js';
 import { Student } from '@src/student/entity/student.entity.js';
 import { Class } from '@src/academic/entity/class.entity.js';
 import { StudentClass } from '@src/student/entity/student-class.entity.js';
-import { Teacher } from '@src/teacher/entity/teacher.entity.js';
+import { Staff } from '@src/hr/entity/staff.entity.js';
 import { User } from '@src/user/entity/user.entity.js';
 import { ClassTimetable } from '@src/academic/entity/class-timetable.entity.js';
 import { StudentAttendanceService } from './student-attendance.service.js';
@@ -27,7 +27,7 @@ import { AuthModule } from '@src/auth/auth.module.js';
       Student,
       Class,
       StudentClass,
-      Teacher,
+      Staff,
       User,
       ClassTimetable,
     ]),

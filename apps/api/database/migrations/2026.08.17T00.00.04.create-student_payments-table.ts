@@ -32,7 +32,7 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
       CONSTRAINT fk_student_payments_class FOREIGN KEY (class_id) REFERENCES classes (id) ON DELETE SET NULL ON UPDATE CASCADE
     );
     CREATE INDEX IF NOT EXISTS idx_student_payments_student ON student_payments (student_id);
-    CREATE INDEX IF NOT EXISTS idx_student_payments_billing ON student_payments (billing_year, billing_month);
+    CREATE UNIQUE INDEX IF NOT EXISTS uq_student_payments_billing ON student_payments (student_id, billing_year, billing_month);
     CREATE INDEX IF NOT EXISTS idx_student_payments_status ON student_payments (status);
   `);
 };

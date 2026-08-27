@@ -6,7 +6,7 @@ import { AttendanceStatusEnum } from '@repo/contracts';
 describe('TeacherAttendanceService', () => {
   let service: TeacherAttendanceService;
   let mockAttendanceRepo: any;
-  let mockTeacherRepo: any;
+  let mockStaffRepo: any;
   let mockLogger: any;
 
   beforeEach(() => {
@@ -25,7 +25,7 @@ describe('TeacherAttendanceService', () => {
       merge: vi.fn((entity, dto) => Object.assign(entity, dto)),
     };
 
-    mockTeacherRepo = {
+    mockStaffRepo = {
       findOne: vi.fn(),
     };
 
@@ -37,14 +37,14 @@ describe('TeacherAttendanceService', () => {
 
     service = new TeacherAttendanceService(
       mockAttendanceRepo,
-      mockTeacherRepo,
+      mockStaffRepo,
       mockLogger,
     );
   });
 
   describe('1. Happy Path (200/201 Success)', () => {
     it('should record teacher daily attendance with calculated hours worked', async () => {
-      mockTeacherRepo.findOne.mockResolvedValue({
+      mockStaffRepo.findOne.mockResolvedValue({
         id: 1,
         name: 'John Sok',
         salaryInHour: 15.0,
@@ -76,7 +76,7 @@ describe('TeacherAttendanceService', () => {
     });
 
     it('should update existing teacher attendance record on duplicate check-in', async () => {
-      mockTeacherRepo.findOne.mockResolvedValue({ id: 1, name: 'John Sok' });
+      mockStaffRepo.findOne.mockResolvedValue({ id: 1, name: 'John Sok' });
       const existing = {
         id: 1,
         teacherId: 1,
@@ -108,11 +108,11 @@ describe('TeacherAttendanceService', () => {
     });
 
     it('should calculate monthly attendance and estimated salary summary', async () => {
-      mockTeacherRepo.findOne.mockResolvedValue({
+      mockStaffRepo.findOne.mockResolvedValue({
         id: 1,
         name: 'John Sok',
-        teacherCode: 'TCH-001',
-        salaryInHour: 20.0,
+        staffCode: 'TCH-001',
+        hourlyRate: 20.0,
       });
 
       mockAttendanceRepo.find.mockResolvedValue([
@@ -133,7 +133,7 @@ describe('TeacherAttendanceService', () => {
 
   describe('2. Resource Not Found (404 Not Found)', () => {
     it('should throw NotFoundException if teacher does not exist', async () => {
-      mockTeacherRepo.findOne.mockResolvedValue(null);
+      mockStaffRepo.findOne.mockResolvedValue(null);
       await expect(
         service.recordAttendance({
           teacherId: 999,

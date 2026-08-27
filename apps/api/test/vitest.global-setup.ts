@@ -5,17 +5,22 @@ config({
   path: '.env.test',
 });
 
-import { migrator, seeder, dataSource } from '../database/umzug.js';
+import { migrator, seeder, dataSource } from '../dist-db/umzug.js';
 
 export async function setup() {
   console.log(
     '--- [Vitest Global Setup] Running database migrations & seeders ---',
   );
-  if (!dataSource.isInitialized) {
-    await dataSource.initialize();
+  try {
+    if (!dataSource.isInitialized) {
+      await dataSource.initialize();
+    }
+    await migrator.up();
+    await seeder.up();
+  } catch (err: any) {
+    console.error('GLOBAL SETUP ERROR:', err);
+    throw err;
   }
-  await migrator.up();
-  await seeder.up();
 }
 
 export async function teardown() {

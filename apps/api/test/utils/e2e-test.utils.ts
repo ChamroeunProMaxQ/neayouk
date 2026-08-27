@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { UserTypeEnum, type PermissionDto } from '@repo/contracts';
 import { ZodValidationPipe } from 'nestjs-zod';
-import { seeder } from '@database/umzug.js';
+import { seeder, dataSource } from '@database/umzug.js';
 import { AppModule } from '@src/app.module.js';
 
 export interface SetupE2eOptions {
@@ -32,6 +32,8 @@ export async function setupE2eApp(
   options: SetupE2eOptions = {},
 ): Promise<E2eTestContext> {
   const { globalPrefix = 'api', version = '1' } = options;
+
+  await resetTestData();
 
   const moduleFixture: TestingModule = await Test.createTestingModule({
     imports: [AppModule],
@@ -87,7 +89,18 @@ export async function setupE2eApp(
  * Rapidly reseeds test data without dropping database tables.
  */
 export async function resetTestData(): Promise<void> {
-  await seeder.down({ to: 0 });
+  if (!dataSource.isInitialized) {
+    await dataSource.initialize();
+  }
+  await dataSource.query(`
+    DO $$ DECLARE
+      r RECORD;
+    BEGIN
+      FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename != 'umzug_migrations') LOOP
+        EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' RESTART IDENTITY CASCADE';
+      END LOOP;
+    END $$;
+  `);
   await seeder.up();
 }
 

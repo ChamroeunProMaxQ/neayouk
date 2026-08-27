@@ -22,7 +22,7 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       deleted_at TIMESTAMP NULL,
-      CONSTRAINT fk_leave_requests_teacher FOREIGN KEY (teacher_id) REFERENCES teachers (id) ON DELETE CASCADE,
+      CONSTRAINT fk_leave_requests_teacher FOREIGN KEY (teacher_id) REFERENCES staff (id) ON DELETE CASCADE,
       CONSTRAINT fk_leave_requests_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL,
       CONSTRAINT fk_leave_requests_reviewer FOREIGN KEY (reviewer_id) REFERENCES users (id) ON DELETE SET NULL
     );

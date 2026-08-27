@@ -10,7 +10,7 @@ import {
 describe('LeaveRequestService', () => {
   let service: LeaveRequestService;
   let mockLeaveRepo: any;
-  let mockTeacherRepo: any;
+  let mockStaffRepo: any;
   let mockAttendanceRepo: any;
   let mockLogger: any;
 
@@ -31,7 +31,7 @@ describe('LeaveRequestService', () => {
       softDelete: vi.fn().mockResolvedValue({ affected: 1 }),
     };
 
-    mockTeacherRepo = {
+    mockStaffRepo = {
       findOne: vi.fn(),
     };
 
@@ -49,7 +49,7 @@ describe('LeaveRequestService', () => {
 
     service = new LeaveRequestService(
       mockLeaveRepo,
-      mockTeacherRepo,
+      mockStaffRepo,
       mockAttendanceRepo,
       mockLogger,
     );
@@ -57,7 +57,7 @@ describe('LeaveRequestService', () => {
 
   describe('1. Happy Path & Approval Sync', () => {
     it('should create leave request with status PENDING', async () => {
-      mockTeacherRepo.findOne.mockResolvedValue({ id: 1, name: 'John Sok' });
+      mockStaffRepo.findOne.mockResolvedValue({ id: 1, name: 'John Sok' });
 
       const dto = {
         teacherId: 1,
@@ -136,7 +136,7 @@ describe('LeaveRequestService', () => {
 
   describe('2. Validation & Conflicts (400 / 404)', () => {
     it('should throw BadRequestException if end date is earlier than start date', async () => {
-      mockTeacherRepo.findOne.mockResolvedValue({ id: 1, name: 'John Sok' });
+      mockStaffRepo.findOne.mockResolvedValue({ id: 1, name: 'John Sok' });
 
       await expect(
         service.create({

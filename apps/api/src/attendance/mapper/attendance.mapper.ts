@@ -52,7 +52,7 @@ export class AttendanceMapper {
       uuid: entity.uuid,
       teacherId: entity.teacherId,
       teacherName: entity.teacher?.name,
-      teacherCode: entity.teacher?.teacherCode ?? null,
+      teacherCode: entity.teacher?.staffCode ?? null,
       date:
         typeof entity.date === 'string'
           ? entity.date
@@ -83,7 +83,7 @@ export class AttendanceMapper {
       uuid: entity.uuid,
       teacherId: entity.teacherId,
       teacherName: entity.teacher?.name,
-      teacherCode: entity.teacher?.teacherCode ?? null,
+      teacherCode: entity.teacher?.staffCode ?? null,
       userId: entity.userId ?? null,
       leaveType: entity.leaveType,
       startDate:

@@ -1,9 +1,9 @@
 import type { TeacherAttribute, TeacherGenderEnum } from '@repo/contracts';
-import { Teacher } from '../entity/teacher.entity.js';
+import { Staff } from '@src/hr/entity/staff.entity.js';
 import { UserMapper } from '@src/user/mapper/user.mapper.js';
 
 export class TeacherMapper {
-  static toDto(entity: Teacher): TeacherAttribute {
+  static toDto(entity: Staff): TeacherAttribute {
     const classesList = entity.classes
       ? entity.classes.map((cls) => ({
           id: cls.id,
@@ -24,14 +24,14 @@ export class TeacherMapper {
       id: entity.id,
       uuid: entity.uuid,
       userId: entity.userId ? Number(entity.userId) : null,
-      teacherCode: entity.teacherCode ?? null,
+      teacherCode: entity.staffCode ?? null,
       name: entity.name,
       nameKm: entity.nameKm ?? null,
       gender: (entity.gender as TeacherGenderEnum) || 'MALE',
       dateOfBirth: entity.dateOfBirth ?? null,
       phone: entity.phone ?? null,
       email: entity.email ?? null,
-      salaryInHour: Number(entity.salaryInHour || 0),
+      salaryInHour: Number(entity.hourlyRate || entity.baseSalary || 0),
       specialization: entity.specialization ?? null,
       bio: entity.bio ?? null,
       status: entity.status,
@@ -45,7 +45,7 @@ export class TeacherMapper {
     };
   }
 
-  static toDtoList(entities: Teacher[]): TeacherAttribute[] {
+  static toDtoList(entities: Staff[]): TeacherAttribute[] {
     return entities.map((entity) => this.toDto(entity));
   }
 }

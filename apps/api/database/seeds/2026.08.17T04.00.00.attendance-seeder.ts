@@ -8,7 +8,7 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
   // 1. Get sample students, classes, and teachers
   const students = await dataSource.query(`SELECT id FROM students LIMIT 10`);
   const classes = await dataSource.query(`SELECT id FROM classes LIMIT 2`);
-  const teachers = await dataSource.query(`SELECT id, user_id FROM teachers LIMIT 4`);
+  const teachers = await dataSource.query(`SELECT id, user_id FROM staff WHERE department = 'ACADEMIC' LIMIT 4`);
   const adminUser = await dataSource.query(`SELECT id FROM users WHERE user_type = 'ADMIN' LIMIT 1`);
   const adminUserId = adminUser && adminUser.length > 0 ? adminUser[0].id : null;
 

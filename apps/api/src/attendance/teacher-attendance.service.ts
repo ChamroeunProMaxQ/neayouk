@@ -16,7 +16,7 @@ import {
   type TeacherAttendanceSummaryDto,
 } from '@repo/contracts';
 import { TeacherAttendance } from './entity/teacher-attendance.entity.js';
-import { Teacher } from '@src/teacher/entity/teacher.entity.js';
+import { Staff } from '@src/hr/entity/staff.entity.js';
 import { AttendanceMapper } from './mapper/attendance.mapper.js';
 
 @Injectable()
@@ -24,8 +24,8 @@ export class TeacherAttendanceService {
   constructor(
     @InjectRepository(TeacherAttendance)
     private readonly attendanceRepo: Repository<TeacherAttendance>,
-    @InjectRepository(Teacher)
-    private readonly teacherRepo: Repository<Teacher>,
+    @InjectRepository(Staff)
+    private readonly staffRepo: Repository<Staff>,
     @Inject(APP_LOGGER)
     private readonly logger: LoggerService,
   ) {}
@@ -47,7 +47,7 @@ export class TeacherAttendanceService {
     dto: RecordTeacherAttendanceDto,
     verifiedBy?: number,
   ): Promise<TeacherAttendanceAttribute> {
-    const teacher = await this.teacherRepo.findOne({
+    const teacher = await this.staffRepo.findOne({
       where: { id: dto.teacherId },
     });
     if (!teacher) {
@@ -57,7 +57,11 @@ export class TeacherAttendanceService {
     const dateStr = typeof dto.date === 'string' ? dto.date : String(dto.date);
 
     let hours = dto.hoursWorked;
-    if (hours === undefined || hours === null || hours === 0) {
+    if (
+      hours === undefined ||
+      hours === null ||
+      (hours === 0 && Boolean(dto.checkInTime && dto.checkOutTime))
+    ) {
       if (dto.checkInTime && dto.checkOutTime) {
         hours = this.calculateHours(dto.checkInTime, dto.checkOutTime);
       } else {
@@ -185,7 +189,7 @@ export class TeacherAttendanceService {
     teacherId: number,
     monthStr: string,
   ): Promise<TeacherAttendanceSummaryDto> {
-    const teacher = await this.teacherRepo.findOne({
+    const teacher = await this.staffRepo.findOne({
       where: { id: teacherId },
     });
     if (!teacher) {
@@ -224,14 +228,14 @@ export class TeacherAttendanceService {
         daysOnLeave++;
     }
 
-    const salaryRate = Number(teacher.salaryInHour || 0);
+    const salaryRate = Number(teacher.hourlyRate || teacher.baseSalary || 0);
     const estimatedSalary =
       Math.round(totalHoursWorked * salaryRate * 100) / 100;
 
     return {
       teacherId: teacher.id,
       teacherName: teacher.name,
-      teacherCode: teacher.teacherCode ?? null,
+      teacherCode: teacher.staffCode ?? null,
       salaryInHour: salaryRate,
       totalHoursWorked: Math.round(totalHoursWorked * 100) / 100,
       estimatedSalary,

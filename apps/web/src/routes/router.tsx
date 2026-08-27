@@ -65,6 +65,12 @@ const InvoicesPage = lazy(() =>
 const ExpensesPage = lazy(() =>
   import("./expenses-page").then((m) => ({ default: m.ExpensesPage }))
 );
+const StaffDirectoryPage = lazy(() =>
+  import("./staff-directory-page").then((m) => ({ default: m.StaffDirectoryPage }))
+);
+const PayrollSalaryPage = lazy(() =>
+  import("./payroll-salary-page").then((m) => ({ default: m.PayrollSalaryPage }))
+);
 const DummyPage = lazy(() =>
   import("./dummy-page").then((m) => ({ default: m.DummyPage }))
 );
@@ -303,6 +309,34 @@ const router = createBrowserRouter([
           {
             path: "/fee-management",
             element: <Navigate to="/fee-management/invoices" replace />,
+          },
+          {
+            path: "/hr-payroll/staff",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource="hr" action="read">
+                  <StaffDirectoryPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/hr-payroll/salary",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource="hr" action="read">
+                  <PayrollSalaryPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/hr-payroll",
+            element: <Navigate to="/hr-payroll/salary" replace />,
+          },
+          {
+            path: "/hr-payroll/directory",
+            element: <Navigate to="/hr-payroll/staff" replace />,
           },
           {
             path: "/roles",

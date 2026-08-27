@@ -19,7 +19,7 @@ import { UserTypesGuard } from '@src/common/guard/user-types.guard.js';
 import { UserTypes } from '@src/common/decorator/user-type.decorator.js';
 import { CurrentUser } from '@src/common/decorator/current-user.decorator.js';
 import { TeacherService } from './teacher.service.js';
-import { Teacher } from './entity/teacher.entity.js';
+import { Staff } from '@src/hr/entity/staff.entity.js';
 import { TeacherHook } from './teacher.hook.js';
 import { CreateTeacherDto } from './dto/create-teacher.dto.js';
 import { UpdateTeacherDto } from './dto/update-teacher.dto.js';
@@ -33,28 +33,28 @@ export class AdminTeacherController {
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
   @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
-  @UseAbility(DefaultActions.read, Teacher)
+  @UseAbility(DefaultActions.read, Staff)
   @Get()
   findAll(@Query() dto: FindTeachersDto) {
     return this.teacherService.findAll(dto);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
-  @UseAbility(DefaultActions.read, Teacher, TeacherHook)
+  @UseAbility(DefaultActions.read, Staff, TeacherHook)
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.teacherService.findOne(id);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
-  @UseAbility(DefaultActions.read, Teacher, TeacherHook)
+  @UseAbility(DefaultActions.read, Staff, TeacherHook)
   @Get(':id/classes')
   getAssignedClasses(@Param('id', ParseIntPipe) id: number) {
     return this.teacherService.getAssignedClasses(id);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
-  @UseAbility(DefaultActions.create, Teacher)
+  @UseAbility(DefaultActions.create, Staff)
   @Post()
   create(
     @Body() dto: CreateTeacherDto,
@@ -64,7 +64,7 @@ export class AdminTeacherController {
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
-  @UseAbility(DefaultActions.update, Teacher, TeacherHook)
+  @UseAbility(DefaultActions.update, Staff, TeacherHook)
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -75,7 +75,7 @@ export class AdminTeacherController {
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
-  @UseAbility(DefaultActions.delete, Teacher, TeacherHook)
+  @UseAbility(DefaultActions.delete, Staff, TeacherHook)
   @Delete(':id')
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.teacherService.delete(id);

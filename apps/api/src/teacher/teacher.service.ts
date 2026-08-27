@@ -10,7 +10,7 @@ import { Repository } from 'typeorm';
 import { UserStatusEnum, UserTypeEnum } from '@repo/contracts';
 import { APP_LOGGER } from '@src/common/config/logger.config.js';
 import { getSkipTake } from '@src/common/helper/pagination.helper.js';
-import { Teacher } from './entity/teacher.entity.js';
+import { Staff } from '@src/hr/entity/staff.entity.js';
 import { User } from '@src/user/entity/user.entity.js';
 import { Role } from '@src/role/entity/role.entity.js';
 import { Class } from '@src/academic/entity/class.entity.js';
@@ -24,8 +24,8 @@ import { hashPassword } from '@src/common/helper/password.helper.js';
 @Injectable()
 export class TeacherService {
   constructor(
-    @InjectRepository(Teacher)
-    private readonly teacherRepo: Repository<Teacher>,
+    @InjectRepository(Staff)
+    private readonly staffRepo: Repository<Staff>,
 
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
@@ -53,11 +53,12 @@ export class TeacherService {
     sortOrder = 'DESC',
     ...dto
   }: FindTeachersDto) {
-    const query = this.teacherRepo
+    const query = this.staffRepo
       .createQueryBuilder('teacher')
       .leftJoinAndSelect('teacher.user', 'user')
       .leftJoinAndSelect('teacher.classes', 'classes')
-      .leftJoinAndSelect('classes.enrollments', 'enrollments');
+      .leftJoinAndSelect('classes.enrollments', 'enrollments')
+      .where('teacher.department = :dept', { dept: 'ACADEMIC' });
 
     if (onlyDeleted) {
       query.withDeleted().andWhere('teacher.deleted_at IS NOT NULL');
@@ -93,12 +94,12 @@ export class TeacherService {
 
     if (search) {
       query.andWhere(
-        '(teacher.name LIKE :search OR teacher.name_km LIKE :search OR teacher.teacher_code LIKE :search OR teacher.phone LIKE :search OR teacher.email LIKE :search OR teacher.specialization LIKE :search)',
+        '(teacher.name LIKE :search OR teacher.name_km LIKE :search OR teacher.staff_code LIKE :search OR teacher.phone LIKE :search OR teacher.email LIKE :search OR teacher.specialization LIKE :search)',
         { search: `%${search}%` },
       );
     }
 
-    query.orderBy(`teacher.${sortBy}`, sortOrder);
+    query.orderBy(`teacher.${sortBy === 'teacherCode' ? 'staff_code' : sortBy === 'salaryInHour' ? 'hourly_rate' : sortBy}`, sortOrder);
 
     const { skip, take } = getSkipTake(dto);
     query.skip(skip).take(take);
@@ -108,8 +109,8 @@ export class TeacherService {
   }
 
   async findOne(id: number) {
-    const teacher = await this.teacherRepo.findOne({
-      where: { id },
+    const teacher = await this.staffRepo.findOne({
+      where: { id, department: 'ACADEMIC' },
       relations: ['user', 'classes', 'classes.enrollments'],
     });
 
@@ -122,8 +123,8 @@ export class TeacherService {
 
   async create(dto: CreateTeacherDto, _userId?: number) {
     if (dto.teacherCode) {
-      const existing = await this.teacherRepo.findOne({
-        where: { teacherCode: dto.teacherCode },
+      const existing = await this.staffRepo.findOne({
+        where: { staffCode: dto.teacherCode },
       });
       if (existing) {
         throw new ConflictException('Teacher code already exists');
@@ -137,7 +138,7 @@ export class TeacherService {
       if (!user) {
         throw new NotFoundException('User not found');
       }
-      const existingLink = await this.teacherRepo.findOne({
+      const existingLink = await this.staffRepo.findOne({
         where: { userId: linkedUserId },
       });
       if (existingLink) {
@@ -184,32 +185,39 @@ export class TeacherService {
 
     let code = dto.teacherCode;
     if (!code) {
-      const count = await this.teacherRepo.count();
+      const count = await this.staffRepo.count({
+        where: { department: 'ACADEMIC' },
+      });
       code = `TCH-${String(count + 1).padStart(4, '0')}`;
     }
 
-    const teacher = this.teacherRepo.create({
-      teacherCode: code,
+    const teacher = this.staffRepo.create({
+      staffCode: code,
       name: dto.name,
       nameKm: dto.nameKm ?? null,
       gender: dto.gender ?? 'MALE',
       dateOfBirth: dto.dateOfBirth ?? null,
       phone: dto.phone ?? null,
       email: dto.email ?? null,
-      salaryInHour: dto.salaryInHour ?? 0,
+      department: 'ACADEMIC',
+      designation: 'Teacher',
+      employmentType: 'FULL_TIME',
+      salaryType: 'HOURLY',
+      baseSalary: 0,
+      hourlyRate: dto.salaryInHour ?? 0,
       specialization: dto.specialization ?? null,
       bio: dto.bio ?? null,
       status: dto.status ?? 'ACTIVE',
       userId: linkedUserId,
     });
 
-    const saved = await this.teacherRepo.save(teacher);
+    const saved = await this.staffRepo.save(teacher);
     return this.findOne(saved.id);
   }
 
   async update(id: number, dto: UpdateTeacherDto, _userId?: number) {
-    const teacher = await this.teacherRepo.findOne({
-      where: { id },
+    const teacher = await this.staffRepo.findOne({
+      where: { id, department: 'ACADEMIC' },
       relations: ['user', 'classes'],
     });
 
@@ -217,14 +225,14 @@ export class TeacherService {
       throw new NotFoundException('teacher not found');
     }
 
-    if (dto.teacherCode && dto.teacherCode !== teacher.teacherCode) {
-      const existing = await this.teacherRepo.findOne({
-        where: { teacherCode: dto.teacherCode },
+    if (dto.teacherCode && dto.teacherCode !== teacher.staffCode) {
+      const existing = await this.staffRepo.findOne({
+        where: { staffCode: dto.teacherCode },
       });
       if (existing && existing.id !== id) {
         throw new ConflictException('Teacher code already exists');
       }
-      teacher.teacherCode = dto.teacherCode;
+      teacher.staffCode = dto.teacherCode;
     }
 
     if (dto.unbindUser) {
@@ -239,7 +247,7 @@ export class TeacherService {
         if (!user) {
           throw new NotFoundException('User not found');
         }
-        const existingLink = await this.teacherRepo.findOne({
+        const existingLink = await this.staffRepo.findOne({
           where: { userId: dto.userId },
         });
         if (existingLink && existingLink.id !== id) {
@@ -310,30 +318,32 @@ export class TeacherService {
     if (dto.dateOfBirth !== undefined) teacher.dateOfBirth = dto.dateOfBirth;
     if (dto.phone !== undefined) teacher.phone = dto.phone;
     if (dto.email !== undefined) teacher.email = dto.email;
-    if (dto.salaryInHour !== undefined) teacher.salaryInHour = dto.salaryInHour;
+    if (dto.salaryInHour !== undefined) teacher.hourlyRate = dto.salaryInHour;
     if (dto.specialization !== undefined)
       teacher.specialization = dto.specialization;
     if (dto.bio !== undefined) teacher.bio = dto.bio;
     if (dto.status !== undefined) teacher.status = dto.status;
 
-    await this.teacherRepo.save(teacher);
+    await this.staffRepo.save(teacher);
     return this.findOne(id);
   }
 
   async delete(id: number) {
-    const teacher = await this.teacherRepo.findOne({ where: { id } });
+    const teacher = await this.staffRepo.findOne({
+      where: { id, department: 'ACADEMIC' },
+    });
     if (!teacher) {
       throw new NotFoundException('teacher not found');
     }
 
-    // Soft delete teacher
-    await this.teacherRepo.softDelete(id);
+    // Soft delete
+    await this.staffRepo.softDelete(id);
     return { id, success: true };
   }
 
   async getAssignedClasses(teacherId: number) {
-    const teacher = await this.teacherRepo.findOne({
-      where: { id: teacherId },
+    const teacher = await this.staffRepo.findOne({
+      where: { id: teacherId, department: 'ACADEMIC' },
     });
     if (!teacher) {
       throw new NotFoundException('teacher not found');

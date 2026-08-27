@@ -7,12 +7,8 @@ import {
   GraduationCap,
   ClipboardCheck,
   Award,
-  BookOpen,
   CreditCard,
   Briefcase,
-  Library,
-  Bus,
-  Building2,
   BarChart3,
   Settings,
   ChevronDown,
@@ -196,9 +192,8 @@ export const adminNavGroups: NavGroup[] = [
         isCollapsible: true,
         requiredPermission: { action: "read", resource: "hr" },
         subItems: [
-          { label: "Staff Directory", path: "/hr-payroll/directory" },
+          { label: "Staff Directory", path: "/hr-payroll/staff" },
           { label: "Payroll & Salary", path: "/hr-payroll/salary" },
-          { label: "Staff Attendance", path: "/hr-payroll/attendance" },
         ],
       },
       // {

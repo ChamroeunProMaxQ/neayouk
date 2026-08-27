@@ -234,10 +234,10 @@ export const LeaveRequestListTable: FC = () => {
                   <td className="px-4 py-3">
                     <div className="flex flex-col">
                       <span className="font-semibold text-slate-900 text-xs">
-                        {leave.teacherName || (leave as any).teacher?.name || `Teacher #${leave.teacherId}`}
+                        {leave.teacherName || `Teacher #${leave.teacherId}`}
                       </span>
                       <span className="text-[10px] text-slate-400">
-                        {leave.teacherCode || (leave as any).teacher?.teacherCode || `ID:${leave.teacherId}`}
+                        {leave.teacherCode || `ID:${leave.teacherId}`}
                       </span>
                     </div>
                   </td>

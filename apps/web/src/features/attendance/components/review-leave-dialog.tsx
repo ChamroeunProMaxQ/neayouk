@@ -56,8 +56,8 @@ export const ReviewLeaveDialog: FC<ReviewLeaveDialogProps> = ({
   };
 
   const teacherName =
-    leaveRequest.teacherName || (leaveRequest as any).teacher?.name || `Teacher #${leaveRequest.teacherId}`;
-  const specialization = (leaveRequest as any).teacher?.specialization || "Instructor";
+    leaveRequest.teacherName || `Teacher #${leaveRequest.teacherId}`;
+  const specialization = "Instructor";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

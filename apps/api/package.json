@@ -26,6 +26,7 @@
     "test:unit:watch": "vitest --config vitest.config.unit.ts",
     "test:watch": "vitest --config vitest.config.unit.ts",
     "test:coverage": "vitest run --coverage",
+    "pretest:e2e": "swc database -d dist-db --strip-leading-paths",
     "test:e2e": "vitest run --config vitest.config.e2e.ts",
     "test:e2e:watch": "vitest --config vitest.config.e2e.ts"
   },

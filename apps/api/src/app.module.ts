@@ -25,6 +25,7 @@ import { TeacherModule } from '@src/teacher/teacher.module.js';
 import { AttendanceModule } from '@src/attendance/attendance.module.js';
 import { ExaminationModule } from '@src/examination/examination.module.js';
 import { FeeModule } from '@src/fee/fee.module.js';
+import { HrModule } from '@src/hr/hr.module.js';
 import { caslConfig } from '@src/common/config/casl.config.js';
 import { envModuelConfig } from '@src/common/config/env.config.js';
 import { typeOrmConfig } from './common/config/orm.config.js';
@@ -43,6 +44,7 @@ import { typeOrmConfig } from './common/config/orm.config.js';
     AttendanceModule,
     ExaminationModule,
     FeeModule,
+    HrModule,
     ...oberservableConfig,
     LoggerModule,
     AuthModule,

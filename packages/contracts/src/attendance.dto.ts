@@ -145,7 +145,7 @@ export const RecordTeacherAttendanceSchema = z.object({
   date: z.string().regex(dateRegex, "Date must be in YYYY-MM-DD format"),
   checkInTime: z.string().optional().nullable(),
   checkOutTime: z.string().optional().nullable(),
-  hoursWorked: z.coerce.number().min(0, "Hours worked cannot be negative").default(0).optional(),
+  hoursWorked: z.coerce.number().min(0, "Hours worked cannot be negative").optional().nullable(),
   status: z.nativeEnum(AttendanceStatusEnum).default(AttendanceStatusEnum.PRESENT),
   remarks: z.string().optional().nullable(),
 });
@@ -156,7 +156,7 @@ export const BatchRecordTeacherAttendanceItemSchema = z.object({
   teacherId: z.coerce.number(),
   checkInTime: z.string().optional().nullable(),
   checkOutTime: z.string().optional().nullable(),
-  hoursWorked: z.coerce.number().min(0).default(0).optional(),
+  hoursWorked: z.coerce.number().min(0).optional().nullable(),
   status: z.nativeEnum(AttendanceStatusEnum).default(AttendanceStatusEnum.PRESENT),
   remarks: z.string().optional().nullable(),
 });

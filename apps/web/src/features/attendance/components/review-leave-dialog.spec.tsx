@@ -74,7 +74,7 @@ describe("ReviewLeaveDialog", () => {
         message: "success",
         data: { ...mockLeaveRequest, status: LeaveStatusEnum.APPROVED },
       },
-    } as any);
+    } as never);
 
     const onOpenChange = vi.fn();
     render(

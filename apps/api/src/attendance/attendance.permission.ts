@@ -62,6 +62,8 @@ export const permissions: Permissions<
     if (
       hasPermission(perms, Actions.manage, ResourceEnum.TEACHER_ATTENDANCE) ||
       hasPermission(perms, Actions.manage, ResourceEnum.ATTENDANCE) ||
+      hasPermission(perms, Actions.manage, ResourceEnum.TEACHER) ||
+      hasPermission(perms, Actions.manage, ResourceEnum.ACADEMIC) ||
       hasPermission(perms, Actions.manage, ResourceEnum.HR)
     ) {
       can(Actions.manage, TeacherAttendance);
@@ -69,6 +71,8 @@ export const permissions: Permissions<
       if (
         hasPermission(perms, Actions.read, ResourceEnum.TEACHER_ATTENDANCE) ||
         hasPermission(perms, Actions.read, ResourceEnum.ATTENDANCE) ||
+        hasPermission(perms, Actions.read, ResourceEnum.TEACHER) ||
+        hasPermission(perms, Actions.read, ResourceEnum.ACADEMIC) ||
         hasPermission(perms, Actions.read, ResourceEnum.HR)
       ) {
         can(Actions.read, TeacherAttendance);
@@ -76,6 +80,8 @@ export const permissions: Permissions<
       if (
         hasPermission(perms, Actions.create, ResourceEnum.TEACHER_ATTENDANCE) ||
         hasPermission(perms, Actions.create, ResourceEnum.ATTENDANCE) ||
+        hasPermission(perms, Actions.create, ResourceEnum.TEACHER) ||
+        hasPermission(perms, Actions.create, ResourceEnum.ACADEMIC) ||
         hasPermission(perms, Actions.create, ResourceEnum.HR)
       ) {
         can(Actions.create, TeacherAttendance);
@@ -83,6 +89,8 @@ export const permissions: Permissions<
       if (
         hasPermission(perms, Actions.update, ResourceEnum.TEACHER_ATTENDANCE) ||
         hasPermission(perms, Actions.update, ResourceEnum.ATTENDANCE) ||
+        hasPermission(perms, Actions.update, ResourceEnum.TEACHER) ||
+        hasPermission(perms, Actions.update, ResourceEnum.ACADEMIC) ||
         hasPermission(perms, Actions.update, ResourceEnum.HR)
       ) {
         can(Actions.update, TeacherAttendance);
@@ -90,6 +98,8 @@ export const permissions: Permissions<
       if (
         hasPermission(perms, Actions.delete, ResourceEnum.TEACHER_ATTENDANCE) ||
         hasPermission(perms, Actions.delete, ResourceEnum.ATTENDANCE) ||
+        hasPermission(perms, Actions.delete, ResourceEnum.TEACHER) ||
+        hasPermission(perms, Actions.delete, ResourceEnum.ACADEMIC) ||
         hasPermission(perms, Actions.delete, ResourceEnum.HR)
       ) {
         can(Actions.delete, TeacherAttendance);

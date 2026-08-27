@@ -11,7 +11,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { LeaveStatusEnum, LeaveTypeEnum } from '@repo/contracts';
-import type { Teacher } from '@src/teacher/entity/teacher.entity.js';
+import type { Staff } from '@src/hr/entity/staff.entity.js';
 import type { User } from '@src/user/entity/user.entity.js';
 
 @Entity({ name: 'leave_requests' })
@@ -25,9 +25,9 @@ export class LeaveRequest {
   @Column({ name: 'teacher_id', type: 'int' })
   teacherId!: number;
 
-  @ManyToOne('Teacher', { onDelete: 'CASCADE' })
+  @ManyToOne('Staff', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'teacher_id' })
-  declare teacher?: Teacher;
+  declare teacher?: Staff;
 
   @Column({ name: 'user_id', type: 'int', nullable: true })
   userId!: number | null;

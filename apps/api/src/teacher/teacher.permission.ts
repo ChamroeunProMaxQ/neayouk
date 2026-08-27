@@ -1,10 +1,10 @@
 import { type Permissions, Actions } from 'nest-casl';
 import { type InferSubjects } from '@casl/ability';
 import { hasPermission, ResourceEnum } from '@repo/contracts';
-import { Teacher } from './entity/teacher.entity.js';
+import { Staff } from '@src/hr/entity/staff.entity.js';
 import type { AppAuthorizableUser } from '../common/config/casl.config.js';
 
-export type Subjects = InferSubjects<typeof Teacher>;
+export type Subjects = InferSubjects<typeof Staff>;
 
 export const permissions: Permissions<
   string,
@@ -13,7 +13,7 @@ export const permissions: Permissions<
   AppAuthorizableUser
 > = {
   ADMIN({ can }) {
-    can(Actions.manage, Teacher);
+    can(Actions.manage, Staff);
   },
 
   CMS({ user, can }) {
@@ -26,7 +26,7 @@ export const permissions: Permissions<
       hasPermission(perms, Actions.manage, ResourceEnum.EXAMINATION) ||
       hasPermission(perms, Actions.manage, ResourceEnum.HR)
     ) {
-      can(Actions.manage, Teacher);
+      can(Actions.manage, Staff);
       return;
     }
 
@@ -37,34 +37,34 @@ export const permissions: Permissions<
       hasPermission(perms, Actions.read, ResourceEnum.EXAMINATION) ||
       hasPermission(perms, Actions.read, ResourceEnum.HR)
     ) {
-      can(Actions.read, Teacher);
+      can(Actions.read, Staff);
     }
     if (
       hasPermission(perms, Actions.create, ResourceEnum.TEACHER) ||
       hasPermission(perms, Actions.create, ResourceEnum.ACADEMIC) ||
       hasPermission(perms, Actions.create, ResourceEnum.HR)
     ) {
-      can(Actions.create, Teacher);
+      can(Actions.create, Staff);
     }
     if (
       hasPermission(perms, Actions.update, ResourceEnum.TEACHER) ||
       hasPermission(perms, Actions.update, ResourceEnum.ACADEMIC) ||
       hasPermission(perms, Actions.update, ResourceEnum.HR)
     ) {
-      can(Actions.update, Teacher);
+      can(Actions.update, Staff);
     }
     if (
       hasPermission(perms, Actions.delete, ResourceEnum.TEACHER) ||
       hasPermission(perms, Actions.delete, ResourceEnum.ACADEMIC) ||
       hasPermission(perms, Actions.delete, ResourceEnum.HR)
     ) {
-      can(Actions.delete, Teacher);
+      can(Actions.delete, Staff);
     }
   },
 
   PORTAL_USER({ user, can }) {
-    can(Actions.read, Teacher);
-    can(Actions.update, Teacher, { userId: user?.id });
+    can(Actions.read, Staff);
+    can(Actions.update, Staff, { userId: user?.id });
   },
 
   CUSTOMER({ extend }) {

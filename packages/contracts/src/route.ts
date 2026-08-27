@@ -112,5 +112,19 @@ export const API_ROUTE = {
     EXPENSES_APPROVE: '/api/v1/admin/fees/expenses/:id/approve',
     SUMMARY: '/api/v1/admin/fees/summary',
   },
+  HR: {
+    STAFF_LIST: '/api/v1/admin/hr/staff',
+    STAFF_CREATE: '/api/v1/admin/hr/staff',
+    STAFF_GET: '/api/v1/admin/hr/staff/:id',
+    STAFF_UPDATE: '/api/v1/admin/hr/staff/:id',
+    STAFF_DELETE: '/api/v1/admin/hr/staff/:id',
+    PAYROLL_LIST: '/api/v1/admin/hr/payrolls',
+    PAYROLL_CREATE: '/api/v1/admin/hr/payrolls',
+    PAYROLL_GET: '/api/v1/admin/hr/payrolls/:id',
+    PAYROLL_UPDATE: '/api/v1/admin/hr/payrolls/:id',
+    PAYROLL_DELETE: '/api/v1/admin/hr/payrolls/:id',
+    PAYROLL_PAY: '/api/v1/admin/hr/payrolls/:id/pay',
+    PAYROLL_SUMMARY: '/api/v1/admin/hr/payrolls/summary',
+  },
 };
 

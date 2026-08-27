@@ -22,11 +22,21 @@ import {
 import { AttendanceStatusBadge } from "./attendance-status-badge";
 
 export const TeacherAttendanceTable: FC = () => {
-  const { can } = usePermission();
-  const canManage = can("manage", "attendance") || can("create", "attendance");
+  const { can, isAdmin } = usePermission();
+  const canManage =
+    isAdmin ||
+    can("manage", "attendance") ||
+    can("create", "attendance") ||
+    can("manage", "teacher") ||
+    can("manage", "academic") ||
+    can("manage", "hr");
 
   const today = new Date().toISOString().slice(0, 10);
   const [selectedDate, setSelectedDate] = useState<string>(today);
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   // Fetch active teachers
   const { data: teachers = [], isLoading: isLoadingTeachers } = useTeachersQuery({
@@ -149,21 +159,41 @@ export const TeacherAttendanceTable: FC = () => {
 
     const records = teacherRows.map((row) => ({
       teacherId: row.teacher.id,
-      checkInTime: row.status === AttendanceStatusEnum.ON_LEAVE ? null : row.checkInTime,
-      checkOutTime: row.status === AttendanceStatusEnum.ON_LEAVE ? null : row.checkOutTime,
-      hoursWorked: row.hoursWorked,
+      checkInTime:
+        row.status === AttendanceStatusEnum.ON_LEAVE || !row.checkInTime
+          ? null
+          : row.checkInTime,
+      checkOutTime:
+        row.status === AttendanceStatusEnum.ON_LEAVE || !row.checkOutTime
+          ? null
+          : row.checkOutTime,
+      hoursWorked:
+        row.status === AttendanceStatusEnum.ON_LEAVE
+          ? 0
+          : Number(row.hoursWorked) || 0,
       status: row.status,
       remarks: row.remarks || null,
     }));
 
     try {
+      setFeedback(null);
       await batchMutation.mutateAsync({
         date: selectedDate,
         records,
       });
       setDrafts({});
-      refetch();
-    } catch (err) {
+      await refetch();
+      setFeedback({
+        type: "success",
+        message: `Daily roster for ${selectedDate} saved successfully (${records.length} instructor${records.length === 1 ? "" : "s"}).`,
+      });
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
+      const serverMsg =
+        errorObj.response?.data?.message ||
+        errorObj.message ||
+        "Failed to save teacher attendance roster.";
+      setFeedback({ type: "error", message: serverMsg });
       console.error("Failed to save teacher attendance:", err);
     }
   };
@@ -184,10 +214,37 @@ export const TeacherAttendanceTable: FC = () => {
     d.setDate(d.getDate() + days);
     setSelectedDate(d.toISOString().slice(0, 10));
     setDrafts({});
+    setFeedback(null);
   };
 
   return (
     <div className="space-y-4">
+      {/* Feedback Banner */}
+      {feedback && (
+        <div
+          className={`p-3 rounded-lg text-xs font-medium flex items-center justify-between transition-all ${
+            feedback.type === "success"
+              ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
+              : "bg-red-50 border border-red-200 text-red-800"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {feedback.type === "success" ? (
+              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+            ) : (
+              <span className="font-bold text-red-600">✕</span>
+            )}
+            <span>{feedback.message}</span>
+          </div>
+          <button
+            onClick={() => setFeedback(null)}
+            className="text-xs text-slate-500 hover:text-slate-800 ml-4 font-bold"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Date Header & Action Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         {/* Left: Date Picker */}
@@ -208,6 +265,7 @@ export const TeacherAttendanceTable: FC = () => {
               onChange={(e) => {
                 setSelectedDate(e.target.value);
                 setDrafts({});
+                setFeedback(null);
               }}
               className="pl-8 h-8 text-xs font-semibold w-40"
             />
@@ -226,6 +284,7 @@ export const TeacherAttendanceTable: FC = () => {
             onClick={() => {
               setSelectedDate(today);
               setDrafts({});
+              setFeedback(null);
             }}
             className="text-xs text-[#45AC5E] hover:bg-emerald-50 font-medium"
           >
@@ -336,9 +395,29 @@ export const TeacherAttendanceTable: FC = () => {
                     />
                   </td>
                   <td className="px-3 py-3">
-                    <span className="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded">
-                      {row.hoursWorked}h
-                    </span>
+                    {canManage && row.status !== AttendanceStatusEnum.ON_LEAVE ? (
+                      <div className="flex items-center gap-1">
+                        <Input
+                          type="number"
+                          step="0.5"
+                          min="0"
+                          max="24"
+                          value={row.hoursWorked}
+                          onChange={(e) =>
+                            handleRowChange(row.teacher.id, {
+                              hoursWorked: Math.max(0, Number(e.target.value) || 0),
+                            })
+                          }
+                          aria-label={`Hours worked for ${row.teacher.name}`}
+                          className="h-7 text-xs font-bold font-mono w-16 px-1.5 text-center bg-slate-50 focus:bg-white border-slate-300"
+                        />
+                        <span className="text-[10px] text-slate-500 font-medium">hrs</span>
+                      </div>
+                    ) : (
+                      <span className="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-xs">
+                        {row.hoursWorked}h
+                      </span>
+                    )}
                   </td>
                   <td className="px-3 py-3">
                     {canManage ? (

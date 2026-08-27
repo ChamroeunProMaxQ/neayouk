@@ -19,7 +19,7 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
       updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       deleted_at TIMESTAMP NULL,
       CONSTRAINT uq_tch_att_record UNIQUE (teacher_id, date),
-      CONSTRAINT fk_teacher_attendances_teacher FOREIGN KEY (teacher_id) REFERENCES teachers (id) ON DELETE CASCADE,
+      CONSTRAINT fk_teacher_attendances_teacher FOREIGN KEY (teacher_id) REFERENCES staff (id) ON DELETE CASCADE,
       CONSTRAINT fk_teacher_attendances_verifier FOREIGN KEY (verified_by) REFERENCES users (id) ON DELETE SET NULL
     );
     CREATE INDEX IF NOT EXISTS idx_tch_att_date ON teacher_attendances (date);

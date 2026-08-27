@@ -18,7 +18,7 @@ import {
   type LeaveRequestAttribute,
 } from '@repo/contracts';
 import { LeaveRequest } from './entity/leave-request.entity.js';
-import { Teacher } from '@src/teacher/entity/teacher.entity.js';
+import { Staff } from '@src/hr/entity/staff.entity.js';
 import { TeacherAttendance } from './entity/teacher-attendance.entity.js';
 import { AttendanceMapper } from './mapper/attendance.mapper.js';
 
@@ -27,8 +27,8 @@ export class LeaveRequestService {
   constructor(
     @InjectRepository(LeaveRequest)
     private readonly leaveRequestRepo: Repository<LeaveRequest>,
-    @InjectRepository(Teacher)
-    private readonly teacherRepo: Repository<Teacher>,
+    @InjectRepository(Staff)
+    private readonly staffRepo: Repository<Staff>,
     @InjectRepository(TeacherAttendance)
     private readonly teacherAttendanceRepo: Repository<TeacherAttendance>,
     @Inject(APP_LOGGER)
@@ -45,7 +45,7 @@ export class LeaveRequestService {
       );
     }
 
-    const teacher = await this.teacherRepo.findOne({
+    const teacher = await this.staffRepo.findOne({
       where: { id: dto.teacherId },
     });
     if (!teacher) {

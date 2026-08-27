@@ -124,14 +124,14 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
       [userId, teacherRoleId]
     );
 
-    // Insert teacher
-    const teacherUuid = randomUUID();
+    // Insert academic staff
+    const staffUuid = randomUUID();
     await dataSource.query(
-      `INSERT INTO teachers (uuid, user_id, teacher_code, name, name_km, gender, date_of_birth, phone, email, salary_in_hour, specialization, bio, status, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), NOW())
-       ON CONFLICT (teacher_code) DO UPDATE SET name = EXCLUDED.name, salary_in_hour = EXCLUDED.salary_in_hour, status = EXCLUDED.status`,
+      `INSERT INTO staff (uuid, user_id, staff_code, name, name_km, gender, date_of_birth, phone, email, department, designation, specialization, bio, employment_type, salary_type, base_salary, hourly_rate, status, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'ACADEMIC', 'Teacher', $10, $11, 'FULL_TIME', 'HOURLY', 0.00, $12, $13, NOW(), NOW())
+       ON CONFLICT (staff_code) DO UPDATE SET name = EXCLUDED.name, hourly_rate = EXCLUDED.hourly_rate, status = EXCLUDED.status`,
       [
-        teacherUuid,
+        staffUuid,
         userId,
         t.code,
         t.name,
@@ -140,19 +140,19 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
         t.dob,
         t.phone,
         t.email,
-        t.salaryInHour,
         t.specialization,
         t.bio,
+        t.salaryInHour,
         t.status,
       ]
     );
   }
 
   // 3. Assign first teachers to existing classes if any
-  const teachers = await dataSource.query(`SELECT id FROM teachers WHERE status = 'ACTIVE' ORDER BY id ASC LIMIT 2`);
-  if (teachers && teachers.length > 0) {
-    const t1Id = teachers[0].id;
-    const t2Id = teachers.length > 1 ? teachers[1].id : t1Id;
+  const staffMembers = await dataSource.query(`SELECT id FROM staff WHERE department = 'ACADEMIC' AND status = 'ACTIVE' ORDER BY id ASC LIMIT 2`);
+  if (staffMembers && staffMembers.length > 0) {
+    const t1Id = staffMembers[0].id;
+    const t2Id = staffMembers.length > 1 ? staffMembers[1].id : t1Id;
 
     const classes = await dataSource.query(`SELECT id FROM classes LIMIT 4`);
     if (classes && classes.length > 0) {
@@ -167,6 +167,6 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
 export const down: MigrationFn<DataSource> = async ({ context }) => {
   const dataSource = await (typeof context === 'function' ? (context as () => Promise<DataSource>)() : context);
   await dataSource.query(`UPDATE classes SET teacher_id = NULL;`);
-  await dataSource.query(`TRUNCATE TABLE teachers CASCADE;`);
+  await dataSource.query(`DELETE FROM staff WHERE department = 'ACADEMIC';`);
   await dataSource.query(`DELETE FROM users WHERE username LIKE 'teacher_%';`);
 };

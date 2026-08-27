@@ -9,14 +9,14 @@ import {
 
 describe('TeacherService', () => {
   let service: TeacherService;
-  let mockTeacherRepo: any;
+  let mockStaffRepo: any;
   let mockUserRepo: any;
   let mockRoleRepo: any;
   let mockClassRepo: any;
   let mockLogger: any;
 
   beforeEach(() => {
-    mockTeacherRepo = {
+    mockStaffRepo = {
       createQueryBuilder: vi.fn(),
       findOne: vi.fn(),
       find: vi.fn(),
@@ -59,7 +59,7 @@ describe('TeacherService', () => {
     };
 
     service = new TeacherService(
-      mockTeacherRepo,
+      mockStaffRepo,
       mockUserRepo,
       mockRoleRepo,
       mockClassRepo,
@@ -82,13 +82,14 @@ describe('TeacherService', () => {
         status: 'ACTIVE',
       };
 
-      mockTeacherRepo.findOne.mockImplementation(async ({ where }: any) => {
-        if (where.teacherCode === 'TCH-0001') return null;
+      mockStaffRepo.findOne.mockImplementation(async ({ where }: any) => {
+        if (where.staffCode === 'TCH-0001') return null;
         if (where.id === 1) {
           return {
             id: 1,
             uuid: 'tch-uuid-1',
             ...dto,
+            hourlyRate: dto.salaryInHour,
             classes: [],
             user: null,
           };
@@ -100,8 +101,8 @@ describe('TeacherService', () => {
       expect(result).toBeDefined();
       expect(result.name).toBe('John Sok');
       expect(result.salaryInHour).toBe(15.5);
-      expect(mockTeacherRepo.create).toHaveBeenCalled();
-      expect(mockTeacherRepo.save).toHaveBeenCalled();
+      expect(mockStaffRepo.create).toHaveBeenCalled();
+      expect(mockStaffRepo.save).toHaveBeenCalled();
     });
 
     it('should create a teacher and auto-provision user account with userType CMS and role teacher', async () => {
@@ -113,14 +114,14 @@ describe('TeacherService', () => {
         password: 'password123',
       };
 
-      mockTeacherRepo.findOne.mockImplementation(async ({ where }: any) => {
-        if (where.teacherCode === 'TCH-0002') return null;
+      mockStaffRepo.findOne.mockImplementation(async ({ where }: any) => {
+        if (where.staffCode === 'TCH-0002') return null;
         if (where.id === 1) {
           return {
             id: 1,
             uuid: 'tch-uuid-2',
             name: 'Sreymom Chan',
-            teacherCode: 'TCH-0002',
+            staffCode: 'TCH-0002',
             userId: 101,
             user: {
               id: 101,
@@ -157,7 +158,7 @@ describe('TeacherService', () => {
         id: 1,
         uuid: 'tch-uuid-1',
         name: 'John Sok',
-        salaryInHour: '15.00',
+        hourlyRate: '15.00',
         gender: 'MALE',
         status: 'ACTIVE',
         classes: [
@@ -165,7 +166,7 @@ describe('TeacherService', () => {
         ],
         user: { id: 101, username: 'teacher_john', userType: 'CMS' },
       };
-      mockTeacherRepo.findOne.mockResolvedValue(mockTeacher);
+      mockStaffRepo.findOne.mockResolvedValue(mockTeacher);
 
       const result = await service.findOne(1);
       expect(result).toBeDefined();
@@ -176,7 +177,7 @@ describe('TeacherService', () => {
     });
 
     it('should retrieve assigned classes for a teacher', async () => {
-      mockTeacherRepo.findOne.mockResolvedValue({ id: 1, name: 'John Sok' });
+      mockStaffRepo.findOne.mockResolvedValue({ id: 1, name: 'John Sok' });
       mockClassRepo.find.mockResolvedValue([
         {
           id: 10,
@@ -193,11 +194,11 @@ describe('TeacherService', () => {
     });
 
     it('should update teacher details and salary rate', async () => {
-      mockTeacherRepo.findOne.mockImplementation(async () => {
+      mockStaffRepo.findOne.mockImplementation(async () => {
         return {
           id: 1,
           name: 'John Sok Senior',
-          salaryInHour: 22.0,
+          hourlyRate: 22.0,
           classes: [],
         };
       });
@@ -211,30 +212,30 @@ describe('TeacherService', () => {
     });
 
     it('should soft delete teacher', async () => {
-      mockTeacherRepo.findOne.mockResolvedValue({ id: 1, name: 'John Sok' });
+      mockStaffRepo.findOne.mockResolvedValue({ id: 1, name: 'John Sok' });
       const result = await service.delete(1);
       expect(result).toEqual({ id: 1, success: true });
-      expect(mockTeacherRepo.softDelete).toHaveBeenCalledWith(1);
+      expect(mockStaffRepo.softDelete).toHaveBeenCalledWith(1);
     });
   });
 
   // 2. Validation & Argument Edge Cases
   describe('2. Validation & Argument Edge Cases (400 / Bad Request)', () => {
     it('should auto-generate teacherCode when not provided', async () => {
-      mockTeacherRepo.count.mockResolvedValue(9);
-      mockTeacherRepo.findOne.mockImplementation(async () => {
+      mockStaffRepo.count.mockResolvedValue(9);
+      mockStaffRepo.findOne.mockImplementation(async () => {
         return {
           id: 10,
           name: 'New Teacher',
-          teacherCode: 'TCH-0010',
+          staffCode: 'TCH-0010',
           classes: [],
         };
       });
 
       await service.create({ name: 'New Teacher' });
-      expect(mockTeacherRepo.create).toHaveBeenCalledWith(
+      expect(mockStaffRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          teacherCode: 'TCH-0010',
+          staffCode: 'TCH-0010',
         }),
       );
     });
@@ -243,9 +244,9 @@ describe('TeacherService', () => {
   // 3. Duplicate & Uniqueness Conflicts (409 Conflict)
   describe('3. Duplicate & Uniqueness Conflicts (409 Conflict)', () => {
     it('should throw ConflictException if teacherCode already exists', async () => {
-      mockTeacherRepo.findOne.mockResolvedValue({
+      mockStaffRepo.findOne.mockResolvedValue({
         id: 99,
-        teacherCode: 'TCH-DUPLICATE',
+        staffCode: 'TCH-DUPLICATE',
       });
 
       await expect(
@@ -257,7 +258,7 @@ describe('TeacherService', () => {
     });
 
     it('should throw ConflictException if username already taken during account creation', async () => {
-      mockTeacherRepo.findOne.mockResolvedValue(null);
+      mockStaffRepo.findOne.mockResolvedValue(null);
       mockUserRepo.findOne.mockResolvedValue({
         id: 50,
         username: 'existing_user',
@@ -275,7 +276,7 @@ describe('TeacherService', () => {
 
     it('should throw ConflictException if userId is already linked to another teacher', async () => {
       mockUserRepo.findOne.mockResolvedValue({ id: 101, username: 'user101' });
-      mockTeacherRepo.findOne.mockImplementation(async ({ where }: any) => {
+      mockStaffRepo.findOne.mockImplementation(async ({ where }: any) => {
         if (where.userId === 101) {
           return { id: 77, name: 'Other Teacher', userId: 101 };
         }
@@ -294,24 +295,24 @@ describe('TeacherService', () => {
   // 4. Resource Not Found (404 Not Found)
   describe('4. Resource Not Found (404 Not Found)', () => {
     it('should throw NotFoundException when finding non-existent teacher', async () => {
-      mockTeacherRepo.findOne.mockResolvedValue(null);
+      mockStaffRepo.findOne.mockResolvedValue(null);
       await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
     });
 
     it('should throw NotFoundException when updating non-existent teacher', async () => {
-      mockTeacherRepo.findOne.mockResolvedValue(null);
+      mockStaffRepo.findOne.mockResolvedValue(null);
       await expect(service.update(999, { name: 'Nobody' })).rejects.toThrow(
         NotFoundException,
       );
     });
 
     it('should throw NotFoundException when deleting non-existent teacher', async () => {
-      mockTeacherRepo.findOne.mockResolvedValue(null);
+      mockStaffRepo.findOne.mockResolvedValue(null);
       await expect(service.delete(999)).rejects.toThrow(NotFoundException);
     });
 
     it('should throw NotFoundException when binding non-existent userId', async () => {
-      mockTeacherRepo.findOne.mockResolvedValue(null);
+      mockStaffRepo.findOne.mockResolvedValue(null);
       mockUserRepo.findOne.mockResolvedValue(null);
 
       await expect(
@@ -330,10 +331,10 @@ describe('TeacherService', () => {
         user: { id: 101, username: 'teacher_john' },
         classes: [],
       };
-      mockTeacherRepo.findOne.mockResolvedValue(existingTeacher);
+      mockStaffRepo.findOne.mockResolvedValue(existingTeacher);
 
       await service.update(1, { unbindUser: true });
-      expect(mockTeacherRepo.save).toHaveBeenCalledWith(
+      expect(mockStaffRepo.save).toHaveBeenCalledWith(
         expect.objectContaining({ userId: null, user: null }),
       );
     });
@@ -342,12 +343,12 @@ describe('TeacherService', () => {
   // 6. Edge & Boundary Limits
   describe('6. Edge & Boundary Limits', () => {
     it('should handle zero hourly salary and null optional fields', async () => {
-      mockTeacherRepo.findOne.mockImplementation(async () => {
+      mockStaffRepo.findOne.mockImplementation(async () => {
         return {
           id: 5,
           uuid: 'tch-uuid-5',
           name: 'Volunteer Teacher',
-          salaryInHour: 0,
+          hourlyRate: 0,
           specialization: null,
           phone: null,
           email: null,

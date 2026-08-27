@@ -58,17 +58,17 @@ describe('AdminAttendanceController (e2e)', () => {
       testStudentId = studentList[0].id;
     }
 
-    // 3. Fetch teacher
-    const teacherRes = await request(server)
-      .get('/api/v1/admin/teachers')
+    // 3. Create active teacher for attendance tests
+    const createTeacherRes = await request(server)
+      .post('/api/v1/admin/teachers')
       .set('Authorization', `Bearer ${adminToken}`)
-      .expect(200);
-
-    const teacherList =
-      teacherRes.body.data?.data || teacherRes.body.data || [];
-    if (teacherList.length > 0) {
-      testTeacherId = teacherList[0].id;
-    }
+      .send({
+        name: `Att Teacher ${Date.now().toString().slice(-4)}`,
+        gender: 'MALE',
+        salaryInHour: 20,
+        specialization: 'Mathematics',
+      });
+    testTeacherId = createTeacherRes.body.data?.id;
   });
 
   describe('Student Attendance Operations', () => {

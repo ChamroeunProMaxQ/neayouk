@@ -132,7 +132,8 @@ export class AdminAttendanceController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, CaslAccessGuard)
+  @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
   @UseAbility(DefaultActions.create, TeacherAttendance)
   @Post('teachers')
   recordTeacherAttendance(
@@ -142,7 +143,8 @@ export class AdminAttendanceController {
     return this.teacherAttendanceService.recordAttendance(dto, currentUserId);
   }
 
-  @UseGuards(JwtAuthGuard, CaslAccessGuard)
+  @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
   @UseAbility(DefaultActions.create, TeacherAttendance)
   @Post('teachers/batch')
   batchRecordTeacherAttendance(

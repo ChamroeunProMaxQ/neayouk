@@ -26,6 +26,7 @@ import { AttendanceModule } from '@src/attendance/attendance.module.js';
 import { ExaminationModule } from '@src/examination/examination.module.js';
 import { FeeModule } from '@src/fee/fee.module.js';
 import { HrModule } from '@src/hr/hr.module.js';
+import { ReportModule } from '@src/report/report.module.js';
 import { caslConfig } from '@src/common/config/casl.config.js';
 import { envModuelConfig } from '@src/common/config/env.config.js';
 import { typeOrmConfig } from './common/config/orm.config.js';
@@ -45,10 +46,12 @@ import { typeOrmConfig } from './common/config/orm.config.js';
     ExaminationModule,
     FeeModule,
     HrModule,
+    ReportModule,
     ...oberservableConfig,
     LoggerModule,
     AuthModule,
   ],
+
   controllers: [AppController],
   providers: [
     AppService,

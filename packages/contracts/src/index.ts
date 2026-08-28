@@ -30,4 +30,5 @@ export * from "./invoice.dto.js";
 export * from "./expense.dto.js";
 export * from "./staff.dto.js";
 export * from "./payroll.dto.js";
+export * from "./report.dto.js";
 

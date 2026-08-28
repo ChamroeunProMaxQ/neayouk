@@ -10,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import type { StudentPayment } from './student-payment.entity.js';
+import type { FeeStructure } from '@src/fee/entity/fee-structure.entity.js';
 
 @Entity({ name: 'payment_items' })
 export class PaymentItem {
@@ -30,6 +31,10 @@ export class PaymentItem {
 
   @Column({ name: 'fee_structure_id', type: 'int', nullable: true })
   feeStructureId!: number | null;
+
+  @ManyToOne('FeeStructure', { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'fee_structure_id' })
+  declare feeStructure?: FeeStructure | null;
 
   @Column({ type: 'varchar', length: 255 })
   title!: string;

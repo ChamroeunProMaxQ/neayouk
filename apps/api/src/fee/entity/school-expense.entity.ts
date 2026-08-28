@@ -39,7 +39,7 @@ export class SchoolExpense {
   amount!: number;
 
   @Column({ name: 'expense_date', type: 'date', default: () => 'CURRENT_DATE' })
-  expenseDate!: Date;
+  expenseDate!: Date | string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   vendor!: string | null;

@@ -126,5 +126,15 @@ export const API_ROUTE = {
     PAYROLL_PAY: '/api/v1/admin/hr/payrolls/:id/pay',
     PAYROLL_SUMMARY: '/api/v1/admin/hr/payrolls/summary',
   },
+  REPORT: {
+    OVERVIEW: '/api/v1/admin/reports/overview',
+    FINANCIAL_SUMMARY: '/api/v1/admin/reports/financial/summary',
+    FINANCIAL_EXPORT: '/api/v1/admin/reports/financial/export',
+    ACADEMIC_SUMMARY: '/api/v1/admin/reports/academic/summary',
+    ACADEMIC_EXPORT: '/api/v1/admin/reports/academic/export',
+    ATTENDANCE_SUMMARY: '/api/v1/admin/reports/attendance/summary',
+    ATTENDANCE_EXPORT: '/api/v1/admin/reports/attendance/export',
+  },
 };
+
 

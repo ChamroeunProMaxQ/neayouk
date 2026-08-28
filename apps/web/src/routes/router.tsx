@@ -72,9 +72,22 @@ const StaffDirectoryPage = lazy(() =>
 const PayrollSalaryPage = lazy(() =>
   import("./payroll-salary-page").then((m) => ({ default: m.PayrollSalaryPage }))
 );
+const ReportsPage = lazy(() =>
+  import("./reports-page").then((m) => ({ default: m.ReportsPage }))
+);
+const FinancialReportPage = lazy(() =>
+  import("./financial-report-page").then((m) => ({ default: m.FinancialReportPage }))
+);
+const AcademicReportPage = lazy(() =>
+  import("./academic-report-page").then((m) => ({ default: m.AcademicReportPage }))
+);
+const AttendanceReportPage = lazy(() =>
+  import("./attendance-report-page").then((m) => ({ default: m.AttendanceReportPage }))
+);
 const DummyPage = lazy(() =>
   import("./dummy-page").then((m) => ({ default: m.DummyPage }))
 );
+
 
 function PageFallback() {
   return (
@@ -340,9 +353,50 @@ const router = createBrowserRouter([
             element: <Navigate to="/hr-payroll/staff" replace />,
           },
           {
+            path: "/reports",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource={ResourceEnum.REPORT} action="read">
+                  <ReportsPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/reports/financial",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource={ResourceEnum.REPORT} action="read">
+                  <FinancialReportPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/reports/academic",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource={ResourceEnum.REPORT} action="read">
+                  <AcademicReportPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/reports/attendance",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource={ResourceEnum.REPORT} action="read">
+                  <AttendanceReportPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
             path: "/roles",
             element: <Navigate to="/users/roles" replace />,
           },
+
           {
             path: "/forbidden",
             element: <ForbiddenPage />,

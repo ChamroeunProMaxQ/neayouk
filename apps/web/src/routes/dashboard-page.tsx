@@ -1,4 +1,4 @@
-import { Users } from "lucide-react";
+import { Users, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function DashboardPage() {
@@ -33,7 +33,30 @@ export function DashboardPage() {
             Go to User List →
           </Link>
         </div>
+
+        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Reports & Analytics
+              </span>
+              <div className="p-2 bg-purple-50 rounded-lg text-purple-600">
+                <BarChart3 className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="text-sm text-slate-600">
+              Financial cash flows, academic grading distributions, and attendance intelligence.
+            </p>
+          </div>
+          <Link
+            to="/reports"
+            className="inline-block mt-4 text-xs font-bold text-purple-600 hover:underline"
+          >
+            Open Reports Hub →
+          </Link>
+        </div>
       </div>
+
     </div>
   );
 }

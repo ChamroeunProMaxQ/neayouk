@@ -23,6 +23,7 @@ export const BranchSchema = z.object({
 });
 
 export type BranchDto = z.infer<typeof BranchSchema>;
+export type BranchAttribute = BranchDto;
 
 export const CreateBranchWithAdminSchema = z.object({
   branchName: z.string().min(1, 'Branch/School name is required'),

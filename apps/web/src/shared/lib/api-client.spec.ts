@@ -3,6 +3,29 @@ import { apiClient } from "./api-client";
 import { useAuthStore } from "@/features/auth/stores/use-auth-store";
 import axios, { AxiosError, type AxiosRequestHeaders } from "axios";
 
+vi.mock('axios', async () => {
+  const actual = await vi.importActual<typeof import('axios')>('axios');
+  const mockAxiosInstance = {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+    interceptors: {
+      request: { use: vi.fn(), eject: vi.fn() },
+      response: { use: vi.fn(), eject: vi.fn() },
+    },
+    defaults: { headers: { common: {} } },
+  };
+  return {
+    ...actual,
+    default: {
+      ...actual.default,
+      create: vi.fn(() => mockAxiosInstance),
+    },
+  };
+});
+
 describe("apiClient", () => {
   beforeEach(() => {
     vi.restoreAllMocks();

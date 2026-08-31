@@ -7,9 +7,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { BranchStatusEnum, UserStatusEnum, UserTypeEnum } from '@repo/contracts';
 import { getSkipTake } from '@src/common/helper/pagination.helper.js';
+import type { AuthContext } from '@src/common/helper/branch-scoping.helper.js';
 import { Role } from '@src/role/entity/role.entity.js';
 import { User } from '@src/user/entity/user.entity.js';
 import { Branch } from './entity/branch.entity.js';
+import { BranchMapper } from './mapper/branch.mapper.js';
 import type { CreateBranchWithAdminDto } from './dto/create-branch-with-admin.dto.js';
 import type { FindBranchesDto } from './dto/find-branches.dto.js';
 import type { UpdateBranchDto } from './dto/update-branch.dto.js';
@@ -92,7 +94,7 @@ export class BranchService {
       await branchRepo.save(savedBranch);
 
       return {
-        branch: savedBranch,
+        branch: BranchMapper.toDto(savedBranch),
         adminUser: {
           id: savedUser.id,
           uuid: savedUser.uuid,
@@ -105,9 +107,23 @@ export class BranchService {
     });
   }
 
-  async findAll(dto: FindBranchesDto) {
+  async findAll(dto: FindBranchesDto, currentUser?: AuthContext) {
     const { search, status, sortBy = 'id', sortOrder = 'DESC' } = dto;
     const qb = this.branchRepo.createQueryBuilder('branch');
+
+    if (
+      currentUser &&
+      currentUser.userType !== UserTypeEnum.SUPER_ADMIN &&
+      currentUser.userType !== 'SUPER_ADMIN'
+    ) {
+      if (currentUser.branchId) {
+        qb.andWhere('branch.id = :scopedBranchId', {
+          scopedBranchId: currentUser.branchId,
+        });
+      } else {
+        qb.andWhere('1 = 0');
+      }
+    }
 
     if (status) {
       qb.andWhere('branch.status = :status', { status });
@@ -125,7 +141,7 @@ export class BranchService {
     qb.skip(skip).take(take);
 
     const [rows, count] = await qb.getManyAndCount();
-    return [rows, count];
+    return [BranchMapper.toDtoList(rows), count];
   }
 
   async findOne(id: number) {
@@ -133,11 +149,28 @@ export class BranchService {
     if (!branch) {
       throw new NotFoundException(`Branch with ID ${id} not found`);
     }
-    return branch;
+    return BranchMapper.toDto(branch);
+  }
+
+  async getCurrentBranch(currentUser?: AuthContext) {
+    if (!currentUser?.branchId) {
+      throw new NotFoundException('No branch assigned to current user');
+    }
+    return this.findOne(currentUser.branchId);
+  }
+
+  async updateCurrentBranch(currentUser: AuthContext, dto: UpdateBranchDto) {
+    if (!currentUser?.branchId) {
+      throw new NotFoundException('No branch assigned to current user');
+    }
+    return this.updateBranch(currentUser.branchId, dto);
   }
 
   async updateBranch(id: number, dto: UpdateBranchDto) {
-    const branch = await this.findOne(id);
+    const branch = await this.branchRepo.findOne({ where: { id } });
+    if (!branch) {
+      throw new NotFoundException(`Branch with ID ${id} not found`);
+    }
 
     if (dto.code && dto.code.toUpperCase() !== branch.code) {
       const existing = await this.branchRepo.findOne({
@@ -146,15 +179,24 @@ export class BranchService {
       if (existing && existing.id !== id) {
         throw new ConflictException(`Branch code "${dto.code}" already exists`);
       }
-      branch.code = dto.code.toUpperCase();
     }
 
-    if (dto.name) branch.name = dto.name;
-    if (dto.address !== undefined) branch.address = dto.address || null;
-    if (dto.phone !== undefined) branch.phone = dto.phone || null;
-    if (dto.email !== undefined) branch.email = dto.email || null;
-    if (dto.status) branch.status = dto.status;
+    this.branchRepo.merge(branch, dto);
 
-    return await this.branchRepo.save(branch);
+    if (dto.code) {
+      branch.code = dto.code.toUpperCase();
+    }
+    if (dto.address !== undefined) {
+      branch.address = dto.address || null;
+    }
+    if (dto.phone !== undefined) {
+      branch.phone = dto.phone || null;
+    }
+    if (dto.email !== undefined) {
+      branch.email = dto.email || null;
+    }
+
+    const saved = await this.branchRepo.save(branch);
+    return BranchMapper.toDto(saved);
   }
 }

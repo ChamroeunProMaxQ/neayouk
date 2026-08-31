@@ -113,7 +113,7 @@ describe("UserForm", () => {
   });
 
   it("submits valid form data including selected dynamic roles and assigned branch", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const handleSubmit = vi.fn();
 
     render(<UserForm onSubmit={handleSubmit} />, { wrapper: createWrapper() });
@@ -147,7 +147,7 @@ describe("UserForm", () => {
   });
 
   it("cancels form when cancel button is clicked", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const handleCancel = vi.fn();
 
     render(<UserForm onSubmit={vi.fn()} onCancel={handleCancel} />, { wrapper: createWrapper() });
@@ -167,7 +167,7 @@ describe("UserForm", () => {
       roles: ["admin"],
     });
 
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const handleSubmit = vi.fn();
 
     render(<UserForm onSubmit={handleSubmit} />, { wrapper: createWrapper() });

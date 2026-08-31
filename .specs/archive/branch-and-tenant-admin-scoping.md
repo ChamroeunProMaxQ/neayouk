@@ -23,52 +23,57 @@ Transform the system into a multi-tenant, single-branch architecture where:
 ## 3. Requirements & Boundaries
 
 ### A. Shared Contracts (`@repo/contracts`)
-- [ ] **Resource & Action Enums**:
+- [x] **Resource & Action Enums**:
   - Add `ResourceEnum.BRANCH` to `resource.enum.ts`.
   - Add `UserTypeEnum.SUPER_ADMIN` to `user-type.enum.ts`.
-- [ ] **Branch DTOs & Validation Schemas (`branch.dto.ts`)**:
+- [x] **Branch DTOs & Validation Schemas (`branch.dto.ts`)**:
   - `BranchStatusEnum` (`ACTIVE`, `INACTIVE`).
   - `CreateBranchWithAdminSchema`: Validates branch name, code/slug, and the initial Branch Admin user payload (username, password, name, email, phone).
   - `BranchSchema`, `FindBranchesSchema`, `UpdateBranchSchema`.
-- [ ] **DTO Updates across Domains**:
+- [x] **DTO Updates across Domains**:
   - Add optional `branchId?: number` to `UserSchema`, `CreateUserSchema`, `StudentSchema`, `ClassSchema`, `FeeStructureSchema`, `PayrollSchema`, etc.
-- [ ] **Route Constants (`route.ts`)**:
+- [x] **Route Constants (`route.ts`)**:
   - Add `API_ROUTE.SUPERADMIN.BRANCHES` for platform superadmin branch & admin provisioning.
+  - Add `API_ROUTE.BRANCH.LIST`, `API_ROUTE.BRANCH.CURRENT`, `API_ROUTE.BRANCH.GET`, and `API_ROUTE.BRANCH.UPDATE`.
 
 ### B. Backend API (`apps/api`)
-- [ ] **Database & Migrations (`database/`)**:
+- [x] **Database & Migrations (`database/`)**:
   - Create migration for `branches` table (`id`, `uuid`, `name`, `code`, `is_default`, `status`, `created_at`, `updated_at`, `deleted_at`).
   - Add `branch_id` foreign key columns with indices across domain tables:
-    - `users`, `students`, `staffs`, `roles`
+    - `users`, `students`, `staff`, `roles`
     - `programs`, `classes`, `class_timetables`
     - `student_attendances`, `teacher_attendances`, `leave_requests`
     - `student_scores`, `grading_rules`
     - `fee_structures`, `student_payments`, `school_expenses`, `payrolls`
-  - Seeders: Platform SuperAdmin, default roles, default demonstration branch with Branch Admin.
-- [ ] **Branch Module (`apps/api/src/branch/`)**:
+  - Seeders: Platform SuperAdmin, default roles, default demonstration branches (`MAIN`, `SOUTH`) with Branch Admins and demo domain fixtures.
+- [x] **Branch Module (`apps/api/src/branch/`)**:
   - `Branch` entity with TypeORM relations.
   - `BranchService`:
     - `createBranchWithAdmin(dto)`: Transactional creation of Branch (`isDefault: true`) and `User` (`userType: ADMIN`, `branchId: branch.id`).
-    - `findAll(query)` (SuperAdmin only).
+    - `findAll(query, currentUser)`: Lists all branches for SuperAdmin, or strictly scoped to user's assigned branch for branch admins.
     - `findOne(id)`, `updateBranch(id, dto)`.
+    - `getCurrentBranch(currentUser)`, `updateCurrentBranch(currentUser, dto)`.
   - `SuperAdminBranchController` (`/api/v1/superadmin/branches`): Protected by `JwtAuthGuard`, `UserTypesGuard(SUPER_ADMIN)`, and `CaslAccessGuard`.
-- [ ] **CASL Configuration Update (`casl.config.ts`)**:
+  - `AdminBranchController` (`/api/v1/admin/branches`): Protected by `JwtAuthGuard`, `UserTypesGuard`, `CaslAccessGuard`, and `BranchHook`.
+- [x] **CASL Configuration Update (`casl.config.ts`)**:
   - Set `superuserRole: UserTypeEnum.SUPER_ADMIN`.
-- [ ] **Branch-Scoped Query & Entity Scoping**:
-  - Update domain services (`UserService`, `StudentService`, `ClassService`, `FeeService`, etc.) to automatically apply `WHERE branch_id = :currentUserBranchId` when `currentUser.userType !== SUPER_ADMIN`.
-  - Update `UserHook` to prevent cross-branch entity mutation (`403 Forbidden`).
+- [x] **Branch-Scoped Query & Entity Scoping**:
+  - Update domain services (`UserService`, `StudentService`, `ClassService`, `ProgramService`, `StaffService`, `TeacherService`, `FeeStructureService`, `InvoiceService`, `ExpenseService`, `FeeSummaryService`, `PayrollService`, `LeaveRequestService`, `AttendanceReportService`, `FinancialReportService`, `AcademicReportService`) to automatically apply `WHERE branch_id = :currentUserBranchId` when `currentUser.userType !== SUPER_ADMIN` using `applyBranchScoping` and `resolveBranchId`.
+  - Update `UserHook` and `BranchHook` to prevent cross-branch entity mutation (`403 Forbidden`).
 
 ### C. Web Frontend (`apps/web`)
-- [ ] **SuperAdmin Branch Provisioning Feature (`apps/web/src/features/branches/`)**:
+- [x] **SuperAdmin Branch Provisioning Feature (`apps/web/src/features/branches/`)**:
   - `components/create-branch-dialog.tsx`: Form modal for SuperAdmin to create a new branch + initial Branch Admin user.
-  - `components/branch-list-table.tsx`: Data table listing all provisioned branches with status and admin info.
-  - `hooks/use-branch-query.ts` & `hooks/use-branch-mutations.ts`.
-- [ ] **Branch Admin User & Domain UI**:
+  - `components/edit-branch-dialog.tsx`: Modal for editing branch settings and contact details.
+  - `components/branch-list-table.tsx`: Data table using TanStack Table, status chips, search/status URL sync, and action buttons.
+  - `hooks/use-branches-query.ts` & `hooks/use-branch-mutations.ts`.
+- [x] **Branch Admin User & Domain UI**:
   - Forms automatically associate newly created entities with the active branch.
   - Standard Branch Admins and staff have no branch-switcher (seamlessly pinned to their branch).
-- [ ] **Navigation & Route Guards**:
-  - SuperAdmin route navigation for branch management (`/admin/branches`).
-  - Branch Admin navigation restricted to school operational modules.
+- [x] **Navigation & Route Guards**:
+  - SuperAdmin and Admin route navigation for branch management (`/branches` with redirect from `/admin/branches`).
+  - Access gated via `<PermissionRoute resource={ResourceEnum.BRANCH} action="read">`.
+  - Sidebar navigation item under User Management with `ResourceEnum.BRANCH` permission check.
 
 ---
 
@@ -93,11 +98,15 @@ Transform the system into a multi-tenant, single-branch architecture where:
 - `apps/api/src/branch/dto/create-branch-with-admin.dto.ts` [NEW]
 - `apps/api/src/branch/dto/find-branches.dto.ts` [NEW]
 - `apps/api/src/branch/dto/update-branch.dto.ts` [NEW]
+- `apps/api/src/branch/mapper/branch.mapper.ts` [NEW]
 - `apps/api/src/branch/branch.service.ts` [NEW]
 - `apps/api/src/branch/superadmin.branch.controller.ts` [NEW]
+- `apps/api/src/branch/admin.branch.controller.ts` [NEW]
+- `apps/api/src/branch/branch.hook.ts` [NEW]
 - `apps/api/src/branch/branch.permission.ts` [NEW]
 - `apps/api/src/branch/branch.module.ts` [NEW]
 - `apps/api/src/common/config/casl.config.ts` [MODIFY]
+- `apps/api/src/common/helper/branch-scoping.helper.ts` [NEW]
 - `apps/api/src/user/entity/user.entity.ts` [MODIFY]
 - `apps/api/src/student/entity/student.entity.ts` [MODIFY]
 - `apps/api/src/hr/entity/staff.entity.ts` [MODIFY]
@@ -117,16 +126,21 @@ Transform the system into a multi-tenant, single-branch architecture where:
 - `apps/api/src/user/user.hook.ts` [MODIFY]
 - `apps/api/src/app.module.ts` [MODIFY]
 - `apps/api/database/migrations/2026.08.28T00.00.01.create-branches-and-scoping.ts` [NEW]
+- `apps/api/database/migrations/2026.08.28T00.00.02.add-student-payments-branch-id.ts` [NEW]
+- `apps/api/database/migrations/2026.08.28T00.00.03.backfill-fee-and-expense-branch-id.ts` [NEW]
 - `apps/api/database/seeds/2026.08.28T00.00.01.branch-and-superadmin-seeder.ts` [NEW]
 - `apps/api/test/branch.e2e-spec.ts` [NEW]
+- `apps/api/test/admin.branch.e2e-spec.ts` [NEW]
 - `apps/api/test/user-branch-scoping.e2e-spec.ts` [NEW]
+- `apps/api/test/domain-branch-scoping.e2e-spec.ts` [NEW]
 
 #### 3. Frontend Web Layer (`apps/web`)
-- `apps/web/src/features/branches/api/branch-api.ts` [NEW]
 - `apps/web/src/features/branches/hooks/use-branches-query.ts` [NEW]
 - `apps/web/src/features/branches/hooks/use-branch-mutations.ts` [NEW]
 - `apps/web/src/features/branches/components/branch-list-table.tsx` [NEW]
+- `apps/web/src/features/branches/components/branch-list-table.spec.tsx` [NEW]
 - `apps/web/src/features/branches/components/create-branch-dialog.tsx` [NEW]
+- `apps/web/src/features/branches/components/edit-branch-dialog.tsx` [NEW]
 - `apps/web/src/features/branches/index.ts` [NEW]
 - `apps/web/src/routes/branches-page.tsx` [NEW]
 - `apps/web/src/routes/router.tsx` [MODIFY]
@@ -134,10 +148,10 @@ Transform the system into a multi-tenant, single-branch architecture where:
 ---
 
 ## 5. Acceptance Criteria
-- [ ] `@repo/contracts` compiles with zero errors (`pnpm --filter @repo/contracts build`).
-- [ ] Database migration successfully creates `branches` table and adds `branch_id` with foreign keys & indexes across all domain tables.
-- [ ] SuperAdmin can call `POST /api/v1/superadmin/branches` to provision a branch and its default Branch Admin atomically.
-- [ ] Branch Admin can log in and manage users, staff, students, and classes strictly within their own branch.
-- [ ] Branch Admin attempting to access or modify records from another branch receives a `403 Forbidden` response.
-- [ ] Backend Vitest e2e tests pass for SuperAdmin provisioning and multi-tenant isolation (`pnpm --filter api test`).
-- [ ] Oxlint passes cleanly across all workspaces (`pnpm lint`).
+- [x] `@repo/contracts` compiles with zero errors (`pnpm --filter @repo/contracts build`).
+- [x] Database migration successfully creates `branches` table and adds `branch_id` with foreign keys & indexes across all domain tables.
+- [x] SuperAdmin can call `POST /api/v1/superadmin/branches` to provision a branch and its default Branch Admin atomically.
+- [x] Branch Admin can log in and manage users, staff, students, and classes strictly within their own branch.
+- [x] Branch Admin attempting to access or modify records from another branch receives a `403 Forbidden` response.
+- [x] Backend Vitest e2e tests pass for SuperAdmin provisioning and multi-tenant isolation (`pnpm --filter api test`).
+- [x] Oxlint passes cleanly across all workspaces (`pnpm lint`).

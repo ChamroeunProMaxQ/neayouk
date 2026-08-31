@@ -7,6 +7,7 @@ import {
   type UpdateBranchDto,
 } from "@repo/contracts";
 import { apiClient } from "@/shared/lib/api-client";
+import { usePermission } from "@/features/auth";
 
 export function useCreateBranchWithAdminMutation() {
   const queryClient = useQueryClient();
@@ -36,11 +37,31 @@ export interface UpdateBranchMutationParams {
 
 export function useUpdateBranchMutation() {
   const queryClient = useQueryClient();
+  const { isSuperAdmin } = usePermission();
 
   return useMutation<ResponseDto<BranchDto>, Error, UpdateBranchMutationParams>({
     mutationFn: async ({ id, dto }) => {
-      const url = `${API_ROUTE.SUPERADMIN.BRANCHES}/${id}`;
-      const response = await apiClient.patch<ResponseDto<BranchDto>>(url, dto);
+      const baseUrl = isSuperAdmin
+        ? `${API_ROUTE.SUPERADMIN.BRANCHES}/${id}`
+        : `${API_ROUTE.BRANCH.LIST}/${id}`;
+      const response = await apiClient.patch<ResponseDto<BranchDto>>(baseUrl, dto);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["branches"] });
+    },
+  });
+}
+
+export function useUpdateCurrentBranchMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation<ResponseDto<BranchDto>, Error, UpdateBranchDto>({
+    mutationFn: async (dto: UpdateBranchDto) => {
+      const response = await apiClient.patch<ResponseDto<BranchDto>>(
+        API_ROUTE.BRANCH.CURRENT,
+        dto
+      );
       return response.data;
     },
     onSuccess: () => {

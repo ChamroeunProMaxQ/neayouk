@@ -15,12 +15,14 @@ import {
   AlertCircle,
   CheckCircle2,
   XCircle,
+  Pencil,
 } from "lucide-react";
 import {
   FindBranchesSchema,
   BranchStatusEnum,
   type BranchDto,
   type CreateBranchWithAdminDto,
+  type UpdateBranchDto,
 } from "@repo/contracts";
 import {
   Table,
@@ -33,13 +35,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useBranchesQuery } from "../hooks/use-branches-query";
-import { useCreateBranchWithAdminMutation } from "../hooks/use-branch-mutations";
+import {
+  useCreateBranchWithAdminMutation,
+  useUpdateBranchMutation,
+} from "../hooks/use-branch-mutations";
 import { CreateBranchDialog } from "./create-branch-dialog";
+import { EditBranchDialog } from "./edit-branch-dialog";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { useDebounce } from "@/hooks/use-debounce";
+import { usePermission } from "@/features/auth";
 
 export const BranchListTable: FC = () => {
+  const { isSuperAdmin, can, isAdmin } = usePermission();
+  const canUpdateBranch = can("update", "branch") || isAdmin || isSuperAdmin;
+
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editingBranch, setEditingBranch] = useState<BranchDto | null>(null);
 
   const { values, setValue } = useUrlFilters(FindBranchesSchema);
   const { search, status } = values;
@@ -52,10 +63,20 @@ export const BranchListTable: FC = () => {
   });
 
   const createMutation = useCreateBranchWithAdminMutation();
+  const updateMutation = useUpdateBranchMutation();
 
   const handleCreateSubmit = async (formData: CreateBranchWithAdminDto) => {
     await createMutation.mutateAsync(formData);
     setIsCreateOpen(false);
+  };
+
+  const handleEditSubmit = async (formData: UpdateBranchDto) => {
+    if (!editingBranch) return;
+    await updateMutation.mutateAsync({
+      id: editingBranch.id,
+      dto: formData,
+    });
+    setEditingBranch(null);
   };
 
   const branches = useMemo(() => data?.data || [], [data]);
@@ -152,8 +173,28 @@ export const BranchListTable: FC = () => {
           </span>
         ),
       },
+      {
+        id: "actions",
+        header: () => <span className="sr-only">Actions</span>,
+        cell: ({ row }) => {
+          if (!canUpdateBranch) return null;
+          return (
+            <div className="flex items-center justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setEditingBranch(row.original)}
+                className="h-8 px-2 text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 flex items-center gap-1.5 cursor-pointer"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                <span className="text-xs">Edit</span>
+              </Button>
+            </div>
+          );
+        },
+      },
     ],
-    []
+    [canUpdateBranch]
   );
 
   const table = useReactTable({
@@ -196,14 +237,16 @@ export const BranchListTable: FC = () => {
           </select>
         </div>
 
-        {/* Action Button */}
-        <Button
-          onClick={() => setIsCreateOpen(true)}
-          className="bg-[#45AC5E] hover:bg-[#3d9a53] text-white flex items-center gap-2 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Provision Branch</span>
-        </Button>
+        {/* Action Button - SuperAdmin only */}
+        {isSuperAdmin && (
+          <Button
+            onClick={() => setIsCreateOpen(true)}
+            className="bg-[#45AC5E] hover:bg-[#3d9a53] text-white flex items-center gap-2 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Provision Branch</span>
+          </Button>
+        )}
       </div>
 
       {/* Table Container */}
@@ -224,7 +267,9 @@ export const BranchListTable: FC = () => {
             <Building2 className="w-12 h-12 text-slate-300" />
             <p className="text-base font-semibold text-slate-700">No branches found</p>
             <p className="text-xs text-slate-400 max-w-sm text-center">
-              No branches match your filter criteria. Click "Provision Branch" to create a new one.
+              {isSuperAdmin
+                ? "No branches match your filter criteria. Click 'Provision Branch' to create a new one."
+                : "No branch information available for your account."}
             </p>
           </div>
         ) : (
@@ -257,12 +302,23 @@ export const BranchListTable: FC = () => {
         )}
       </div>
 
-      {/* Provision Dialog */}
-      <CreateBranchDialog
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-        onSubmit={handleCreateSubmit}
-        isLoading={createMutation.isPending}
+      {/* Provision Dialog (SuperAdmin) */}
+      {isSuperAdmin && (
+        <CreateBranchDialog
+          isOpen={isCreateOpen}
+          onClose={() => setIsCreateOpen(false)}
+          onSubmit={handleCreateSubmit}
+          isLoading={createMutation.isPending}
+        />
+      )}
+
+      {/* Edit Branch Dialog */}
+      <EditBranchDialog
+        isOpen={Boolean(editingBranch)}
+        onClose={() => setEditingBranch(null)}
+        branch={editingBranch}
+        onSubmit={handleEditSubmit}
+        isLoading={updateMutation.isPending}
       />
     </div>
   );

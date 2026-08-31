@@ -9,6 +9,7 @@ import {
 import type { UserAttribute } from '@repo/contracts';
 import { UserTypeEnum } from '@repo/contracts';
 import { UserService } from './user.service.js';
+import { User } from './entity/user.entity.js';
 import type { AuthorizableUser, SubjectBeforeFilterHook } from 'nest-casl';
 import type { Request } from 'express';
 import { APP_LOGGER } from '@src/common/config/logger.config.js';
@@ -35,12 +36,12 @@ export class UserHook implements SubjectBeforeFilterHook<
 
     // Branch isolation check
     if (authUser && authUser.userType !== UserTypeEnum.SUPER_ADMIN && authUser.branchId) {
-      if (user.branchId && user.branchId !== authUser.branchId) {
+      if (user.branchId && Number(user.branchId) !== Number(authUser.branchId)) {
         throw new ForbiddenException('You can only manage users in your own branch');
       }
     }
 
-    return user;
+    return Object.assign(new User(), user);
   }
 }
 

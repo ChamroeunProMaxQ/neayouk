@@ -22,6 +22,12 @@ import type {
   FindClassTimetablesDto,
 } from './dto/class.dto.js';
 
+import {
+  applyBranchScoping,
+  resolveBranchId,
+  type AuthContext,
+} from '@src/common/helper/branch-scoping.helper.js';
+
 @Injectable()
 export class ClassService {
   constructor(
@@ -33,7 +39,7 @@ export class ClassService {
     private readonly studentClassRepo: Repository<StudentClass>,
   ) {}
 
-  async findAll(dto: FindClassesDto) {
+  async findAll(dto: FindClassesDto, currentUser?: AuthContext) {
     const {
       search,
       academicYear,
@@ -54,6 +60,8 @@ export class ClassService {
       .leftJoinAndSelect('class.timetables', 'timetables')
       .leftJoinAndSelect('class.program', 'program')
       .leftJoinAndSelect('class.teacher', 'teacher');
+
+    applyBranchScoping(query, 'class', currentUser, dto.branchId);
 
     if (search) {
       query.andWhere(
@@ -120,7 +128,7 @@ export class ClassService {
     return ClassMapper.toDto(cls);
   }
 
-  async create(dto: CreateClassDto) {
+  async create(dto: CreateClassDto, currentUser?: AuthContext) {
     if (dto.code) {
       const existing = await this.classRepo.findOne({
         where: { code: dto.code },
@@ -137,6 +145,7 @@ export class ClassService {
       ...data,
       monthlyFee: dto.monthlyFee ?? 0,
       status: dto.status ?? 'ACTIVE',
+      branchId: resolveBranchId(currentUser, dto.branchId),
     });
     const saved = await this.classRepo.save(cls);
     return this.findOne(saved.id);
@@ -355,13 +364,8 @@ export class ClassService {
     }
   }
 
-  async getAcademicYearsSummary() {
-    const raw: Array<{
-      academicYear: string;
-      semester: string;
-      classCount: string | number;
-      studentCount: string | number;
-    }> = await this.classRepo
+  async getAcademicYearsSummary(currentUser?: AuthContext) {
+    const qb = this.classRepo
       .createQueryBuilder('class')
       .select('class.academicYear', 'academicYear')
       .addSelect('class.semester', 'semester')
@@ -373,7 +377,16 @@ export class ClassService {
         { enrolledStatus: ClassEnrollmentStatusEnum.ENROLLED },
       )
       .addSelect('COUNT(DISTINCT enrollment.studentId)', 'studentCount')
-      .where('class.academicYear IS NOT NULL')
+      .where('class.academicYear IS NOT NULL');
+
+    applyBranchScoping(qb, 'class', currentUser);
+
+    const raw: Array<{
+      academicYear: string;
+      semester: string;
+      classCount: string | number;
+      studentCount: string | number;
+    }> = await qb
       .groupBy('class.academicYear')
       .addGroupBy('class.semester')
       .orderBy('class.academicYear', 'DESC')

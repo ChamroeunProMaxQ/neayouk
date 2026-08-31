@@ -21,6 +21,7 @@ export class InvoiceMapper {
     return {
       id: entity.id,
       uuid: entity.uuid,
+      branchId: entity.branchId ?? null,
       invoiceNumber: entity.paymentNumber || entity.receiptNumber || `INV-${entity.id}`,
       studentId: entity.studentId,
       classId: entity.classId ?? null,

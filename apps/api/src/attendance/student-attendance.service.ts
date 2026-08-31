@@ -6,7 +6,7 @@ import {
   type LoggerService,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, In, Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { APP_LOGGER } from '@src/common/config/logger.config.js';
 import {
   AttendanceStatusEnum,
@@ -25,6 +25,12 @@ import { Class } from '@src/academic/entity/class.entity.js';
 import { StudentClass } from '@src/student/entity/student-class.entity.js';
 import { AttendanceMapper } from './mapper/attendance.mapper.js';
 
+import {
+  applyBranchScoping,
+  resolveBranchId,
+  type AuthContext,
+} from '@src/common/helper/branch-scoping.helper.js';
+
 @Injectable()
 export class StudentAttendanceService {
   constructor(
@@ -42,8 +48,11 @@ export class StudentAttendanceService {
 
   async recordAttendance(
     dto: RecordStudentAttendanceDto,
-    recordedBy?: number,
+    currentUser?: AuthContext | number,
   ): Promise<StudentAttendanceAttribute> {
+    const auth = typeof currentUser === 'object' ? currentUser : undefined;
+    const recordedBy = typeof currentUser === 'number' ? currentUser : (currentUser as any)?.sub ?? null;
+
     const student = await this.studentRepo.findOne({
       where: { id: dto.studentId },
     });
@@ -84,6 +93,7 @@ export class StudentAttendanceService {
         sessionSlotId: dto.sessionSlotId ?? null,
         remarks: dto.remarks ?? null,
         recordedBy: recordedBy ?? null,
+        branchId: student.branchId ?? resolveBranchId(auth, (dto as any).branchId),
       });
     }
 
@@ -126,7 +136,10 @@ export class StudentAttendanceService {
     return results;
   }
 
-  async findAll(query: FindStudentAttendanceDto) {
+  async findAll(
+    query: FindStudentAttendanceDto,
+    currentUser?: AuthContext,
+  ) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
     const skip = (page - 1) * pageSize;
@@ -136,6 +149,8 @@ export class StudentAttendanceService {
       .leftJoinAndSelect('att.student', 'student')
       .leftJoinAndSelect('att.class', 'class')
       .leftJoinAndSelect('att.recorder', 'recorder');
+
+    applyBranchScoping(qb, 'att', currentUser, (query as any).branchId);
 
     if (query.classId) {
       qb.andWhere('att.class_id = :classId', { classId: query.classId });

@@ -22,6 +22,12 @@ import { Staff } from '@src/hr/entity/staff.entity.js';
 import { TeacherAttendance } from './entity/teacher-attendance.entity.js';
 import { AttendanceMapper } from './mapper/attendance.mapper.js';
 
+import {
+  applyBranchScoping,
+  resolveBranchId,
+  type AuthContext,
+} from '@src/common/helper/branch-scoping.helper.js';
+
 @Injectable()
 export class LeaveRequestService {
   constructor(
@@ -37,8 +43,11 @@ export class LeaveRequestService {
 
   async create(
     dto: CreateLeaveRequestDto,
-    userId?: number,
+    currentUser?: AuthContext | number,
   ): Promise<LeaveRequestAttribute> {
+    const auth = typeof currentUser === 'object' ? currentUser : undefined;
+    const userId = typeof currentUser === 'number' ? currentUser : (currentUser as any)?.sub ?? null;
+
     if (dto.endDate < dto.startDate) {
       throw new BadRequestException(
         'End date must be greater than or equal to start date',
@@ -58,6 +67,7 @@ export class LeaveRequestService {
       leaveType: dto.leaveType,
       startDate: dto.startDate,
       endDate: dto.endDate,
+      branchId: teacher.branchId ?? resolveBranchId(auth, (dto as any).branchId),
       totalDays: dto.totalDays ?? 1.0,
       reason: dto.reason,
       attachmentUrl: dto.attachmentUrl ?? null,
@@ -131,7 +141,7 @@ export class LeaveRequestService {
     });
   }
 
-  async findAll(query: FindLeaveRequestsDto) {
+  async findAll(query: FindLeaveRequestsDto, currentUser?: AuthContext) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
     const skip = (page - 1) * pageSize;
@@ -141,6 +151,8 @@ export class LeaveRequestService {
       .leftJoinAndSelect('leave.teacher', 'teacher')
       .leftJoinAndSelect('leave.user', 'user')
       .leftJoinAndSelect('leave.reviewer', 'reviewer');
+
+    applyBranchScoping(qb, 'leave', currentUser, (query as any).branchId);
 
     if (query.teacherId) {
       qb.andWhere('leave.teacher_id = :teacherId', {
@@ -237,6 +249,7 @@ export class LeaveRequestService {
             status: AttendanceStatusEnum.ON_LEAVE,
             remarks: `Approved Leave (${leave.leaveType}): ${leave.reason}`,
             verifiedBy: reviewerId ?? null,
+            branchId: leave.branchId ?? leave.teacher?.branchId ?? null,
           });
         }
 

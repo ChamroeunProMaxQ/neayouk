@@ -29,6 +29,12 @@ import type {
   UpdatePayrollDto,
 } from './dto/payroll.dto.js';
 
+import {
+  applyBranchScoping,
+  resolveBranchId,
+  type AuthContext,
+} from '@src/common/helper/branch-scoping.helper.js';
+
 @Injectable()
 export class PayrollService {
   constructor(
@@ -53,23 +59,28 @@ export class PayrollService {
     private readonly logger: LoggerService,
   ) {}
 
-  async findAll({
-    search,
-    staffId,
-    department,
-    year,
-    month,
-    salaryType,
-    status,
-    sortBy = 'id',
-    sortOrder = 'DESC',
-    ...dto
-  }: FindPayrollsDto) {
+  async findAll(
+    {
+      search,
+      staffId,
+      department,
+      year,
+      month,
+      salaryType,
+      status,
+      sortBy = 'id',
+      sortOrder = 'DESC',
+      ...dto
+    }: FindPayrollsDto,
+    currentUser?: AuthContext,
+  ) {
     const query = this.payrollRepo
       .createQueryBuilder('payroll')
       .leftJoinAndSelect('payroll.staff', 'staff')
       .leftJoinAndSelect('payroll.items', 'items')
       .leftJoinAndSelect('payroll.processedByUser', 'processedByUser');
+
+    applyBranchScoping(query, 'payroll', currentUser, (dto as any).branchId);
 
     if (staffId) {
       query.andWhere('payroll.staff_id = :staffId', { staffId });
@@ -139,7 +150,7 @@ export class PayrollService {
     return PayrollMapper.toDto(payroll);
   }
 
-  async create(dto: CreatePayrollDto, userId?: number) {
+  async create(dto: CreatePayrollDto, currentUserId?: AuthContext | number) {
     const staff = await this.staffRepo.findOne({
       where: { id: dto.staffId },
     });
@@ -272,7 +283,8 @@ export class PayrollService {
         netSalary,
         status: 'DRAFT',
         notes: dto.notes ?? null,
-        processedBy: userId ?? null,
+        branchId: staff.branchId ?? resolveBranchId(typeof currentUserId === 'object' ? currentUserId : undefined, (dto as any).branchId),
+        processedBy: typeof currentUserId === 'number' ? currentUserId : (currentUserId as any)?.sub ?? null,
       });
 
       const savedPayroll = await queryRunner.manager.save(payroll);
@@ -444,6 +456,7 @@ export class PayrollService {
         status: ExpenseStatusEnum.APPROVED,
         receiptRef: payroll.payrollNumber,
         notes: `Disbursed payroll voucher ${payroll.payrollNumber}`,
+        branchId: payroll.branchId,
         recordedBy: userId ?? null,
         approvedBy: userId ?? null,
         approvedAt: paymentDate,
@@ -477,10 +490,12 @@ export class PayrollService {
     return PayrollMapper.toDto(payroll);
   }
 
-  async getSummary(year?: number, month?: number) {
+  async getSummary(year?: number, month?: number, currentUser?: AuthContext) {
     const query = this.payrollRepo
       .createQueryBuilder('payroll')
       .where('payroll.status != :cancelled', { cancelled: 'CANCELLED' });
+
+    applyBranchScoping(query, 'payroll', currentUser);
 
     if (year) {
       query.andWhere('payroll.year = :year', { year });
@@ -511,9 +526,11 @@ export class PayrollService {
       .filter((p) => p.salaryType === 'HOURLY')
       .reduce((sum, p) => sum + Number(p.netSalary || 0), 0);
 
-    const totalStaffCount = await this.staffRepo.count({
-      where: { status: 'ACTIVE' },
-    });
+    const staffQb = this.staffRepo
+      .createQueryBuilder('staff')
+      .where('staff.status = :status', { status: 'ACTIVE' });
+    applyBranchScoping(staffQb, 'staff', currentUser);
+    const totalStaffCount = await staffQb.getCount();
 
     return {
       totalPayrollSpend,

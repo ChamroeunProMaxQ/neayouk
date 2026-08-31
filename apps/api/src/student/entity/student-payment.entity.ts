@@ -23,6 +23,9 @@ export class StudentPayment {
   @Column({ type: 'varchar', length: 36 })
   uuid!: string;
 
+  @Column({ name: 'branch_id', type: 'int', nullable: true })
+  branchId!: number | null;
+
   @Column({ name: 'payment_number', type: 'varchar', length: 100, nullable: true })
   paymentNumber!: string | null;
 

@@ -13,12 +13,21 @@ export const permissions: Permissions<
   Actions,
   AppAuthorizableUser
 > = {
-  // 1. Full Admin / Superuser
-  ADMIN({ can }) {
+  // 1. Platform SuperAdmin: Full access across all branches
+  SUPER_ADMIN({ can }) {
     can(Actions.manage, User);
   },
 
-  // 2. CMS: Evaluates dynamic database permissions assigned to the user
+  // 2. Branch Admin: Full access strictly within their branch
+  ADMIN({ user, can }) {
+    if (user?.branchId) {
+      can(Actions.manage, User, { branchId: user.branchId });
+    } else {
+      can(Actions.manage, User);
+    }
+  },
+
+  // 3. CMS: Evaluates dynamic database permissions assigned to the user
   CMS({ user, can }) {
     const perms = user?.permissions;
     registerCaslPermissions(can, perms, User, ResourceEnum.USER);

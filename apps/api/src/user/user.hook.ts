@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
@@ -6,6 +7,7 @@ import {
   type LoggerService,
 } from '@nestjs/common';
 import type { UserAttribute } from '@repo/contracts';
+import { UserTypeEnum } from '@repo/contracts';
 import { UserService } from './user.service.js';
 import type { AuthorizableUser, SubjectBeforeFilterHook } from 'nest-casl';
 import type { Request } from 'express';
@@ -24,12 +26,20 @@ export class UserHook implements SubjectBeforeFilterHook<
     //
   }
 
-  async run({ params }: Request) {
-    // this.logger.log(`user hook is running for user ${params.id}`);
+  async run(req: Request) {
+    const { params, user: authUser } = req as any;
     const user = await this.userService.findOne(+params.id);
     if (!user) {
       throw new NotFoundException('user not found');
     }
+
+    // Branch isolation check
+    if (authUser && authUser.userType !== UserTypeEnum.SUPER_ADMIN && authUser.branchId) {
+      if (user.branchId && user.branchId !== authUser.branchId) {
+        throw new ForbiddenException('You can only manage users in your own branch');
+      }
+    }
+
     return user;
   }
 }
@@ -46,8 +56,8 @@ export class AuthUserHook implements SubjectBeforeFilterHook<
   ) {}
 
   async run({ user }: Request) {
-    console.log('user in req', user?.sub);
-    const auth = await this.userService.findOne(+user?.sub!);
+    if (!user?.sub) throw new UnauthorizedException();
+    const auth = await this.userService.findOne(+user.sub);
     if (!auth) throw new UnauthorizedException();
     return {
       id: auth.id.toString(),

@@ -64,6 +64,7 @@ export class StudentMapper {
       registeredAt: entity.registeredAt,
       discount: Number(entity.discount || 0),
       status: entity.status,
+      branchId: entity.branchId,
       enrollments: entity.enrollments
         ? StudentClassMapper.toDtoList(entity.enrollments)
         : undefined,

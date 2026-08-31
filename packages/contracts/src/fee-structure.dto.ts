@@ -24,6 +24,7 @@ export enum BillingCycleEnum {
 export const FeeStructureSchema = z.object({
   id: z.number(),
   uuid: z.string(),
+  branchId: z.number().nullable().optional(),
   name: z.string(),
   category: z.enum(FeeCategoryEnum),
   amount: z.coerce.number(),
@@ -40,6 +41,7 @@ export const FeeStructureSchema = z.object({
 export type FeeStructureAttribute = z.infer<typeof FeeStructureSchema>;
 
 export const CreateFeeStructureSchema = z.object({
+  branchId: z.number().optional(),
   name: z.string().min(1, "Fee structure name is required"),
   category: z.enum(FeeCategoryEnum).default(FeeCategoryEnum.TUITION),
   amount: z.coerce.number().min(0, "Amount must be zero or positive"),
@@ -60,6 +62,7 @@ export type UpdateFeeStructureDto = z.infer<typeof UpdateFeeStructureSchema>;
 export const FindFeeStructuresSchema = PaginationSchema.extend({
   ...createSortSchema(["id", "name", "category", "amount", "createdAt"], "id"),
   search: z.string().optional(),
+  branchId: z.coerce.number().optional(),
   category: z.enum(FeeCategoryEnum).optional(),
   billingCycle: z.enum(BillingCycleEnum).optional(),
   isActive: z.coerce.boolean().optional(),

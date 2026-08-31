@@ -32,11 +32,14 @@ export class AdminTeacherController {
   constructor(private readonly teacherService: TeacherService) {}
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, Staff)
   @Get()
-  findAll(@Query() dto: FindTeachersDto) {
-    return this.teacherService.findAll(dto);
+  findAll(
+    @Query() dto: FindTeachersDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.teacherService.findAll(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
@@ -58,9 +61,9 @@ export class AdminTeacherController {
   @Post()
   create(
     @Body() dto: CreateTeacherDto,
-    @CurrentUser('sub') currentUserId: number,
+    @CurrentUser() currentUser: any,
   ) {
-    return this.teacherService.create(dto, currentUserId);
+    return this.teacherService.create(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)

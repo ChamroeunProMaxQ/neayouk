@@ -20,6 +20,8 @@ import { CaslAccessGuard } from '@src/common/guard/casl-access.guard.js';
 import { UserTypesGuard } from '@src/common/guard/user-types.guard.js';
 import { UserTypes } from '@src/common/decorator/user-type.decorator.js';
 
+import { CurrentUser } from '@src/common/decorator/current-user.decorator.js';
+
 import { FeeStructure } from './entity/fee-structure.entity.js';
 import { FeeStructureService } from './fee-structure.service.js';
 import {
@@ -30,14 +32,17 @@ import {
 
 @Controller('admin/fees/structures')
 @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-@UserTypes(UserTypeEnum.ADMIN, UserTypeEnum.CMS)
+@UserTypes(UserTypeEnum.ADMIN, UserTypeEnum.CMS, UserTypeEnum.SUPER_ADMIN)
 export class FeeStructureController {
   constructor(private readonly service: FeeStructureService) {}
 
   @Get()
   @UseAbility(Actions.read, FeeStructure)
-  async findAll(@Query() query: FindFeeStructuresDto) {
-    return this.service.findAll(query);
+  async findAll(
+    @Query() query: FindFeeStructuresDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.service.findAll(query, currentUser);
   }
 
   @Get(':id')
@@ -48,8 +53,11 @@ export class FeeStructureController {
 
   @Post()
   @UseAbility(Actions.create, FeeStructure)
-  async create(@Body() dto: CreateFeeStructureDto) {
-    return this.service.create(dto);
+  async create(
+    @Body() dto: CreateFeeStructureDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.service.create(dto, currentUser);
   }
 
   @Put(':id')

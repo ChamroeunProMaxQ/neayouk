@@ -48,11 +48,14 @@ export class AdminStudentController {
   ) {}
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, Student)
   @Get()
-  findAll(@Query() dto: FindStudentsDto) {
-    return this.studentService.findAll(dto);
+  findAll(
+    @Query() dto: FindStudentsDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.studentService.findAll(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
@@ -74,9 +77,9 @@ export class AdminStudentController {
   @Post()
   create(
     @Body() dto: CreateStudentDto,
-    @CurrentUser('sub') currentUserId: number,
+    @CurrentUser() currentUser: any,
   ) {
-    return this.studentService.create(dto, currentUserId);
+    return this.studentService.create(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)

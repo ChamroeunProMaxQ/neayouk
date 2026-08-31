@@ -68,7 +68,6 @@ export class UserTokenService {
                 id: perm.id,
                 resource: perm.resource,
                 action: perm.action,
-                description: perm.description ?? undefined,
               });
             }
           }
@@ -83,6 +82,7 @@ export class UserTokenService {
       sub: user.id,
       type: user.userType,
       userType: user.userType,
+      branchId: user.branchId,
       roles,
       permissions,
     };

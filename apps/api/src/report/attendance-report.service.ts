@@ -13,6 +13,10 @@ import { Class } from '@src/academic/entity/class.entity.js';
 import { Student } from '@src/student/entity/student.entity.js';
 import { StudentClass } from '@src/student/entity/student-class.entity.js';
 import { resolveDateRange } from './helper/report-date.helper.js';
+import {
+  applyBranchScoping,
+  type AuthContext,
+} from '@src/common/helper/branch-scoping.helper.js';
 
 @Injectable()
 export class AttendanceReportService {
@@ -36,7 +40,10 @@ export class AttendanceReportService {
     private readonly studentClassRepo: Repository<StudentClass>,
   ) {}
 
-  async getSummary(query: AttendanceReportQueryDto): Promise<AttendanceReportSummaryDto> {
+  async getSummary(
+    query: AttendanceReportQueryDto,
+    currentUser?: AuthContext,
+  ): Promise<AttendanceReportSummaryDto> {
     const range = resolveDateRange(query.preset, query.startDate, query.endDate);
 
     // 1. Fetch student attendance records
@@ -48,6 +55,8 @@ export class AttendanceReportService {
         startDate: range.startDate,
         endDate: range.endDate,
       });
+
+    applyBranchScoping(studentAttQb, 'att', currentUser, (query as any).branchId);
 
     if (query.classId) {
       studentAttQb.andWhere('att.class_id = :classId', { classId: query.classId });
@@ -62,6 +71,8 @@ export class AttendanceReportService {
         startDate: range.startDate,
         endDate: range.endDate,
       });
+
+    applyBranchScoping(teacherAttQb, 'tatt', currentUser, (query as any).branchId);
 
     const teacherRecords = await teacherAttQb.getMany();
 
@@ -115,6 +126,8 @@ export class AttendanceReportService {
         end: `${range.endDate} 23:59:59`,
       })
       .andWhere('leave.status = :status', { status: 'APPROVED' });
+
+    applyBranchScoping(leaveQb, 'leave', currentUser, (query as any).branchId);
 
     const leaves = await leaveQb.getMany();
     const totalApprovedLeaves = leaves.length;
@@ -291,7 +304,10 @@ export class AttendanceReportService {
     };
   }
 
-  async exportCsv(query: AttendanceReportQueryDto): Promise<string> {
+  async exportCsv(
+    query: AttendanceReportQueryDto,
+    currentUser?: AuthContext,
+  ): Promise<string> {
     const range = resolveDateRange(query.preset, query.startDate, query.endDate);
 
     const qb = this.studentAttRepo
@@ -303,6 +319,8 @@ export class AttendanceReportService {
         endDate: range.endDate,
       })
       .orderBy('att.date', 'DESC');
+
+    applyBranchScoping(qb, 'att', currentUser, (query as any).branchId);
 
     if (query.classId) {
       qb.andWhere('att.class_id = :classId', { classId: query.classId });

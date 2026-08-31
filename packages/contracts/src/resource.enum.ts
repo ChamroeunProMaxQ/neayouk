@@ -41,6 +41,7 @@ export enum ResourceEnum {
   PAYROLL = "payroll",
 
   // General & System
+  BRANCH = "branch",
   DASHBOARD = "dashboard",
   ANNOUNCEMENT = "announcement",
   REPORT = "report",

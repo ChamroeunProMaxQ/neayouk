@@ -153,6 +153,7 @@ export class StudentPaymentService {
         receiptNumber: receiptNo,
         studentId: dto.studentId,
         classId: defaultClassId,
+        branchId: student.branchId ?? targetClass?.branchId ?? null,
         billingYear: dto.billingYear,
         billingMonth: dto.billingMonth,
         subtotal: baseFee,

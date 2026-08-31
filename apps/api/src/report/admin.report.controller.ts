@@ -12,6 +12,7 @@ import { JwtAuthGuard } from '@src/auth/jwt-auth.guard.js';
 import { CaslAccessGuard } from '@src/common/guard/casl-access.guard.js';
 import { UserTypesGuard } from '@src/common/guard/user-types.guard.js';
 import { UserTypes } from '@src/common/decorator/user-type.decorator.js';
+import { CurrentUser } from '@src/common/decorator/current-user.decorator.js';
 import { InstitutionalReport } from './entity/report.entity.js';
 import { FinancialReportService } from './financial-report.service.js';
 import { AcademicReportService } from './academic-report.service.js';
@@ -26,7 +27,7 @@ import {
 @ApiBearerAuth()
 @Controller('admin/reports')
 @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-@UserTypes(UserTypeEnum.ADMIN, UserTypeEnum.CMS)
+@UserTypes(UserTypeEnum.ADMIN, UserTypeEnum.CMS, UserTypeEnum.SUPER_ADMIN)
 export class AdminReportController {
   constructor(
     private readonly financialReportService: FinancialReportService,
@@ -36,11 +37,11 @@ export class AdminReportController {
 
   @Get('overview')
   @UseAbility(DefaultActions.read, InstitutionalReport)
-  async getOverview(): Promise<ReportOverviewDto> {
+  async getOverview(@CurrentUser() currentUser: any): Promise<ReportOverviewDto> {
     const [financial, academic, attendance] = await Promise.all([
-      this.financialReportService.getSummary({}),
-      this.academicReportService.getSummary({}),
-      this.attendanceReportService.getSummary({ targetType: 'STUDENT' }),
+      this.financialReportService.getSummary({}, currentUser),
+      this.academicReportService.getSummary({}, currentUser),
+      this.attendanceReportService.getSummary({ targetType: 'STUDENT' }, currentUser),
     ]);
 
     return {
@@ -66,43 +67,61 @@ export class AdminReportController {
 
   @Get('financial/summary')
   @UseAbility(DefaultActions.read, InstitutionalReport)
-  async getFinancialSummary(@Query() query: FinancialReportQueryDto) {
-    return this.financialReportService.getSummary(query);
+  async getFinancialSummary(
+    @Query() query: FinancialReportQueryDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.financialReportService.getSummary(query, currentUser);
   }
 
   @Get('financial/export')
   @UseAbility(DefaultActions.read, InstitutionalReport)
   @Header('Content-Type', 'text/csv')
   @Header('Content-Disposition', 'attachment; filename="financial-report.csv"')
-  async exportFinancialCsv(@Query() query: FinancialReportQueryDto): Promise<string> {
-    return this.financialReportService.exportCsv(query);
+  async exportFinancialCsv(
+    @Query() query: FinancialReportQueryDto,
+    @CurrentUser() currentUser: any,
+  ): Promise<string> {
+    return this.financialReportService.exportCsv(query, currentUser);
   }
 
   @Get('academic/summary')
   @UseAbility(DefaultActions.read, InstitutionalReport)
-  async getAcademicSummary(@Query() query: AcademicReportQueryDto) {
-    return this.academicReportService.getSummary(query);
+  async getAcademicSummary(
+    @Query() query: AcademicReportQueryDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.academicReportService.getSummary(query, currentUser);
   }
 
   @Get('academic/export')
   @UseAbility(DefaultActions.read, InstitutionalReport)
   @Header('Content-Type', 'text/csv')
   @Header('Content-Disposition', 'attachment; filename="academic-report.csv"')
-  async exportAcademicCsv(@Query() query: AcademicReportQueryDto): Promise<string> {
-    return this.academicReportService.exportCsv(query);
+  async exportAcademicCsv(
+    @Query() query: AcademicReportQueryDto,
+    @CurrentUser() currentUser: any,
+  ): Promise<string> {
+    return this.academicReportService.exportCsv(query, currentUser);
   }
 
   @Get('attendance/summary')
   @UseAbility(DefaultActions.read, InstitutionalReport)
-  async getAttendanceSummary(@Query() query: AttendanceReportQueryDto) {
-    return this.attendanceReportService.getSummary(query);
+  async getAttendanceSummary(
+    @Query() query: AttendanceReportQueryDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.attendanceReportService.getSummary(query, currentUser);
   }
 
   @Get('attendance/export')
   @UseAbility(DefaultActions.read, InstitutionalReport)
   @Header('Content-Type', 'text/csv')
   @Header('Content-Disposition', 'attachment; filename="attendance-report.csv"')
-  async exportAttendanceCsv(@Query() query: AttendanceReportQueryDto): Promise<string> {
-    return this.attendanceReportService.exportCsv(query);
+  async exportAttendanceCsv(
+    @Query() query: AttendanceReportQueryDto,
+    @CurrentUser() currentUser: any,
+  ): Promise<string> {
+    return this.attendanceReportService.exportCsv(query, currentUser);
   }
 }

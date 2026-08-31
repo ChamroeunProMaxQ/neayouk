@@ -23,17 +23,22 @@ import { FindRolesDto } from './dto/find-roles.dto.js';
 import { CreateRoleDto } from './dto/create-role.dto.js';
 import { UpdateRoleDto } from './dto/update-role.dto.js';
 
+import { CurrentUser } from '@src/common/decorator/current-user.decorator.js';
+
 @ApiBearerAuth()
 @Controller('admin/roles')
 @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-@UserTypes(UserTypeEnum.ADMIN, UserTypeEnum.CMS)
+@UserTypes(UserTypeEnum.ADMIN, UserTypeEnum.CMS, UserTypeEnum.SUPER_ADMIN)
 export class AdminRoleController {
   constructor(private readonly roleService: RoleService) {}
 
   @UseAbility(DefaultActions.read, Role)
   @Get()
-  findAll(@Query() dto: FindRolesDto) {
-    return this.roleService.findAll(dto);
+  findAll(
+    @Query() dto: FindRolesDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.roleService.findAll(dto, currentUser);
   }
 
   @UseAbility(DefaultActions.read, Role)
@@ -44,8 +49,11 @@ export class AdminRoleController {
 
   @UseAbility(DefaultActions.create, Role)
   @Post()
-  create(@Body() dto: CreateRoleDto) {
-    return this.roleService.create(dto);
+  create(
+    @Body() dto: CreateRoleDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.roleService.create(dto, currentUser);
   }
 
   @UseAbility(DefaultActions.update, Role)

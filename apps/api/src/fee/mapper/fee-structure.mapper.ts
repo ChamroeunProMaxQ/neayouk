@@ -15,6 +15,7 @@ export class FeeStructureMapper {
       academicYear: entity.academicYear ?? null,
       description: entity.description ?? null,
       isActive: entity.isActive ?? true,
+      branchId: entity.branchId,
       createdAt: entity.createdAt ? new Date(entity.createdAt).toISOString() : undefined,
       updatedAt: entity.updatedAt ? new Date(entity.updatedAt).toISOString() : undefined,
     };

@@ -9,6 +9,10 @@ import { StudentScore } from '@src/examination/entity/student-score.entity.js';
 import { Class } from '@src/academic/entity/class.entity.js';
 import { Student } from '@src/student/entity/student.entity.js';
 import { GradingRule } from '@src/examination/entity/grading-rule.entity.js';
+import {
+  applyBranchScoping,
+  type AuthContext,
+} from '@src/common/helper/branch-scoping.helper.js';
 
 @Injectable()
 export class AcademicReportService {
@@ -26,12 +30,17 @@ export class AcademicReportService {
     private readonly gradingRuleRepo: Repository<GradingRule>,
   ) {}
 
-  async getSummary(query: AcademicReportQueryDto): Promise<AcademicReportSummaryDto> {
+  async getSummary(
+    query: AcademicReportQueryDto,
+    currentUser?: AuthContext,
+  ): Promise<AcademicReportSummaryDto> {
     const qb = this.scoreRepo
       .createQueryBuilder('score')
       .leftJoinAndSelect('score.student', 'student')
       .leftJoinAndSelect('score.class', 'class')
       .where('score.deleted_at IS NULL');
+
+    applyBranchScoping(qb, 'score', currentUser, (query as any).branchId);
 
     if (query.academicYear) {
       qb.andWhere('score.academic_year = :year', { year: query.academicYear });
@@ -223,13 +232,18 @@ export class AcademicReportService {
     };
   }
 
-  async exportCsv(query: AcademicReportQueryDto): Promise<string> {
+  async exportCsv(
+    query: AcademicReportQueryDto,
+    currentUser?: AuthContext,
+  ): Promise<string> {
     const qb = this.scoreRepo
       .createQueryBuilder('score')
       .leftJoinAndSelect('score.student', 'student')
       .leftJoinAndSelect('score.class', 'class')
       .where('score.deleted_at IS NULL')
       .orderBy('score.percentage', 'DESC');
+
+    applyBranchScoping(qb, 'score', currentUser, (query as any).branchId);
 
     if (query.academicYear) {
       qb.andWhere('score.academic_year = :year', { year: query.academicYear });

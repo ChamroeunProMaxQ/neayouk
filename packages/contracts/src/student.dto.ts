@@ -18,6 +18,7 @@ const booleanParam = z
 export const StudentSchema = z.object({
   id: z.number(),
   uuid: z.string(),
+  branchId: z.number().nullable().optional(),
   studentCode: z.string().nullable().optional(),
   firstName: z.string(),
   lastName: z.string(),
@@ -31,7 +32,7 @@ export const StudentSchema = z.object({
   payableDate: z.coerce.number().min(1).max(31).default(1).optional(),
   registeredAt: z.date().or(z.string()).optional(),
   discount: z.coerce.number().default(0),
-  status: z.enum(StudentStatusEnum).default(StudentStatusEnum.ACTIVE),
+  status: z.nativeEnum(StudentStatusEnum).default(StudentStatusEnum.ACTIVE),
   enrollments: z.array(StudentClassEnrollmentSchema).optional(),
   classes: z.array(ClassSchema).optional(),
   primaryClass: ClassSchema.nullable().optional(),
@@ -44,6 +45,7 @@ export const StudentSchema = z.object({
 export type StudentAttribute = z.infer<typeof StudentSchema>;
 
 export const CreateStudentSchema = z.object({
+  branchId: z.number().optional(),
   studentCode: z.string().optional(),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
@@ -57,7 +59,7 @@ export const CreateStudentSchema = z.object({
   payableDate: z.coerce.number().int().min(1).max(31).default(1).optional(),
   registeredAt: z.date().or(z.string()).optional(),
   discount: z.coerce.number().min(0, "Discount cannot be negative").default(0).optional(),
-  status: z.enum(StudentStatusEnum).default(StudentStatusEnum.ACTIVE).optional(),
+  status: z.nativeEnum(StudentStatusEnum).default(StudentStatusEnum.ACTIVE).optional(),
   classIds: z.array(z.coerce.number()).optional(),
   primaryClassId: z.coerce.number().optional(),
 });
@@ -73,6 +75,7 @@ export type UpdateStudentDto = z.infer<typeof UpdateStudentSchema>;
 export const FindStudentsSchema = PaginationSchema.extend({
   ...createSortSchema(['id', 'studentCode', 'firstName', 'lastName', 'discount', 'status', 'registeredAt', 'updatedAt'], 'id'),
   search: z.string().optional(),
+  branchId: z.coerce.number().optional(),
   classId: z.coerce.number().optional(),
   status: z.enum(StudentStatusEnum).optional(),
   gender: z.enum(['MALE', 'FEMALE', 'OTHER']).optional(),

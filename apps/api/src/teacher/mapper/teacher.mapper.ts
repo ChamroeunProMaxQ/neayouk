@@ -35,6 +35,7 @@ export class TeacherMapper {
       specialization: entity.specialization ?? null,
       bio: entity.bio ?? null,
       status: entity.status,
+      branchId: entity.branchId,
       classCount:
         entity.classes !== undefined ? entity.classes.length : undefined,
       classes: classesList,

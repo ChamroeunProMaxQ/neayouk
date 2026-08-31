@@ -1,5 +1,6 @@
 export * from "./action.enum.js";
 export * from "./auth.dto.js";
+export * from "./branch.dto.js";
 export * from "./class.dto.js";
 export * from "./pagination.dto.js";
 export * from "./payment-status.enum.js";

@@ -55,15 +55,18 @@ export class AdminAttendanceController {
   // ==================== STUDENT ATTENDANCE ====================
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, StudentAttendance)
   @Get('students')
-  findStudentsAttendance(@Query() dto: FindStudentAttendanceDto) {
-    return this.studentAttendanceService.findAll(dto);
+  findStudentsAttendance(
+    @Query() dto: FindStudentAttendanceDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.studentAttendanceService.findAll(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, StudentAttendance)
   @Get('students/matrix')
   getStudentAttendanceMatrix(
@@ -75,7 +78,7 @@ export class AdminAttendanceController {
   }
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, StudentAttendance)
   @Get('students/summary')
   getClassAttendanceSummary(
@@ -90,9 +93,9 @@ export class AdminAttendanceController {
   @Post('students')
   recordStudentAttendance(
     @Body() dto: RecordStudentAttendanceDto,
-    @CurrentUser('sub') currentUserId: number,
+    @CurrentUser() currentUser: any,
   ) {
-    return this.studentAttendanceService.recordAttendance(dto, currentUserId);
+    return this.studentAttendanceService.recordAttendance(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
@@ -111,15 +114,18 @@ export class AdminAttendanceController {
   // ==================== TEACHER ATTENDANCE ====================
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, TeacherAttendance)
   @Get('teachers')
-  findTeachersAttendance(@Query() dto: FindTeacherAttendanceDto) {
-    return this.teacherAttendanceService.findAll(dto);
+  findTeachersAttendance(
+    @Query() dto: FindTeacherAttendanceDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.teacherAttendanceService.findAll(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, TeacherAttendance)
   @Get('teachers/summary')
   getTeacherMonthlySummary(
@@ -133,18 +139,18 @@ export class AdminAttendanceController {
   }
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.create, TeacherAttendance)
   @Post('teachers')
   recordTeacherAttendance(
     @Body() dto: RecordTeacherAttendanceDto,
-    @CurrentUser('sub') currentUserId: number,
+    @CurrentUser() currentUser: any,
   ) {
-    return this.teacherAttendanceService.recordAttendance(dto, currentUserId);
+    return this.teacherAttendanceService.recordAttendance(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.create, TeacherAttendance)
   @Post('teachers/batch')
   batchRecordTeacherAttendance(
@@ -160,11 +166,14 @@ export class AdminAttendanceController {
   // ==================== LEAVE REQUESTS ====================
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, LeaveRequest)
   @Get('leave-requests')
-  findLeaveRequests(@Query() dto: FindLeaveRequestsDto) {
-    return this.leaveRequestService.findAll(dto);
+  findLeaveRequests(
+    @Query() dto: FindLeaveRequestsDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.leaveRequestService.findAll(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
@@ -179,9 +188,9 @@ export class AdminAttendanceController {
   @Post('leave-requests')
   createLeaveRequest(
     @Body() dto: CreateLeaveRequestDto,
-    @CurrentUser('sub') currentUserId: number,
+    @CurrentUser() currentUser: any,
   ) {
-    return this.leaveRequestService.create(dto, currentUserId);
+    return this.leaveRequestService.create(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)

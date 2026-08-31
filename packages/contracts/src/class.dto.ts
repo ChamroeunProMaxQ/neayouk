@@ -11,6 +11,7 @@ import { ProgramSchema } from "./program.dto.js";
 export const ClassSchema = z.object({
   id: z.number(),
   uuid: z.string(),
+  branchId: z.number().nullable().optional(),
   name: z.string(),
   code: z.string().nullable().optional(),
   gradeLevel: z.string().nullable().optional(),
@@ -48,6 +49,7 @@ export type ClassAttribute = z.infer<typeof ClassSchema>;
 
 export const CreateClassSchema = z
   .object({
+    branchId: z.number().optional(),
     name: z.string().min(1, "Class name is required"),
     code: z.string().optional(),
     gradeLevel: z.string().optional(),
@@ -99,6 +101,7 @@ export type CreateClassDto = z.infer<typeof CreateClassSchema>;
 
 export const UpdateClassSchema = z
   .object({
+    branchId: z.number().nullable().optional(),
     name: z.string().min(1, "Class name is required").optional(),
     code: z.string().optional(),
     gradeLevel: z.string().optional(),
@@ -164,6 +167,7 @@ export const FindClassesSchema = PaginationSchema.extend({
     "id",
   ),
   search: z.string().optional(),
+  branchId: z.coerce.number().optional(),
   academicYear: z.string().optional(),
   semester: z.enum(SemesterEnum).optional(),
   shift: z.enum(ShiftEnum).optional(),

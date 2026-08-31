@@ -14,6 +14,31 @@ describe("usePermission", () => {
     });
   });
 
+  it("grants all permissions to SUPER_ADMIN user", () => {
+    useAuthStore.setState({
+      user: {
+        id: 1,
+        username: "superadmin",
+        userType: UserTypeEnum.SUPER_ADMIN,
+        roles: ["super_admin"],
+        permissions: [],
+      },
+      isAuthenticated: true,
+    });
+
+    const { result } = renderHook(() => usePermission());
+
+    expect(result.current.isSuperAdmin).toBe(true);
+    expect(result.current.isAdmin).toBe(true);
+    expect(result.current.can("read", "branch")).toBe(true);
+    expect(result.current.can("create", "branch")).toBe(true);
+    expect(result.current.can("delete", "user")).toBe(true);
+    expect(result.current.can("manage", "academic")).toBe(true);
+    expect(result.current.hasRole("admin")).toBe(true);
+    expect(result.current.isUserType(UserTypeEnum.SUPER_ADMIN)).toBe(true);
+    expect(result.current.isUserType(UserTypeEnum.ADMIN)).toBe(true);
+  });
+
   it("grants all permissions to ADMIN user", () => {
     useAuthStore.setState({
       user: {

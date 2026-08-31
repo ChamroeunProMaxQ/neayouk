@@ -17,6 +17,7 @@ export type InvoiceItemAttribute = z.infer<typeof InvoiceItemSchema>;
 export const StudentInvoiceSchema = z.object({
   id: z.number(),
   uuid: z.string(),
+  branchId: z.number().nullable().optional(),
   invoiceNumber: z.string(),
   studentId: z.number(),
   classId: z.number().nullable().optional(),

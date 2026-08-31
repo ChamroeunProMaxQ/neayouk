@@ -19,6 +19,7 @@ export interface E2eTestContext {
     username?: string;
     type?: UserTypeEnum;
     userType?: UserTypeEnum;
+    branchId?: number | null;
     roles?: string[];
     permissions?: PermissionDto[];
   }) => string;
@@ -63,6 +64,7 @@ export async function setupE2eApp(
     username?: string;
     type?: UserTypeEnum;
     userType?: UserTypeEnum;
+    branchId?: number | null;
     roles?: string[];
     permissions?: PermissionDto[];
   }) => {
@@ -72,6 +74,7 @@ export async function setupE2eApp(
       username: payload?.username ?? 'admin',
       type: userType,
       userType,
+      branchId: payload?.branchId ?? 1,
       roles: payload?.roles ?? [userType.toLowerCase()],
       permissions: payload?.permissions ?? [],
     });

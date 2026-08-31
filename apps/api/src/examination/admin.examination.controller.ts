@@ -31,7 +31,7 @@ export class AdminExaminationController {
   constructor(private readonly examinationService: ExaminationService) {}
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, StudentScore)
   @Get('matrix')
   async getMatrix(@Query() query: GetGradebookMatrixDto) {
@@ -42,7 +42,7 @@ export class AdminExaminationController {
   }
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.create, StudentScore)
   @Post('matrix/save')
   async saveGradebook(
@@ -53,7 +53,7 @@ export class AdminExaminationController {
   }
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, StudentScore)
   @Get('report-card/:studentId')
   async getStudentReportCard(
@@ -69,7 +69,7 @@ export class AdminExaminationController {
   }
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, StudentScore)
   @Header('Content-Type', 'text/csv')
   @Header('Content-Disposition', 'attachment; filename="gradebook-export.csv"')

@@ -15,6 +15,12 @@ import type {
 import { GradingRule } from './entity/grading-rule.entity.js';
 import { GradingRuleMapper } from './mapper/grading-rule.mapper.js';
 
+import {
+  applyBranchScoping,
+  resolveBranchId,
+  type AuthContext,
+} from '@src/common/helper/branch-scoping.helper.js';
+
 @Injectable()
 export class GradingRuleService {
   constructor(
@@ -29,7 +35,10 @@ export class GradingRuleService {
     }
   }
 
-  async create(dto: CreateGradingRuleDto): Promise<GradingRuleAttribute> {
+  async create(
+    dto: CreateGradingRuleDto,
+    currentUser?: AuthContext,
+  ): Promise<GradingRuleAttribute> {
     this.validateComponentWeights(dto.components);
 
     const existing = await this.gradingRuleRepo.findOne({
@@ -55,6 +64,7 @@ export class GradingRuleService {
       gradeScale: dto.gradeScale,
       isDefault: dto.isDefault ?? true,
       status: dto.status ?? 'ACTIVE',
+      branchId: resolveBranchId(currentUser, (dto as any).branchId),
     });
 
     const saved = await this.gradingRuleRepo.save(entity);
@@ -94,7 +104,7 @@ export class GradingRuleService {
     return GradingRuleMapper.toDto(saved);
   }
 
-  async findAll(filter: FindGradingRulesDto) {
+  async findAll(filter: FindGradingRulesDto, currentUser?: AuthContext) {
     const page = Number(filter.page) || 1;
     const pageSize = Number(filter.pageSize) || 10;
     const skip = (page - 1) * pageSize;
@@ -102,6 +112,8 @@ export class GradingRuleService {
     const qb = this.gradingRuleRepo
       .createQueryBuilder('gr')
       .where('gr.deletedAt IS NULL');
+
+    applyBranchScoping(qb, 'gr', currentUser, (filter as any).branchId);
 
     if (filter.search) {
       qb.andWhere('(gr.name ILIKE :search OR gr.code ILIKE :search)', {

@@ -9,12 +9,14 @@ import {
   type UpdateUserDto,
   type UserAttribute,
 } from "@repo/contracts";
-import { Loader2, AlertCircle, Shield, Check } from "lucide-react";
+import { Loader2, AlertCircle, Shield, Check, Building2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/shared/lib/utils";
 import { zodResolver } from "@/shared/lib/zod-resolver";
 import { useRolesQuery } from "@/features/roles";
+import { useBranchesQuery } from "@/features/branches/hooks/use-branches-query";
+import { usePermission } from "@/features/auth";
 
 export type UserFormValues = CreateUserDto | UpdateUserDto;
 
@@ -36,8 +38,19 @@ export const UserForm: FC<UserFormProps> = ({
   const isEdit = Boolean(userToEdit);
   const [serverError, setServerError] = useState<string | null>(null);
 
+  const { isSuperAdmin, user: authUser } = usePermission();
+
   const { data: rolesResponse, isLoading: isRolesLoading } = useRolesQuery();
   const availableRoles = rolesResponse?.data ?? [];
+
+  const { data: branchesResponse } = useBranchesQuery();
+  const availableBranches = branchesResponse?.data ?? [];
+
+  const effectiveBranchId = isSuperAdmin
+    ? (userToEdit?.branchId ?? userToEdit?.branch?.id ?? null)
+    : (userToEdit?.branchId ?? userToEdit?.branch?.id ?? authUser?.branchId ?? null);
+
+  const assignedBranch = availableBranches.find((b) => b.id === effectiveBranchId) || (userToEdit?.branch ?? null);
 
   const [selectedRoles, setSelectedRoles] = useState<string[]>(() => {
     if (userToEdit?.roles && userToEdit.roles.length > 0) {
@@ -64,6 +77,7 @@ export const UserForm: FC<UserFormProps> = ({
       password: "",
       userType: userToEdit?.userType ?? UserTypeEnum.CUSTOMER,
       status: userToEdit?.status ?? UserStatusEnum.ACTIVE,
+      branchId: effectiveBranchId,
       roles: selectedRoles,
     },
   });
@@ -80,9 +94,10 @@ export const UserForm: FC<UserFormProps> = ({
       password: "",
       userType: userToEdit?.userType ?? UserTypeEnum.CUSTOMER,
       status: userToEdit?.status ?? UserStatusEnum.ACTIVE,
+      branchId: effectiveBranchId,
       roles: initialRoles,
     });
-  }, [userToEdit, reset]);
+  }, [userToEdit, reset, availableBranches, effectiveBranchId]);
 
   const toggleRole = (slug: string) => {
     const next = selectedRoles.includes(slug)
@@ -95,8 +110,13 @@ export const UserForm: FC<UserFormProps> = ({
   const handleFormSubmit = async (values: UserFormValues) => {
     setServerError(null);
     try {
+      const targetBranchId = !isSuperAdmin
+        ? (effectiveBranchId ?? null)
+        : (values.branchId ? Number(values.branchId) : null);
+
       await onSubmit({
         ...values,
+        branchId: targetBranchId,
         roles: selectedRoles,
       });
     } catch (err: unknown) {
@@ -185,6 +205,76 @@ export const UserForm: FC<UserFormProps> = ({
           </p>
         )}
       </div>
+
+      {/* Branch / Campus Assignment */}
+      {isSuperAdmin ? (
+        <div className="space-y-1.5">
+          <label
+            htmlFor="branchId"
+            className="block text-xs font-bold text-slate-700 uppercase tracking-wide"
+          >
+            Branch / Campus Assignment
+          </label>
+          <select
+            id="branchId"
+            {...register("branchId", {
+              setValueAs: (v) => (v === "" || v === null || v === undefined ? null : Number(v)),
+            })}
+            className={cn(
+              "w-full px-3 py-2 text-xs border rounded-lg focus:outline-none bg-white transition-all text-slate-700 cursor-pointer",
+              errors.branchId
+                ? "border-red-500 ring-2 ring-red-500/20 text-red-900 focus:border-red-500 focus:ring-red-500/30"
+                : "border-slate-200 focus:ring-2 focus:ring-[#45AC5E]/20 focus:border-[#45AC5E]"
+            )}
+          >
+            <option value="">Global / All Campuses</option>
+            {availableBranches.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name} ({b.code})
+              </option>
+            ))}
+          </select>
+          {errors.branchId ? (
+            <p className="flex items-center gap-1.5 text-xs text-red-600 font-semibold mt-1">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0 text-red-600" />
+              <span>{errors.branchId.message}</span>
+            </p>
+          ) : (
+            <p className="text-[11px] text-slate-500">
+              Assign the campus this user belongs to, or leave as Global for institution-wide access.
+            </p>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          <label
+            htmlFor="branch-readonly"
+            className="block text-xs font-bold text-slate-700 uppercase tracking-wide"
+          >
+            Assigned Branch / Campus
+          </label>
+          <div
+            id="branch-readonly"
+            className="flex items-center gap-2 p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700"
+          >
+            <Building2 className="w-4 h-4 text-blue-600 shrink-0" />
+            <span className="font-semibold text-slate-800">
+              {assignedBranch?.name || "Your Assigned Campus"}
+            </span>
+            {assignedBranch?.code && (
+              <span className="text-[10px] text-slate-500 font-mono">
+                ({assignedBranch.code})
+              </span>
+            )}
+            <span className="ml-auto text-[10px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
+              Auto-assigned
+            </span>
+          </div>
+          <p className="text-[11px] text-slate-500">
+            Users created from your account are automatically assigned to your campus.
+          </p>
+        </div>
+      )}
 
       {/* User Type & Status Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

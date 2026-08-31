@@ -17,6 +17,7 @@ import { JwtAuthGuard } from '@src/auth/jwt-auth.guard.js';
 import { CaslAccessGuard } from '@src/common/guard/casl-access.guard.js';
 import { UserTypesGuard } from '@src/common/guard/user-types.guard.js';
 import { UserTypes } from '@src/common/decorator/user-type.decorator.js';
+import { CurrentUser } from '@src/common/decorator/current-user.decorator.js';
 import { ClassService } from './class.service.js';
 import { Class } from './entity/class.entity.js';
 import { ClassTimetable } from './entity/class-timetable.entity.js';
@@ -36,18 +37,21 @@ export class AdminClassController {
   constructor(private readonly classService: ClassService) {}
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, Class)
   @Get()
-  findAll(@Query() dto: FindClassesDto) {
-    return this.classService.findAll(dto);
+  findAll(
+    @Query() dto: FindClassesDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.classService.findAll(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
   @UseAbility(DefaultActions.read, Class)
   @Get('academic-years/summary')
-  getAcademicYearsSummary() {
-    return this.classService.getAcademicYearsSummary();
+  getAcademicYearsSummary(@CurrentUser() currentUser: any) {
+    return this.classService.getAcademicYearsSummary(currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
@@ -60,8 +64,11 @@ export class AdminClassController {
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
   @UseAbility(DefaultActions.create, Class)
   @Post()
-  create(@Body() dto: CreateClassDto) {
-    return this.classService.create(dto);
+  create(
+    @Body() dto: CreateClassDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.classService.create(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)

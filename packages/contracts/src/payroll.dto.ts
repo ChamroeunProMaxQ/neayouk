@@ -46,6 +46,7 @@ export type CreatePayrollItemDto = z.infer<typeof CreatePayrollItemSchema>;
 export const PayrollSchema = z.object({
   id: z.number(),
   uuid: z.string(),
+  branchId: z.number().nullable().optional(),
   payrollNumber: z.string(),
   staffId: z.number(),
   staff: StaffSchema.optional(),
@@ -79,6 +80,7 @@ export const PayrollSchema = z.object({
 export type PayrollAttribute = z.infer<typeof PayrollSchema>;
 
 export const CreatePayrollSchema = z.object({
+  branchId: z.number().optional(),
   staffId: z.coerce.number().min(1, "Staff is required"),
   year: z.coerce.number().min(2000).max(2100),
   month: z.coerce.number().min(1).max(12),
@@ -96,6 +98,7 @@ export type CreatePayrollAttribute = z.infer<typeof CreatePayrollSchema>;
 export type CreatePayrollDto = z.infer<typeof CreatePayrollSchema>;
 
 export const UpdatePayrollSchema = z.object({
+  branchId: z.number().nullable().optional(),
   totalHoursWorked: z.coerce.number().min(0).optional(),
   baseSalary: z.coerce.number().min(0).optional(),
   hourlyRate: z.coerce.number().min(0).optional(),
@@ -133,6 +136,7 @@ export const FindPayrollsSchema = PaginationSchema.extend({
     "id"
   ),
   search: z.string().optional(),
+  branchId: z.coerce.number().optional(),
   staffId: z.coerce.number().optional(),
   department: z.enum(StaffDepartmentEnum).optional(),
   year: z.coerce.number().optional(),

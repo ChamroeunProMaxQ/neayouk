@@ -18,6 +18,26 @@ export class UserMapper {
       password: '',
       userType: entity.userType,
       status: entity.status,
+      branchId: entity.branchId,
+      branch: entity.branch
+        ? {
+            id: entity.branch.id,
+            uuid: entity.branch.uuid,
+            name: entity.branch.name,
+            code: entity.branch.code,
+            address: entity.branch.address ?? undefined,
+            phone: entity.branch.phone ?? undefined,
+            email: entity.branch.email ?? undefined,
+            isDefault: entity.branch.isDefault ?? false,
+            status: entity.branch.status,
+            adminUserId: entity.branch.adminUserId ?? undefined,
+            createdAt: entity.branch.createdAt,
+            updatedAt: entity.branch.updatedAt,
+            deletedAt: entity.branch.deletedAt ?? undefined,
+          }
+        : entity.branch === null
+          ? null
+          : undefined,
       roles: rolesList,
       roleIds: entity.roles
         ?.map((r) => (typeof r === 'string' ? 0 : r.id))

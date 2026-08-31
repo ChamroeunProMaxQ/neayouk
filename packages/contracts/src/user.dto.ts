@@ -3,6 +3,7 @@ import { createSortSchema, PaginationSchema } from "./pagination.dto.js";
 import { UserStatusEnum } from "./user-status.enum.js";
 import { UserTypeEnum } from "./user-type.enum.js";
 import { RoleSchema } from "./role.dto.js";
+import { BranchSchema } from "./branch.dto.js";
 
 export const UserSchema = z.object({
   id: z.number(),
@@ -11,6 +12,8 @@ export const UserSchema = z.object({
   password: z.string(),
   userType: z.enum(UserTypeEnum),
   status: z.enum(UserStatusEnum),
+  branchId: z.number().nullable().optional(),
+  branch: BranchSchema.nullable().optional(),
   computedNameId: z.string(),
   roles: z.array(z.string().or(RoleSchema)).optional(),
   roleIds: z.array(z.number()).optional(),
@@ -26,6 +29,7 @@ export const CreateUserSchema = z.object({
   password: z.string().min(6, "password must be at least 6 characters"),
   status: z.enum(UserStatusEnum).optional(),
   userType: z.enum(UserTypeEnum).optional(),
+  branchId: z.number().nullable().optional(),
   roleIds: z.array(z.number()).optional(),
   roles: z.array(z.string()).optional(),
 });
@@ -38,6 +42,7 @@ export const UpdateUserSchema = z.object({
   password: z.string().min(6, "password must be at least 6 characters").or(z.literal("")).optional(),
   status: z.enum(UserStatusEnum).optional(),
   userType: z.enum(UserTypeEnum).optional(),
+  branchId: z.number().nullable().optional(),
   roleIds: z.array(z.number()).optional(),
   roles: z.array(z.string()).optional(),
 });
@@ -61,6 +66,7 @@ export const FindUsersSchema = PaginationSchema.extend({
   name: z.string().optional(),
   userType: z.enum(UserTypeEnum).optional(),
   role: z.string().optional(),
+  branchId: z.coerce.number().optional(),
   includeDeleted: booleanParam,
   onlyDeleted: booleanParam,
 });

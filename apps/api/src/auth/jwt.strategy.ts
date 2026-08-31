@@ -33,6 +33,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       username: payload.username,
       type: userType,
       userType,
+      branchId: payload.branchId ?? null,
       roles,
       permissions,
     };

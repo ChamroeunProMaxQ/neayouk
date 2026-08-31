@@ -187,12 +187,13 @@ export class ExaminationService {
         await queryRunner.query(
           `
           INSERT INTO student_scores (
-            uuid, student_id, class_id, month, academic_year, semester,
+            uuid, branch_id, student_id, class_id, month, academic_year, semester,
             scores, total_raw_score, total_weighted_score, percentage,
             grade_letter, rank, feedback, recorded_by, created_at, updated_at
           )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), NOW())
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW(), NOW())
           ON CONFLICT (student_id, class_id, month) DO UPDATE SET
+            branch_id = EXCLUDED.branch_id,
             scores = EXCLUDED.scores,
             total_raw_score = EXCLUDED.total_raw_score,
             total_weighted_score = EXCLUDED.total_weighted_score,
@@ -205,6 +206,7 @@ export class ExaminationService {
         `,
           [
             randomUUID(),
+            classEntity.branchId ?? null,
             item.studentId,
             dto.classId,
             dto.month,

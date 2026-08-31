@@ -18,6 +18,9 @@ const DashboardPage = lazy(() =>
 const UsersPage = lazy(() =>
   import("./users-page").then((m) => ({ default: m.UsersPage }))
 );
+const BranchesPage = lazy(() =>
+  import("./branches-page").then((m) => ({ default: m.BranchesPage }))
+);
 const RolesPage = lazy(() =>
   import("./roles-page").then((m) => ({ default: m.RolesPage }))
 );
@@ -139,6 +142,20 @@ const router = createBrowserRouter([
                 </PermissionRoute>
               </Suspense>
             ),
+          },
+          {
+            path: "/branches",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource={ResourceEnum.BRANCH} action="read">
+                  <BranchesPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/admin/branches",
+            element: <Navigate to="/branches" replace />,
           },
           {
             path: "/users/roles",

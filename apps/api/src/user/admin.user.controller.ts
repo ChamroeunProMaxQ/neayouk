@@ -33,11 +33,14 @@ export class AdminUserController {
   }
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, User)
   @Get()
-  findAll(@Query() dto: FindUsersDto) {
-    return this.userService.findAll(dto);
+  findAll(
+    @Query() dto: FindUsersDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.userService.findAll(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
@@ -52,9 +55,9 @@ export class AdminUserController {
   @Post()
   create(
     @Body() dto: CreateUserDto,
-    @CurrentUser('sub') currentUserId: number,
+    @CurrentUser() currentUser: any,
   ) {
-    return this.userService.createUser(dto, currentUserId);
+    return this.userService.createUser(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
@@ -64,8 +67,9 @@ export class AdminUserController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateUserDto,
     @CurrentUser('sub') currentUserId: number,
+    @CurrentUser() currentUser: any,
   ) {
-    return this.userService.updateUser(id, dto, currentUserId);
+    return this.userService.updateUser(id, dto, currentUserId, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)

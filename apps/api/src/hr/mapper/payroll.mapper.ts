@@ -57,6 +57,7 @@ export class PayrollMapper {
       paymentDate: entity.paymentDate ? entity.paymentDate.toISOString() : null,
       paymentReference: entity.paymentReference ?? null,
       notes: entity.notes ?? null,
+      branchId: entity.branchId,
       processedBy: entity.processedBy ? Number(entity.processedBy) : null,
       processedByUser: entity.processedByUser
         ? UserMapper.toDto(entity.processedByUser)

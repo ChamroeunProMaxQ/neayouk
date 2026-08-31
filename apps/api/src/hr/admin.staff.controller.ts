@@ -31,12 +31,15 @@ export class AdminStaffController {
   constructor(private readonly staffService: StaffService) {}
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, Staff)
   @Get()
   @HttpMessage('Staff list retrieved successfully')
-  findAll(@Query() dto: FindStaffDto) {
-    return this.staffService.findAll(dto);
+  findAll(
+    @Query() dto: FindStaffDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.staffService.findAll(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
@@ -53,9 +56,9 @@ export class AdminStaffController {
   @HttpMessage('Staff created successfully')
   create(
     @Body() dto: CreateStaffDto,
-    @CurrentUser('sub') currentUserId: number,
+    @CurrentUser() currentUser: any,
   ) {
-    return this.staffService.create(dto, currentUserId);
+    return this.staffService.create(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)

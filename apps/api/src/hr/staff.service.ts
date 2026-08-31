@@ -20,6 +20,12 @@ import type { CreateStaffDto } from './dto/staff.dto.js';
 import type { UpdateStaffDto } from './dto/staff.dto.js';
 import type { FindStaffDto } from './dto/staff.dto.js';
 
+import {
+  applyBranchScoping,
+  resolveBranchId,
+  type AuthContext,
+} from '@src/common/helper/branch-scoping.helper.js';
+
 @Injectable()
 export class StaffService {
   constructor(
@@ -39,27 +45,32 @@ export class StaffService {
     private readonly logger: LoggerService,
   ) {}
 
-  async findAll({
-    search,
-    name,
-    department,
-    designation,
-    salaryType,
-    status,
-    gender,
-    specialization,
-    hasAccount,
-    includeDeleted,
-    onlyDeleted,
-    sortBy = 'id',
-    sortOrder = 'DESC',
-    ...dto
-  }: FindStaffDto) {
+  async findAll(
+    {
+      search,
+      name,
+      department,
+      designation,
+      salaryType,
+      status,
+      gender,
+      specialization,
+      hasAccount,
+      includeDeleted,
+      onlyDeleted,
+      sortBy = 'id',
+      sortOrder = 'DESC',
+      ...dto
+    }: FindStaffDto,
+    currentUser?: AuthContext,
+  ) {
     const query = this.staffRepo
       .createQueryBuilder('staff')
       .leftJoinAndSelect('staff.user', 'user')
       .leftJoinAndSelect('staff.classes', 'classes')
       .leftJoinAndSelect('classes.enrollments', 'enrollments');
+
+    applyBranchScoping(query, 'staff', currentUser, (dto as any).branchId);
 
     if (onlyDeleted) {
       query.withDeleted().andWhere('staff.deleted_at IS NOT NULL');
@@ -148,7 +159,10 @@ export class StaffService {
     return StaffMapper.toDto(staff);
   }
 
-  async create(dto: CreateStaffDto, _userId?: number) {
+  async create(dto: CreateStaffDto, currentUser?: AuthContext | number) {
+    const auth = typeof currentUser === 'object' ? currentUser : undefined;
+    const targetBranchId = resolveBranchId(auth, (dto as any).branchId);
+
     if (dto.staffCode) {
       const existing = await this.staffRepo.findOne({
         where: { staffCode: dto.staffCode },
@@ -209,6 +223,7 @@ export class StaffService {
         password: hashPassword(dto.password),
         userType: UserTypeEnum.CMS,
         status: UserStatusEnum.ACTIVE,
+        branchId: targetBranchId,
         roles: [staffRole],
       });
       const savedUser = await this.userRepo.save(newUser);
@@ -237,12 +252,13 @@ export class StaffService {
       salaryType: dto.salaryType ?? 'MONTHLY',
       baseSalary: dto.baseSalary ?? 0,
       hourlyRate: dto.hourlyRate ?? 0,
-      joiningDate: dto.joiningDate ?? null,
+      joiningDate: dto.joiningDate ? new Date(dto.joiningDate) : null,
       bankName: dto.bankName ?? null,
       bankAccountName: dto.bankAccountName ?? null,
       bankAccountNumber: dto.bankAccountNumber ?? null,
       status: dto.status ?? 'ACTIVE',
       notes: dto.notes ?? null,
+      branchId: targetBranchId,
       userId: linkedUserId,
     });
 

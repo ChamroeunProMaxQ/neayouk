@@ -10,6 +10,11 @@ import type {
   ApproveSchoolExpenseDto,
   FindSchoolExpensesDto,
 } from './dto/fee.dto.js';
+import {
+  applyBranchScoping,
+  resolveBranchId,
+  type AuthContext,
+} from '@src/common/helper/branch-scoping.helper.js';
 
 @Injectable()
 export class ExpenseService {
@@ -18,7 +23,7 @@ export class ExpenseService {
     private readonly repo: Repository<SchoolExpense>,
   ) {}
 
-  async findAll(query: FindSchoolExpensesDto) {
+  async findAll(query: FindSchoolExpensesDto, currentUser?: AuthContext) {
     const {
       page = 1,
       pageSize = 20,
@@ -35,6 +40,8 @@ export class ExpenseService {
       .createQueryBuilder('expense')
       .leftJoinAndSelect('expense.recordedByUser', 'recordedByUser')
       .leftJoinAndSelect('expense.approvedByUser', 'approvedByUser');
+
+    applyBranchScoping(qb, 'expense', currentUser, (query as any).branchId);
 
     if (search) {
       qb.andWhere(
@@ -79,18 +86,18 @@ export class ExpenseService {
     return ExpenseMapper.toDto(entity);
   }
 
-  async create(dto: CreateSchoolExpenseDto, userId?: number) {
+  async create(dto: CreateSchoolExpenseDto, currentUser?: AuthContext | number) {
+    const auth = typeof currentUser === 'object' ? currentUser : undefined;
+    const recordedBy = typeof currentUser === 'number' ? currentUser : (currentUser as any)?.sub ?? null;
+
     const entity = this.repo.create({
-      title: dto.title,
-      category: dto.category,
+      ...dto,
       amount: Number(dto.amount),
       expenseDate: dto.expenseDate ? new Date(dto.expenseDate) : new Date(),
-      vendor: dto.vendor ?? null,
+      status: dto.status ?? ExpenseStatusEnum.PENDING,
       paymentMethod: dto.paymentMethod ?? PaymentMethodEnum.CASH,
-      status: ExpenseStatusEnum.PENDING,
-      receiptRef: dto.receiptRef ?? null,
-      notes: dto.notes ?? null,
-      recordedBy: userId ?? null,
+      recordedBy,
+      branchId: resolveBranchId(auth, (dto as any).branchId),
     });
 
     const saved = await this.repo.save(entity);

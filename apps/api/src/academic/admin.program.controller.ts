@@ -25,6 +25,8 @@ import {
   FindProgramsDto,
 } from './dto/program.dto.js';
 
+import { CurrentUser } from '@src/common/decorator/current-user.decorator.js';
+
 @ApiTags('Admin Programs')
 @ApiBearerAuth()
 @Controller('admin/programs')
@@ -32,11 +34,14 @@ export class AdminProgramController {
   constructor(private readonly programService: ProgramService) {}
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, Program)
   @Get()
-  findAll(@Query() dto: FindProgramsDto) {
-    return this.programService.findAll(dto);
+  findAll(
+    @Query() dto: FindProgramsDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.programService.findAll(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
@@ -49,8 +54,11 @@ export class AdminProgramController {
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
   @UseAbility(DefaultActions.create, Program)
   @Post()
-  create(@Body() dto: CreateProgramDto) {
-    return this.programService.create(dto);
+  create(
+    @Body() dto: CreateProgramDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.programService.create(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)

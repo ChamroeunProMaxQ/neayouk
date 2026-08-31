@@ -39,6 +39,12 @@ export const PERMISSION_GROUPS: PermissionGroupConfig[] = [
         actions: STANDARD_ACTIONS,
       },
       {
+        resource: ResourceEnum.BRANCH,
+        title: "Branches & Tenants",
+        description: "Manage institution branches and campuses",
+        actions: STANDARD_ACTIONS,
+      },
+      {
         resource: ResourceEnum.ROLE,
         title: "Roles & Permissions",
         description: "Configure system roles and permission sets",

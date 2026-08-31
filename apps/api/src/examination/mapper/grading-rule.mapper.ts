@@ -14,6 +14,7 @@ export class GradingRuleMapper {
       gradeScale: entity.gradeScale ?? [],
       isDefault: Boolean(entity.isDefault),
       status: entity.status,
+      branchId: entity.branchId,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
       deletedAt: entity.deletedAt,

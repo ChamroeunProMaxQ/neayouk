@@ -42,6 +42,7 @@ export enum StaffGenderEnum {
 export const StaffSchema = z.object({
   id: z.number(),
   uuid: z.string(),
+  branchId: z.number().nullable().optional(),
   userId: z.coerce.number().nullable().optional(),
   staffCode: z.string().nullable().optional(),
   name: z.string(),
@@ -89,6 +90,7 @@ export const StaffSchema = z.object({
 export type StaffAttribute = z.infer<typeof StaffSchema>;
 
 export const CreateStaffSchema = z.object({
+  branchId: z.number().optional(),
   name: z.string().min(1, "Name is required"),
   nameKm: z.string().optional(),
   staffCode: z.string().optional(),
@@ -128,6 +130,7 @@ export type CreateStaffAttribute = z.infer<typeof CreateStaffSchema>;
 export type CreateStaffDto = z.infer<typeof CreateStaffSchema>;
 
 export const UpdateStaffSchema = z.object({
+  branchId: z.number().nullable().optional(),
   name: z.string().min(1, "Name is required").optional(),
   nameKm: z.string().optional(),
   staffCode: z.string().optional(),
@@ -192,6 +195,7 @@ export const FindStaffSchema = PaginationSchema.extend({
     "id"
   ),
   search: z.string().optional(),
+  branchId: z.coerce.number().optional(),
   name: z.string().optional(),
   department: z.enum(StaffDepartmentEnum).optional(),
   designation: z.string().optional(),

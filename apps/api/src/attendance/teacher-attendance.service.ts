@@ -19,6 +19,12 @@ import { TeacherAttendance } from './entity/teacher-attendance.entity.js';
 import { Staff } from '@src/hr/entity/staff.entity.js';
 import { AttendanceMapper } from './mapper/attendance.mapper.js';
 
+import {
+  applyBranchScoping,
+  resolveBranchId,
+  type AuthContext,
+} from '@src/common/helper/branch-scoping.helper.js';
+
 @Injectable()
 export class TeacherAttendanceService {
   constructor(
@@ -45,8 +51,11 @@ export class TeacherAttendanceService {
 
   async recordAttendance(
     dto: RecordTeacherAttendanceDto,
-    verifiedBy?: number,
+    currentUser?: AuthContext | number,
   ): Promise<TeacherAttendanceAttribute> {
+    const auth = typeof currentUser === 'object' ? currentUser : undefined;
+    const verifiedBy = typeof currentUser === 'number' ? currentUser : (currentUser as any)?.sub ?? null;
+
     const teacher = await this.staffRepo.findOne({
       where: { id: dto.teacherId },
     });
@@ -97,6 +106,7 @@ export class TeacherAttendanceService {
         status: dto.status,
         remarks: dto.remarks ?? null,
         verifiedBy: verifiedBy ?? null,
+        branchId: teacher.branchId ?? resolveBranchId(auth, (dto as any).branchId),
       });
     }
 
@@ -135,7 +145,10 @@ export class TeacherAttendanceService {
     return results;
   }
 
-  async findAll(query: FindTeacherAttendanceDto) {
+  async findAll(
+    query: FindTeacherAttendanceDto,
+    currentUser?: AuthContext,
+  ) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
     const skip = (page - 1) * pageSize;
@@ -144,6 +157,8 @@ export class TeacherAttendanceService {
       .createQueryBuilder('att')
       .leftJoinAndSelect('att.teacher', 'teacher')
       .leftJoinAndSelect('att.verifier', 'verifier');
+
+    applyBranchScoping(qb, 'att', currentUser, (query as any).branchId);
 
     if (query.teacherId) {
       qb.andWhere('att.teacher_id = :teacherId', {

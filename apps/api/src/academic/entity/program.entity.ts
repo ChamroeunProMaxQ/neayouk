@@ -5,10 +5,13 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Branch } from '@src/branch/entity/branch.entity.js';
 import { jsonArrayTransformer } from '@src/common/helper/json-transformer.helper.js';
 import type { Class } from './class.entity.js';
 
@@ -19,6 +22,13 @@ export class Program {
 
   @Column({ type: 'varchar', length: 36 })
   uuid!: string;
+
+  @Column({ name: 'branch_id', type: 'int', nullable: true })
+  branchId!: number | null;
+
+  @ManyToOne(() => Branch, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'branch_id' })
+  branch?: Branch | null;
 
   @Column({ type: 'varchar', length: 255 })
   name!: string;

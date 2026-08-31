@@ -12,6 +12,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { SemesterEnum, ShiftEnum } from '@repo/contracts';
+import { Branch } from '@src/branch/entity/branch.entity.js';
 import type { Program } from './program.entity.js';
 import type { StudentClass } from '@src/student/entity/student-class.entity.js';
 import type { StudentPayment } from '@src/student/entity/student-payment.entity.js';
@@ -25,6 +26,13 @@ export class Class {
 
   @Column({ type: 'varchar', length: 36 })
   uuid!: string;
+
+  @Column({ name: 'branch_id', type: 'int', nullable: true })
+  branchId!: number | null;
+
+  @ManyToOne(() => Branch, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'branch_id' })
+  branch?: Branch | null;
 
   @Column({ type: 'varchar', length: 255 })
   name!: string;

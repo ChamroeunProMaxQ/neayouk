@@ -6,6 +6,12 @@ import { FeeStructure } from './entity/fee-structure.entity.js';
 import { FeeStructureMapper } from './mapper/fee-structure.mapper.js';
 import type { CreateFeeStructureDto, UpdateFeeStructureDto, FindFeeStructuresDto } from './dto/fee.dto.js';
 
+import {
+  applyBranchScoping,
+  resolveBranchId,
+  type AuthContext,
+} from '@src/common/helper/branch-scoping.helper.js';
+
 @Injectable()
 export class FeeStructureService {
   constructor(
@@ -13,7 +19,7 @@ export class FeeStructureService {
     private readonly repo: Repository<FeeStructure>,
   ) {}
 
-  async findAll(query: FindFeeStructuresDto) {
+  async findAll(query: FindFeeStructuresDto, currentUser?: AuthContext) {
     const {
       page = 1,
       pageSize = 20,
@@ -22,11 +28,14 @@ export class FeeStructureService {
       billingCycle,
       isActive,
       programId,
+      branchId,
       sortBy = 'id',
       sortOrder = 'DESC',
     } = query;
 
     const qb = this.repo.createQueryBuilder('fee');
+
+    applyBranchScoping(qb, 'fee', currentUser, branchId);
 
     if (search) {
       qb.andWhere('fee.name ILIKE :search OR fee.description ILIKE :search', {
@@ -65,11 +74,15 @@ export class FeeStructureService {
     return FeeStructureMapper.toDto(entity);
   }
 
-  async create(dto: CreateFeeStructureDto): Promise<FeeStructureAttribute> {
+  async create(
+    dto: CreateFeeStructureDto,
+    currentUser?: AuthContext,
+  ): Promise<FeeStructureAttribute> {
     const entity = this.repo.create({
       ...dto,
       isOptional: dto.isOptional ?? false,
       isActive: dto.isActive ?? true,
+      branchId: resolveBranchId(currentUser, dto.branchId),
     });
     const saved = await this.repo.save(entity);
     return FeeStructureMapper.toDto(saved);

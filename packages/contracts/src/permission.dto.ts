@@ -95,9 +95,9 @@ export function isUserType(
 ): boolean {
   if (!userType) return false;
 
-  // If user is CUSTOMER and allowedTypes has PORTAL_USER (or vice-versa), treat as matched
   return allowedTypes.some((type) => {
     if (userType === type) return true;
+    if (userType === UserTypeEnum.SUPER_ADMIN && type === UserTypeEnum.ADMIN) return true;
     if (userType === UserTypeEnum.CUSTOMER && type === UserTypeEnum.PORTAL_USER) return true;
     if (userType === UserTypeEnum.PORTAL_USER && type === UserTypeEnum.CUSTOMER) return true;
     return false;

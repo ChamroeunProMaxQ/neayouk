@@ -14,9 +14,11 @@ describe('AdminUserController (e2e)', () => {
     app = ctx.app;
     server = ctx.server;
     adminToken = ctx.createToken({
-      sub: 11,
-      username: 'string',
-      type: UserTypeEnum.ADMIN,
+      sub: 1,
+      username: 'superadmin',
+      type: UserTypeEnum.SUPER_ADMIN,
+      userType: UserTypeEnum.SUPER_ADMIN,
+      branchId: null,
     });
   });
 

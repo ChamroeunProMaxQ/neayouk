@@ -27,32 +27,39 @@ export function usePermission() {
     return user?.permissions ?? [];
   }, [user?.permissions]);
 
+  const isSuperAdmin = useMemo<boolean>(() => {
+    if (userType === UserTypeEnum.SUPER_ADMIN || userType === "SUPER_ADMIN") return true;
+    return roles.some((r) => r.toLowerCase() === "super_admin" || r.toLowerCase() === "superadmin");
+  }, [userType, roles]);
+
   const isAdmin = useMemo<boolean>(() => {
+    if (isSuperAdmin) return true;
     if (userType === UserTypeEnum.ADMIN || userType === "ADMIN") return true;
     return roles.some((r) => r.toLowerCase() === "admin");
-  }, [userType, roles]);
+  }, [isSuperAdmin, userType, roles]);
 
   const can = useCallback(
     (action: string, resource: string): boolean => {
-      if (isAdmin) return true;
+      if (isSuperAdmin || isAdmin) return true;
       return checkHasPermission(permissions, action, resource);
     },
-    [isAdmin, permissions]
+    [isSuperAdmin, isAdmin, permissions]
   );
 
   const hasRole = useCallback(
     (...requiredRoles: string[]): boolean => {
-      if (isAdmin) return true;
+      if (isSuperAdmin || isAdmin) return true;
       return checkHasRole(roles, ...requiredRoles);
     },
-    [isAdmin, roles]
+    [isSuperAdmin, isAdmin, roles]
   );
 
   const isUserType = useCallback(
     (...allowedTypes: (UserTypeEnum | string)[]): boolean => {
+      if (isSuperAdmin) return true;
       return checkIsUserType(userType, ...allowedTypes);
     },
-    [userType]
+    [isSuperAdmin, userType]
   );
 
   return {
@@ -60,6 +67,7 @@ export function usePermission() {
     userType,
     roles,
     permissions,
+    isSuperAdmin,
     isAdmin,
     can,
     hasRole,

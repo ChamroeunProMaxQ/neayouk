@@ -12,6 +12,10 @@ import { PaymentItem } from '@src/student/entity/payment-item.entity.js';
 import { SchoolExpense } from '@src/fee/entity/school-expense.entity.js';
 import { Payroll } from '@src/hr/entity/payroll.entity.js';
 import { resolveDateRange } from './helper/report-date.helper.js';
+import {
+  applyBranchScoping,
+  type AuthContext,
+} from '@src/common/helper/branch-scoping.helper.js';
 
 @Injectable()
 export class FinancialReportService {
@@ -29,7 +33,10 @@ export class FinancialReportService {
     private readonly payrollRepo: Repository<Payroll>,
   ) { }
 
-  async getSummary(query: FinancialReportQueryDto): Promise<FinancialReportSummaryDto> {
+  async getSummary(
+    query: FinancialReportQueryDto,
+    currentUser?: AuthContext,
+  ): Promise<FinancialReportSummaryDto> {
     const range = resolveDateRange(query.preset, query.startDate, query.endDate);
 
     // 1. Student Payments Revenue (Current Period)
@@ -39,6 +46,8 @@ export class FinancialReportService {
         start: `${range.startDate} 00:00:00`,
         end: `${range.endDate} 23:59:59`,
       });
+
+    applyBranchScoping(paymentQb, 'p', currentUser, (query as any).branchId);
 
     if (query.academicYear) {
       paymentQb.andWhere('p.billing_year = :year', {
@@ -71,6 +80,9 @@ export class FinancialReportService {
         start: `${range.prevStartDate} 00:00:00`,
         end: `${range.prevEndDate} 23:59:59`,
       });
+
+    applyBranchScoping(prevPaymentQb, 'p', currentUser, (query as any).branchId);
+
     if (query.classId) {
       prevPaymentQb.andWhere('p.class_id = :classId', { classId: query.classId });
     }
@@ -98,6 +110,8 @@ export class FinancialReportService {
         statuses: [ExpenseStatusEnum.APPROVED, ExpenseStatusEnum.PAID],
       });
 
+    applyBranchScoping(expenseQb, 'exp', currentUser, (query as any).branchId);
+
     const expenses = await expenseQb.getMany();
     const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
@@ -109,6 +123,8 @@ export class FinancialReportService {
         end: `${range.endDate} 23:59:59`,
       })
       .andWhere('pay.status = :status', { status: 'PAID' });
+
+    applyBranchScoping(payrollQb, 'pay', currentUser, (query as any).branchId);
 
     const payrolls = await payrollQb.getMany();
     const totalPayroll = payrolls.reduce((sum, py) => sum + Number(py.netSalary || py.grossSalary || 0), 0);
@@ -172,6 +188,8 @@ export class FinancialReportService {
         start: `${range.startDate} 00:00:00`,
         end: `${range.endDate} 23:59:59`,
       });
+
+    applyBranchScoping(itemQb, 'p', currentUser, (query as any).branchId);
 
     if (query.academicYear) {
       itemQb.andWhere('p.billing_year = :year', {
@@ -255,7 +273,10 @@ export class FinancialReportService {
     };
   }
 
-  async exportCsv(query: FinancialReportQueryDto): Promise<string> {
+  async exportCsv(
+    query: FinancialReportQueryDto,
+    currentUser?: AuthContext,
+  ): Promise<string> {
     const range = resolveDateRange(query.preset, query.startDate, query.endDate);
 
     const paymentQb = this.paymentRepo
@@ -267,6 +288,8 @@ export class FinancialReportService {
         end: `${range.endDate} 23:59:59`,
       })
       .orderBy('p.created_at', 'DESC');
+
+    applyBranchScoping(paymentQb, 'p', currentUser, (query as any).branchId);
 
     if (query.classId) {
       paymentQb.andWhere('p.class_id = :classId', { classId: query.classId });
@@ -280,6 +303,8 @@ export class FinancialReportService {
         endDate: range.endDate,
       })
       .orderBy('exp.expense_date', 'DESC');
+
+    applyBranchScoping(expenseQb, 'exp', currentUser, (query as any).branchId);
     const expenses = await expenseQb.getMany();
 
     const headers = [

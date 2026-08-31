@@ -20,6 +20,7 @@ export class ExpenseMapper {
       approvedAt: entity.approvedAt ? new Date(entity.approvedAt).toISOString() : null,
       recordedByName: entity.recordedByUser ? `${entity.recordedByUser.firstName ?? ''} ${entity.recordedByUser.lastName ?? ''}`.trim() : undefined,
       approvedByName: entity.approvedByUser ? `${entity.approvedByUser.firstName ?? ''} ${entity.approvedByUser.lastName ?? ''}`.trim() : undefined,
+      branchId: entity.branchId,
       createdAt: entity.createdAt ? new Date(entity.createdAt).toISOString() : undefined,
       updatedAt: entity.updatedAt ? new Date(entity.updatedAt).toISOString() : undefined,
     };

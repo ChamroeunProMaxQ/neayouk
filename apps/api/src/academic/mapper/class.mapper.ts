@@ -50,6 +50,7 @@ export class ClassMapper {
       academicYear: entity.academicYear,
       semester: entity.semester,
       status: entity.status,
+      branchId: entity.branchId,
       studentCount:
         entity.enrollments !== undefined ? activeEnrollments.length : undefined,
       createdAt: entity.createdAt,

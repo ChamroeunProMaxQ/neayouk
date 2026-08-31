@@ -1,5 +1,6 @@
 import { UserStatusEnum, UserTypeEnum } from '@repo/contracts';
 import { randomUUID } from 'node:crypto';
+import { Branch } from '@src/branch/entity/branch.entity.js';
 import {
   BeforeInsert,
   BeforeUpdate,
@@ -7,8 +8,10 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   JoinTable,
   ManyToMany,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -24,6 +27,13 @@ export class User {
 
   @Column({ type: 'varchar', length: 36 })
   uuid!: string;
+
+  @Column({ name: 'branch_id', type: 'int', nullable: true })
+  branchId!: number | null;
+
+  @ManyToOne(() => Branch, (branch) => branch.users, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'branch_id' })
+  branch?: Branch | null;
 
   @Column({ type: 'varchar', unique: true })
   username!: string;

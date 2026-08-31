@@ -36,27 +36,32 @@ export class AdminPayrollController {
   constructor(private readonly payrollService: PayrollService) {}
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, Payroll)
   @Get('summary')
   @HttpMessage('Payroll summary retrieved successfully')
   getSummary(
     @Query('year') year?: number,
     @Query('month') month?: number,
+    @CurrentUser() currentUser?: any,
   ) {
     return this.payrollService.getSummary(
       year ? Number(year) : undefined,
       month ? Number(month) : undefined,
+      currentUser,
     );
   }
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, Payroll)
   @Get()
   @HttpMessage('Payrolls retrieved successfully')
-  findAll(@Query() dto: FindPayrollsDto) {
-    return this.payrollService.findAll(dto);
+  findAll(
+    @Query() dto: FindPayrollsDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.payrollService.findAll(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
@@ -73,9 +78,9 @@ export class AdminPayrollController {
   @HttpMessage('Payroll created successfully')
   create(
     @Body() dto: CreatePayrollDto,
-    @CurrentUser('sub') currentUserId: number,
+    @CurrentUser() currentUser: any,
   ) {
-    return this.payrollService.create(dto, currentUserId);
+    return this.payrollService.create(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)

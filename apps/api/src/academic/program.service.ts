@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -16,6 +15,12 @@ import type {
   FindProgramsDto,
 } from './dto/program.dto.js';
 
+import {
+  applyBranchScoping,
+  resolveBranchId,
+  type AuthContext,
+} from '@src/common/helper/branch-scoping.helper.js';
+
 @Injectable()
 export class ProgramService {
   constructor(
@@ -23,12 +28,14 @@ export class ProgramService {
     private readonly programRepo: Repository<Program>,
   ) {}
 
-  async findAll(dto: FindProgramsDto) {
+  async findAll(dto: FindProgramsDto, currentUser?: AuthContext) {
     const { search, status, sortBy = 'id', sortOrder = 'DESC' } = dto;
 
     const query = this.programRepo
       .createQueryBuilder('program')
       .leftJoinAndSelect('program.classes', 'classes');
+
+    applyBranchScoping(query, 'program', currentUser, dto.branchId);
 
     if (search) {
       query.andWhere(
@@ -64,7 +71,7 @@ export class ProgramService {
     return ProgramMapper.toDto(program);
   }
 
-  async create(dto: CreateProgramDto) {
+  async create(dto: CreateProgramDto, currentUser?: AuthContext) {
     const existing = await this.programRepo.findOne({
       where: { code: dto.code },
     });
@@ -79,6 +86,7 @@ export class ProgramService {
       status: dto.status ?? 'ACTIVE',
       books: dto.books ?? [],
       gradeLevels: dto.gradeLevels ?? [],
+      branchId: resolveBranchId(currentUser, dto.branchId),
     });
     const saved = await this.programRepo.save(program);
     return ProgramMapper.toDto(saved);

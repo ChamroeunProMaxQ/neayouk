@@ -13,7 +13,7 @@ import { FindPermissionsDto } from './dto/find-permissions.dto.js';
 @ApiBearerAuth()
 @Controller('admin/permissions')
 @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-@UserTypes(UserTypeEnum.ADMIN, UserTypeEnum.CMS)
+@UserTypes(UserTypeEnum.ADMIN, UserTypeEnum.CMS, UserTypeEnum.SUPER_ADMIN)
 export class AdminPermissionController {
   constructor(private readonly permissionService: PermissionService) {}
 

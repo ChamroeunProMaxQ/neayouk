@@ -10,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { FeeCategoryEnum, BillingCycleEnum } from '@repo/contracts';
+import { Branch } from '@src/branch/entity/branch.entity.js';
 import type { Program } from '@src/academic/entity/program.entity.js';
 
 @Entity({ name: 'fee_structures' })
@@ -19,6 +20,13 @@ export class FeeStructure {
 
   @Column({ type: 'varchar', length: 36 })
   uuid!: string;
+
+  @Column({ name: 'branch_id', type: 'int', nullable: true })
+  branchId!: number | null;
+
+  @ManyToOne(() => Branch, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'branch_id' })
+  branch?: Branch | null;
 
   @Column({ type: 'varchar', length: 255 })
   name!: string;

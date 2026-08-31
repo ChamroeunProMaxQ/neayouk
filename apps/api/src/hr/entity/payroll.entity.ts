@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Branch } from '@src/branch/entity/branch.entity.js';
 import type { User } from '@src/user/entity/user.entity.js';
 import type { Staff } from './staff.entity.js';
 import type { PayrollItem } from './payroll-item.entity.js';
@@ -21,6 +22,13 @@ export class Payroll {
 
   @Column({ type: 'varchar', length: 36 })
   uuid!: string;
+
+  @Column({ name: 'branch_id', type: 'int', nullable: true })
+  branchId!: number | null;
+
+  @ManyToOne(() => Branch, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'branch_id' })
+  branch?: Branch | null;
 
   @Column({
     name: 'payroll_number',

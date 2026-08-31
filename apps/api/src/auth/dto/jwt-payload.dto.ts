@@ -5,6 +5,7 @@ export interface JwtPayload {
   username: string;
   type?: UserTypeEnum;
   userType?: UserTypeEnum;
+  branchId?: number | null;
   roles?: string[];
   permissions?: PermissionDto[];
   iat?: number;

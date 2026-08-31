@@ -68,6 +68,7 @@ export const adminNavGroups: NavGroup[] = [
           { label: "Students", path: "/students", requiredPermission: { action: "read", resource: ResourceEnum.STUDENT } },
           { label: "Teachers", path: "/teachers", requiredPermission: { action: "read", resource: ResourceEnum.TEACHER } },
           { label: "User Accounts", path: "/users", requiredPermission: { action: "read", resource: ResourceEnum.USER } },
+          { label: "Branches & Campuses", path: "/branches", requiredPermission: { action: "read", resource: ResourceEnum.BRANCH } },
           { label: "Roles & Permissions", path: "/users/roles", requiredPermission: { action: "read", resource: ResourceEnum.ROLE } },
         ],
       },
@@ -112,11 +113,11 @@ export const adminNavGroups: NavGroup[] = [
             path: "/academics/academic-years",
             requiredPermission: { action: "read", resource: ResourceEnum.ACADEMIC_YEAR },
           },
-          {
-            label: "Class Timetable",
-            path: "/academics/timetable",
-            requiredPermission: { action: "read", resource: ResourceEnum.TIMETABLE },
-          },
+          // {
+          //   label: "Class Timetable",
+          //   path: "/academics/timetable",
+          //   requiredPermission: { action: "read", resource: ResourceEnum.TIMETABLE },
+          // },
         ],
       },
       {

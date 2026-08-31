@@ -31,14 +31,17 @@ import {
 
 @Controller('admin/fees/invoices')
 @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-@UserTypes(UserTypeEnum.ADMIN, UserTypeEnum.CMS)
+@UserTypes(UserTypeEnum.ADMIN, UserTypeEnum.CMS, UserTypeEnum.SUPER_ADMIN)
 export class InvoiceController {
   constructor(private readonly service: InvoiceService) {}
 
   @Get()
   @UseAbility(Actions.read, StudentPayment)
-  async findAll(@Query() query: FindInvoicesDto) {
-    return this.service.findAll(query);
+  async findAll(
+    @Query() query: FindInvoicesDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.service.findAll(query, currentUser);
   }
 
   @Get(':id')
@@ -49,14 +52,20 @@ export class InvoiceController {
 
   @Post()
   @UseAbility(Actions.create, StudentPayment)
-  async create(@Body() dto: CreateInvoiceDto) {
-    return this.service.create(dto);
+  async create(
+    @Body() dto: CreateInvoiceDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.service.create(dto, currentUser);
   }
 
   @Post('batch-generate')
   @UseAbility(Actions.create, StudentPayment)
-  async generateBatch(@Body() dto: GenerateBatchInvoicesDto) {
-    return this.service.generateBatch(dto);
+  async generateBatch(
+    @Body() dto: GenerateBatchInvoicesDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.service.generateBatch(dto, currentUser);
   }
 
   @Post(':id/pay')

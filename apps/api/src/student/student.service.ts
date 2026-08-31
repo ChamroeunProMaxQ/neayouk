@@ -23,6 +23,11 @@ import type {
   BatchPromoteStudentsDto,
 } from '@src/academic/dto/class.dto.js';
 import { getSkipTake } from '@src/common/helper/pagination.helper.js';
+import {
+  applyBranchScoping,
+  resolveBranchId,
+  type AuthContext,
+} from '@src/common/helper/branch-scoping.helper.js';
 
 @Injectable()
 export class StudentService {
@@ -39,7 +44,7 @@ export class StudentService {
     private readonly paymentService: StudentPaymentService,
   ) {}
 
-  async findAll(dto: FindStudentsDto) {
+  async findAll(dto: FindStudentsDto, currentUser?: AuthContext) {
     const {
       search,
       classId,
@@ -56,6 +61,8 @@ export class StudentService {
       .leftJoinAndSelect('student.enrollments', 'enrollment')
       .leftJoinAndSelect('enrollment.class', 'class')
       .leftJoinAndSelect('student.payments', 'payment');
+
+    applyBranchScoping(query, 'student', currentUser, dto.branchId);
 
     if (onlyDeleted) {
       query.withDeleted().andWhere('student.deleted_at IS NOT NULL');
@@ -198,7 +205,8 @@ export class StudentService {
     };
   }
 
-  async create(dto: CreateStudentDto, _currentUserId?: number) {
+  async create(dto: CreateStudentDto, currentUser?: AuthContext | number) {
+    const auth = typeof currentUser === 'object' ? currentUser : undefined;
     let studentCode = dto.studentCode;
     if (!studentCode) {
       const count = await this.studentRepo.count();
@@ -220,6 +228,7 @@ export class StudentService {
       registeredAt: dto.registeredAt ? new Date(dto.registeredAt) : new Date(),
       discount: dto.discount ?? 0,
       status: dto.status ?? StudentStatusEnum.ACTIVE,
+      branchId: resolveBranchId(auth, dto.branchId),
     });
 
     const savedStudent = await this.studentRepo.save(student);

@@ -15,6 +15,7 @@ import {
   ArrowDown,
   Loader2,
   AlertCircle,
+  Building2,
 } from "lucide-react";
 import {
   FindUsersSchema,
@@ -33,6 +34,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useUsersInfiniteQuery } from "../hooks/use-users-query";
+import { useBranchesQuery } from "@/features/branches/hooks/use-branches-query";
 import {
   useCreateUserMutation,
   useUpdateUserMutation,
@@ -46,13 +48,16 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { usePermission } from "@/features/auth";
 
 export const UserListTable: FC = () => {
-  const { can } = usePermission();
+  const { can, isSuperAdmin } = usePermission();
   const canCreateUser = can("create", "user");
   const canUpdateUser = can("update", "user");
   const canDeleteUser = can("delete", "user");
 
   const { values, setValue, setValues } = useUrlFilters(FindUsersSchema);
-  const { search, userType, sortBy, sortOrder } = values;
+  const { search, userType, branchId, sortBy, sortOrder } = values;
+
+  const { data: branchesData } = useBranchesQuery();
+  const branches = useMemo(() => branchesData?.data ?? [], [branchesData]);
 
   const pageSize = 20;
 
@@ -135,6 +140,7 @@ export const UserListTable: FC = () => {
           username: formValues.username,
           userType: formValues.userType,
           status: formValues.status,
+          branchId: formValues.branchId !== undefined ? formValues.branchId : undefined,
           roles: formValues.roles,
           ...(formValues.password ? { password: formValues.password } : {}),
         },
@@ -151,6 +157,7 @@ export const UserListTable: FC = () => {
       password: formValues.password || "password123",
       userType: formValues.userType,
       status: formValues.status,
+      branchId: formValues.branchId !== undefined ? formValues.branchId : undefined,
       roles: formValues.roles,
     });
     setIsFormDialogOpen(false);
@@ -217,6 +224,33 @@ export const UserListTable: FC = () => {
             {getValue<string>()}
           </span>
         ),
+      },
+      {
+        id: "branch",
+        header: "Branch / Campus",
+        cell: ({ row }) => {
+          const user = row.original;
+          const branch = user.branch;
+          if (!branch) {
+            return (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                Global / All Campuses
+              </span>
+            );
+          }
+
+          return (
+            <div className="flex flex-col gap-0.5">
+              <span className="text-slate-900 font-semibold text-xs inline-flex items-center gap-1.5">
+                <Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                {branch.name}
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono">
+                Code: {branch.code}
+              </span>
+            </div>
+          );
+        },
       },
       {
         accessorKey: "userType",
@@ -429,6 +463,34 @@ export const UserListTable: FC = () => {
               <option value={UserTypeEnum.CUSTOMER}>Customer</option>
             </select>
           </div>
+
+          {/* Branch / Campus Filter (SuperAdmin Only) */}
+          {isSuperAdmin && (
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="branch-filter"
+                className="text-xs font-bold text-slate-600 uppercase tracking-wide"
+              >
+                Branch:
+              </label>
+              <select
+                id="branch-filter"
+                aria-label="Filter by Branch"
+                value={branchId ?? ""}
+                onChange={(e) =>
+                  setValue("branchId", e.target.value ? Number(e.target.value) : undefined)
+                }
+                className="px-3 py-2 text-xs font-semibold border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#45AC5E]/20 focus:border-[#45AC5E] text-slate-700"
+              >
+                <option value="">All Branches</option>
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name} ({b.code})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Right Side: Action Buttons */}

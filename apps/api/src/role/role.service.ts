@@ -14,6 +14,12 @@ import type { UpdateRoleDto } from './dto/update-role.dto.js';
 import type { RolePermissionInputDto } from '@repo/contracts';
 import { getSkipTake } from '@src/common/helper/pagination.helper.js';
 
+import {
+  resolveBranchId,
+  type AuthContext,
+} from '@src/common/helper/branch-scoping.helper.js';
+import { UserTypeEnum } from '@repo/contracts';
+
 @Injectable()
 export class RoleService {
   constructor(
@@ -24,10 +30,21 @@ export class RoleService {
     private readonly permissionRepo: Repository<Permission>,
   ) {}
 
-  async findAll(dto: FindRolesDto) {
+  async findAll(dto: FindRolesDto, currentUser?: AuthContext) {
     const query = this.roleRepo
       .createQueryBuilder('role')
       .leftJoinAndSelect('role.permissions', 'permissions');
+
+    if (
+      currentUser &&
+      currentUser.userType !== UserTypeEnum.SUPER_ADMIN &&
+      currentUser.userType !== 'SUPER_ADMIN' &&
+      currentUser.branchId
+    ) {
+      query.andWhere('(role.branch_id IS NULL OR role.branch_id = :scopedBranchId)', {
+        scopedBranchId: currentUser.branchId,
+      });
+    }
 
     if (dto.search) {
       query.andWhere(
@@ -104,7 +121,7 @@ export class RoleService {
     return permissions;
   }
 
-  async create(dto: CreateRoleDto) {
+  async create(dto: CreateRoleDto, currentUser?: AuthContext) {
     // Guard clause: Validate slug uniqueness
     const existing = await this.roleRepo.findOneBy({ slug: dto.slug });
     if (existing) {
@@ -119,6 +136,7 @@ export class RoleService {
       name: dto.name,
       slug: dto.slug,
       description: dto.description,
+      branchId: resolveBranchId(currentUser, (dto as any).branchId),
       permissions,
     });
 

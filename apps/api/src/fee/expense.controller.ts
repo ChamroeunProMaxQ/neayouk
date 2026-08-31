@@ -33,14 +33,17 @@ import {
 
 @Controller('admin/fees/expenses')
 @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-@UserTypes(UserTypeEnum.ADMIN, UserTypeEnum.CMS)
+@UserTypes(UserTypeEnum.ADMIN, UserTypeEnum.CMS, UserTypeEnum.SUPER_ADMIN)
 export class ExpenseController {
   constructor(private readonly service: ExpenseService) {}
 
   @Get()
   @UseAbility(Actions.read, SchoolExpense)
-  async findAll(@Query() query: FindSchoolExpensesDto) {
-    return this.service.findAll(query);
+  async findAll(
+    @Query() query: FindSchoolExpensesDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.service.findAll(query, currentUser);
   }
 
   @Get(':id')
@@ -53,9 +56,9 @@ export class ExpenseController {
   @UseAbility(Actions.create, SchoolExpense)
   async create(
     @Body() dto: CreateSchoolExpenseDto,
-    @CurrentUser() user: User,
+    @CurrentUser() user: any,
   ) {
-    return this.service.create(dto, user?.id);
+    return this.service.create(dto, user);
   }
 
   @Put(':id')

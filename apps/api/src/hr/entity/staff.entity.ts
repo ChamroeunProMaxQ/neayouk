@@ -11,6 +11,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Branch } from '@src/branch/entity/branch.entity.js';
 import type { User } from '@src/user/entity/user.entity.js';
 import type { Class } from '@src/academic/entity/class.entity.js';
 import type { Payroll } from './payroll.entity.js';
@@ -24,6 +25,13 @@ export class Staff {
 
   @Column({ type: 'varchar', length: 36 })
   uuid!: string;
+
+  @Column({ name: 'branch_id', type: 'int', nullable: true })
+  branchId!: number | null;
+
+  @ManyToOne(() => Branch, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'branch_id' })
+  branch?: Branch | null;
 
   @Column({ name: 'user_id', type: 'int', nullable: true })
   userId!: number | null;

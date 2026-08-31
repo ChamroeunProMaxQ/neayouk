@@ -21,6 +21,12 @@ import type { UpdateTeacherDto } from './dto/update-teacher.dto.js';
 import type { FindTeachersDto } from './dto/find-teachers.dto.js';
 import { hashPassword } from '@src/common/helper/password.helper.js';
 
+import {
+  applyBranchScoping,
+  resolveBranchId,
+  type AuthContext,
+} from '@src/common/helper/branch-scoping.helper.js';
+
 @Injectable()
 export class TeacherService {
   constructor(
@@ -40,25 +46,30 @@ export class TeacherService {
     private readonly logger: LoggerService,
   ) {}
 
-  async findAll({
-    search,
-    name,
-    status,
-    gender,
-    specialization,
-    hasAccount,
-    includeDeleted,
-    onlyDeleted,
-    sortBy = 'id',
-    sortOrder = 'DESC',
-    ...dto
-  }: FindTeachersDto) {
+  async findAll(
+    {
+      search,
+      name,
+      status,
+      gender,
+      specialization,
+      hasAccount,
+      includeDeleted,
+      onlyDeleted,
+      sortBy = 'id',
+      sortOrder = 'DESC',
+      ...dto
+    }: FindTeachersDto,
+    currentUser?: AuthContext,
+  ) {
     const query = this.staffRepo
       .createQueryBuilder('teacher')
       .leftJoinAndSelect('teacher.user', 'user')
       .leftJoinAndSelect('teacher.classes', 'classes')
       .leftJoinAndSelect('classes.enrollments', 'enrollments')
       .where('teacher.department = :dept', { dept: 'ACADEMIC' });
+
+    applyBranchScoping(query, 'teacher', currentUser, (dto as any).branchId);
 
     if (onlyDeleted) {
       query.withDeleted().andWhere('teacher.deleted_at IS NOT NULL');
@@ -121,7 +132,13 @@ export class TeacherService {
     return TeacherMapper.toDto(teacher);
   }
 
-  async create(dto: CreateTeacherDto, _userId?: number) {
+  async create(
+    dto: CreateTeacherDto,
+    currentUser?: AuthContext | number,
+  ) {
+    const auth = typeof currentUser === 'object' ? currentUser : undefined;
+    const targetBranchId = resolveBranchId(auth, (dto as any).branchId);
+
     if (dto.teacherCode) {
       const existing = await this.staffRepo.findOne({
         where: { staffCode: dto.teacherCode },
@@ -177,6 +194,7 @@ export class TeacherService {
         password: hashPassword(dto.password),
         userType: UserTypeEnum.CMS,
         status: UserStatusEnum.ACTIVE,
+        branchId: targetBranchId,
         roles: [teacherRole],
       });
       const savedUser = await this.userRepo.save(newUser);
@@ -208,6 +226,7 @@ export class TeacherService {
       specialization: dto.specialization ?? null,
       bio: dto.bio ?? null,
       status: dto.status ?? 'ACTIVE',
+      branchId: targetBranchId,
       userId: linkedUserId,
     });
 
@@ -287,6 +306,7 @@ export class TeacherService {
         password: hashPassword(dto.password),
         userType: UserTypeEnum.CMS,
         status: UserStatusEnum.ACTIVE,
+        branchId: teacher.branchId,
         roles: [teacherRole],
       });
       const savedUser = await this.userRepo.save(newUser);

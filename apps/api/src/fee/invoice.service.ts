@@ -9,6 +9,11 @@ import { PaymentRefund } from './entity/payment-refund.entity.js';
 import { PaymentReminder } from './entity/payment-reminder.entity.js';
 import { Student } from '@src/student/entity/student.entity.js';
 import { InvoiceMapper } from './mapper/invoice.mapper.js';
+import {
+  applyBranchScoping,
+  resolveBranchId,
+  type AuthContext,
+} from '@src/common/helper/branch-scoping.helper.js';
 import type {
   CreateInvoiceDto,
   GenerateBatchInvoicesDto,
@@ -35,7 +40,7 @@ export class InvoiceService {
     private readonly studentRepo: Repository<Student>,
   ) {}
 
-  async findAll(query: FindInvoicesDto) {
+  async findAll(query: FindInvoicesDto, currentUser?: AuthContext) {
     const {
       page = 1,
       pageSize = 20,
@@ -54,6 +59,8 @@ export class InvoiceService {
       .leftJoinAndSelect('p.student', 'student')
       .leftJoinAndSelect('p.class', 'class')
       .leftJoinAndSelect('p.items', 'items');
+
+    applyBranchScoping(qb, 'p', currentUser, (query as any).branchId);
 
     if (search) {
       qb.andWhere(
@@ -102,7 +109,7 @@ export class InvoiceService {
     return InvoiceMapper.toDto(entity);
   }
 
-  async create(dto: CreateInvoiceDto) {
+  async create(dto: CreateInvoiceDto, currentUser?: AuthContext) {
     const student = await this.studentRepo.findOne({ where: { id: dto.studentId } });
     if (!student) {
       throw new NotFoundException(`Student with ID ${dto.studentId} not found`);
@@ -116,6 +123,7 @@ export class InvoiceService {
     const payment = this.paymentRepo.create({
       paymentNumber,
       receiptNumber: paymentNumber,
+      branchId: student.branchId ?? resolveBranchId(currentUser, (dto as any).branchId),
       studentId: dto.studentId,
       classId: dto.classId ?? null,
       billingYear: dto.billingYear,
@@ -148,7 +156,7 @@ export class InvoiceService {
     return this.findOne(savedPayment.id);
   }
 
-  async generateBatch(dto: GenerateBatchInvoicesDto) {
+  async generateBatch(dto: GenerateBatchInvoicesDto, currentUser?: AuthContext) {
     let students: Student[] = [];
 
     if (dto.studentIds && dto.studentIds.length > 0) {
@@ -206,6 +214,7 @@ export class InvoiceService {
       const payment = this.paymentRepo.create({
         paymentNumber,
         receiptNumber: paymentNumber,
+        branchId: student.branchId ?? resolveBranchId(currentUser, (dto as any).branchId),
         studentId: student.id,
         classId: dto.classId ?? null,
         billingYear: dto.billingYear,

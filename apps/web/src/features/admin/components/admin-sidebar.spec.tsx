@@ -19,6 +19,29 @@ describe("AdminSidebar RBAC", () => {
     vi.restoreAllMocks();
   });
 
+  it("enables all navigation items for SUPER_ADMIN platform user", async () => {
+    useAuthStore.setState({
+      user: {
+        id: 1,
+        username: "superadmin",
+        userType: UserTypeEnum.SUPER_ADMIN,
+        roles: ["super_admin"],
+        permissions: [],
+      },
+      isAuthenticated: true,
+    });
+
+    renderSidebar();
+
+    const userMgmtButton = screen.getByRole("button", { name: /user management/i });
+    const academicsButton = screen.getByRole("button", { name: /academics & classes/i });
+    const hrButton = screen.getByRole("button", { name: /hr & payroll/i });
+
+    expect(userMgmtButton).not.toBeDisabled();
+    expect(academicsButton).not.toBeDisabled();
+    expect(hrButton).not.toBeDisabled();
+  });
+
   it("enables all navigation items for ADMIN superuser", async () => {
     useAuthStore.setState({
       user: {

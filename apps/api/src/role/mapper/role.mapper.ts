@@ -10,6 +10,7 @@ export class RoleMapper {
       name: entity.name,
       slug: entity.slug,
       description: entity.description,
+      branchId: entity.branchId,
       permissions: entity.permissions
         ? PermissionMapper.toDtoList(entity.permissions)
         : undefined,

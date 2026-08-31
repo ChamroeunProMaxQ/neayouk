@@ -53,6 +53,7 @@ export class StaffMapper {
       bankAccountNumber: entity.bankAccountNumber ?? null,
       status: (entity.status as StaffStatusEnum) || 'ACTIVE',
       notes: entity.notes ?? null,
+      branchId: entity.branchId,
       classCount:
         entity.classes !== undefined ? entity.classes.length : undefined,
       classes: classesList,

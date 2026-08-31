@@ -22,6 +22,9 @@ export class StudentScore {
   @Column({ type: 'varchar', length: 36 })
   uuid!: string;
 
+  @Column({ name: 'branch_id', type: 'int', nullable: true })
+  branchId!: number | null;
+
   @Column({ name: 'student_id', type: 'int' })
   studentId!: number;
 

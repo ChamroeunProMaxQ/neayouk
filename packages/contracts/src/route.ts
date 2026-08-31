@@ -1,4 +1,15 @@
 export const API_ROUTE = {
+  SUPERADMIN: {
+    BRANCHES: '/api/v1/superadmin/branches',
+    BRANCH_GET: '/api/v1/superadmin/branches/:id',
+    BRANCH_UPDATE: '/api/v1/superadmin/branches/:id',
+  },
+  BRANCH: {
+    LIST: '/api/v1/superadmin/branches',
+    CREATE: '/api/v1/superadmin/branches',
+    GET: '/api/v1/superadmin/branches/:id',
+    UPDATE: '/api/v1/superadmin/branches/:id',
+  },
   AUTH: {
     LOGIN: '/api/v1/auth/login',
     LOGOUT: '/api/v1/auth/logout',

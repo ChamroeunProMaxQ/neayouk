@@ -8,6 +8,7 @@ export interface AuthUser {
   username: string;
   userType?: UserTypeEnum | string;
   type?: UserTypeEnum | string;
+  branchId?: number | null;
   roles?: string[];
   permissions?: PermissionDto[];
 }

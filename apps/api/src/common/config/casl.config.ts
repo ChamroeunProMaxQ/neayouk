@@ -7,11 +7,12 @@ export interface AppAuthorizableUser extends AuthorizableUser<string, number> {
   id: number;
   roles: string[];
   userType?: UserTypeEnum;
+  branchId?: number | null;
   permissions?: PermissionDto[];
 }
 
 export const caslConfig = CaslModule.forRoot<string, AppAuthorizableUser>({
-  superuserRole: UserTypeEnum.ADMIN,
+  superuserRole: UserTypeEnum.SUPER_ADMIN,
   getUserFromRequest: (request) => {
     const user = (request as unknown as Request).user as JwtPayload | undefined;
     if (!user) return undefined;
@@ -35,6 +36,7 @@ export const caslConfig = CaslModule.forRoot<string, AppAuthorizableUser>({
       id: Number(user.sub),
       roles: Array.from(new Set(roles)),
       userType,
+      branchId: user.branchId,
       permissions: user.permissions ?? [],
     };
   },

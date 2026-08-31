@@ -25,6 +25,8 @@ import {
   FindGradingRulesDto,
 } from './dto/grading-rule.dto.js';
 
+import { CurrentUser } from '@src/common/decorator/current-user.decorator.js';
+
 @ApiTags('Admin Grading Rules')
 @ApiBearerAuth()
 @Controller('admin/examinations/rules')
@@ -32,15 +34,18 @@ export class AdminGradingRuleController {
   constructor(private readonly gradingRuleService: GradingRuleService) {}
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, GradingRule)
   @Get()
-  async findAll(@Query() query: FindGradingRulesDto) {
-    return this.gradingRuleService.findAll(query);
+  async findAll(
+    @Query() query: FindGradingRulesDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.gradingRuleService.findAll(query, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, GradingRule)
   @Get('default')
   async findDefault() {
@@ -48,7 +53,7 @@ export class AdminGradingRuleController {
   }
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, GradingRule)
   @Get(':id')
   async findById(@Param('id', ParseIntPipe) id: number) {
@@ -56,15 +61,18 @@ export class AdminGradingRuleController {
   }
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.create, GradingRule)
   @Post()
-  async create(@Body() dto: CreateGradingRuleDto) {
-    return this.gradingRuleService.create(dto);
+  async create(
+    @Body() dto: CreateGradingRuleDto,
+    @CurrentUser() currentUser: any,
+  ) {
+    return this.gradingRuleService.create(dto, currentUser);
   }
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.update, GradingRule)
   @Patch(':id')
   async update(
@@ -75,7 +83,7 @@ export class AdminGradingRuleController {
   }
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)
-  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN)
+  @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.delete, GradingRule)
   @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number) {

@@ -1,4 +1,4 @@
-import { useState, useEffect, type FC } from "react";
+import { useState, useEffect, useMemo, type FC } from "react";
 import { useForm } from "react-hook-form";
 import {
   CreateUserSchema,
@@ -41,10 +41,10 @@ export const UserForm: FC<UserFormProps> = ({
   const { isSuperAdmin, user: authUser } = usePermission();
 
   const { data: rolesResponse, isLoading: isRolesLoading } = useRolesQuery();
-  const availableRoles = rolesResponse?.data ?? [];
+  const availableRoles = useMemo(() => rolesResponse?.data ?? [], [rolesResponse?.data]);
 
   const { data: branchesResponse } = useBranchesQuery();
-  const availableBranches = branchesResponse?.data ?? [];
+  const availableBranches = useMemo(() => branchesResponse?.data ?? [], [branchesResponse?.data]);
 
   const effectiveBranchId = isSuperAdmin
     ? (userToEdit?.branchId ?? userToEdit?.branch?.id ?? null)
@@ -97,7 +97,7 @@ export const UserForm: FC<UserFormProps> = ({
       branchId: effectiveBranchId,
       roles: initialRoles,
     });
-  }, [userToEdit, reset, availableBranches, effectiveBranchId]);
+  }, [userToEdit, reset, effectiveBranchId, availableBranches.length]);
 
   const toggleRole = (slug: string) => {
     const next = selectedRoles.includes(slug)

@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect, type FC, type KeyboardEvent } from "react";
 import {
   AttendanceStatusEnum,
+  DefaultActions,
+  ResourceEnum,
 } from "@repo/contracts";
 import { useClassesQuery } from "@/features/classes/hooks/use-classes-infinite-query";
 import {
@@ -30,7 +32,7 @@ interface EditedCell {
 
 export const StudentAttendanceSheet: FC = () => {
   const { can } = usePermission();
-  const canManage = can("manage", "attendance") || can("create", "attendance");
+  const canManage = can(DefaultActions.manage, ResourceEnum.STUDENT_ATTENDANCE) || can(DefaultActions.create, ResourceEnum.STUDENT_ATTENDANCE);
 
   // Selected class
   const { data: classesData, isLoading: isLoadingClasses } = useClassesQuery({

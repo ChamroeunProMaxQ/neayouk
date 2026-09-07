@@ -3,6 +3,8 @@ import {
   hasPermission as checkHasPermission,
   hasRole as checkHasRole,
   isUserType as checkIsUserType,
+  DefaultActions,
+  ResourceEnum,
   UserTypeEnum,
   type PermissionDto,
 } from "@repo/contracts";
@@ -39,9 +41,9 @@ export function usePermission() {
   }, [isSuperAdmin, userType, roles]);
 
   const can = useCallback(
-    (action: string, resource: string): boolean => {
+    (action: DefaultActions | string, resource: ResourceEnum | string): boolean => {
       if (isSuperAdmin || isAdmin) return true;
-      return checkHasPermission(permissions, action, resource);
+      return checkHasPermission(permissions, action as any, resource as any);
     },
     [isSuperAdmin, isAdmin, permissions]
   );

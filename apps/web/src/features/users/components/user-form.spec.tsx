@@ -1,5 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BranchStatusEnum, UserStatusEnum, UserTypeEnum, type BranchDto, type RoleDto } from "@repo/contracts";
@@ -113,7 +112,6 @@ describe("UserForm", () => {
   });
 
   it("submits valid form data including selected dynamic roles and assigned branch", async () => {
-    const user = userEvent.setup({ delay: null });
     const handleSubmit = vi.fn();
 
     render(<UserForm onSubmit={handleSubmit} />, { wrapper: createWrapper() });
@@ -122,15 +120,15 @@ describe("UserForm", () => {
       expect(screen.getByRole("option", { name: /main campus/i })).toBeInTheDocument();
     });
 
-    await user.type(screen.getByLabelText(/username/i), "new_user");
-    await user.type(screen.getByLabelText(/^password/i), "securepass");
-    await user.selectOptions(screen.getByLabelText(/branch \/ campus/i), "1");
-    await user.selectOptions(screen.getByLabelText(/user type \(portal\)/i), UserTypeEnum.CMS);
+    fireEvent.change(screen.getByLabelText(/username/i), { target: { value: "new_user" } });
+    fireEvent.change(screen.getByLabelText(/^password/i), { target: { value: "securepass" } });
+    fireEvent.change(screen.getByLabelText(/branch \/ campus/i), { target: { value: "1" } });
+    fireEvent.change(screen.getByLabelText(/user type \(portal\)/i), { target: { value: UserTypeEnum.CMS } });
 
     const teacherRoleBtn = await screen.findByRole("button", { name: "Teacher" });
-    await user.click(teacherRoleBtn);
+    fireEvent.click(teacherRoleBtn);
 
-    await user.click(screen.getByRole("button", { name: /create user/i }));
+    fireEvent.click(screen.getByRole("button", { name: /create user/i }));
 
     await waitFor(() => {
       expect(handleSubmit).toHaveBeenCalledWith(
@@ -146,14 +144,13 @@ describe("UserForm", () => {
     });
   });
 
-  it("cancels form when cancel button is clicked", async () => {
-    const user = userEvent.setup({ delay: null });
+  it("cancels form when cancel button is clicked", () => {
     const handleCancel = vi.fn();
 
     render(<UserForm onSubmit={vi.fn()} onCancel={handleCancel} />, { wrapper: createWrapper() });
 
     const cancelBtn = screen.getByRole("button", { name: /cancel/i });
-    await user.click(cancelBtn);
+    fireEvent.click(cancelBtn);
 
     expect(handleCancel).toHaveBeenCalled();
   });
@@ -167,7 +164,6 @@ describe("UserForm", () => {
       roles: ["admin"],
     });
 
-    const user = userEvent.setup({ delay: null });
     const handleSubmit = vi.fn();
 
     render(<UserForm onSubmit={handleSubmit} />, { wrapper: createWrapper() });
@@ -177,9 +173,9 @@ describe("UserForm", () => {
     });
     expect(screen.getByText(/auto-assigned/i)).toBeInTheDocument();
 
-    await user.type(screen.getByLabelText(/username/i), "campus_teacher");
-    await user.type(screen.getByLabelText(/^password/i), "securepass");
-    await user.click(screen.getByRole("button", { name: /create user/i }));
+    fireEvent.change(screen.getByLabelText(/username/i), { target: { value: "campus_teacher" } });
+    fireEvent.change(screen.getByLabelText(/^password/i), { target: { value: "securepass" } });
+    fireEvent.click(screen.getByRole("button", { name: /create user/i }));
 
     await waitFor(() => {
       expect(handleSubmit).toHaveBeenCalledWith(

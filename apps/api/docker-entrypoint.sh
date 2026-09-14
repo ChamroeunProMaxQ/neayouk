@@ -6,7 +6,7 @@ echo "Starting API entrypoint..."
 # Wait for PostgreSQL to become available
 if [ -n "$DB_HOST" ]; then
   echo "Waiting for database at $DB_HOST:${DB_PORT:-5432}..."
-  until pg_isready -h "$DB_HOST" -p "${DB_PORT:-5432}" -U "${DB_USER:-postgres}" > /dev/null 2>&1; do
+  until node -e "const s = require('net').connect(${DB_PORT:-5432}, '$DB_HOST').on('connect', () => { s.destroy(); process.exit(0); }).on('error', () => process.exit(1));" > /dev/null 2>&1; do
     echo "PostgreSQL is unavailable - sleeping 1s..."
     sleep 1
   done

@@ -2,7 +2,7 @@
 # Base Stage
 # ==========================================
 FROM node:24-alpine AS base
-RUN apk add --no-cache libc6-compat postgresql-client curl
+RUN apk add --no-cache libc6-compat curl
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN npm install -g pnpm@11.11.0
@@ -65,7 +65,7 @@ RUN pnpm --filter api --prod --legacy deploy /prod/api
 # Production Runtime Stage
 # ==========================================
 FROM node:24-alpine AS prod
-RUN apk add --no-cache libc6-compat postgresql-client curl
+RUN apk add --no-cache libc6-compat curl
 WORKDIR /app
 
 ENV NODE_ENV=production

@@ -1,0 +1,82 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: neayouk-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-neayoukdb}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-neayoukdb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - neayouk-dev-network
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: dev
+    container_name: neayouk-api-dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-neayoukdb}
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_me}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-3600}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      RUN_MIGRATIONS: "true"
+      RUN_SEEDS: ${RUN_SEEDS:-false}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/api/src:/app/apps/api/src
+      - ./apps/api/database:/app/apps/api/database
+      - ./packages/contracts/src:/app/packages/contracts/src
+      - uploads_dev_data:/app/apps/api/uploads
+    networks:
+      - neayouk-dev-network
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: dev
+    container_name: neayouk-web-dev
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      NODE_ENV: development
+      VITE_PROXY_TARGET: http://api:3000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./apps/web/src:/app/apps/web/src
+      - ./apps/web/public:/app/apps/web/public
+      - ./packages/contracts/src:/app/packages/contracts/src
+    networks:
+      - neayouk-dev-network
+
+volumes:
+  postgres_dev_data:
+  uploads_dev_data:
+
+networks:
+  neayouk-dev-network:
+    driver: bridge

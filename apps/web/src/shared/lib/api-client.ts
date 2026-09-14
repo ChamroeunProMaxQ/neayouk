@@ -56,8 +56,10 @@ function extractErrorMessage(error: AxiosError<ApiErrorResponse>): void {
   }
 }
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
+
 export const apiClient: AxiosInstance = axios.create({
-  baseURL: "",
+  baseURL: apiBaseUrl,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -129,7 +131,7 @@ apiClient.interceptors.response.use(
     try {
       // Direct axios post call to avoid recursive interceptor invocation
       const response = await axios.post<ResponseDto<LogInResponseDto>>(
-        API_ROUTE.AUTH.REFRESH_TOKEN,
+        `${apiBaseUrl}${API_ROUTE.AUTH.REFRESH_TOKEN}`,
         { refreshToken },
         {
           headers: { "Content-Type": "application/json" },

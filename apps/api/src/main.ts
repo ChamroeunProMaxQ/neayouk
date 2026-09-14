@@ -10,8 +10,14 @@ import '@src/tracing.js';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  const corsOrigin = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.includes(',')
+      ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+      : process.env.CORS_ORIGIN
+    : 'http://localhost:5173';
+
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: corsOrigin,
     credentials: true,
   });
 
@@ -38,12 +44,13 @@ async function bootstrap() {
   swaggerConfig(app);
   app.useGlobalPipes(new ZodValidationPipe());
 
-  await app.listen(3000);
+  const port = process.env.PORT ? Number(process.env.PORT) : 3000;
+  await app.listen(port, '0.0.0.0');
 }
 
 bootstrap()
   .then(() => {
-    console.log('application start in port: 3000');
+    console.log(`application start in port: ${process.env.PORT ?? 3000}`);
   })
   .catch((err) => {
     console.error('Failed to start application:', err);

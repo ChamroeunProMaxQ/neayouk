@@ -1,0 +1,6 @@
+# Default Docker Compose configuration (defaults to development environment)
+# - To run Development: docker compose up (or: pnpm docker:dev)
+# - To run Production:  docker compose -f docker-compose.prod.yml up -d (or: pnpm docker:prod)
+
+include:
+  - path: docker-compose.dev.yml

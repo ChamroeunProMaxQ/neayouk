@@ -32,7 +32,7 @@ export const winstonConfig = WinstonModule.forRoot({
       ),
     }),
     new LokiTransport({
-      host: 'http://localhost:3100',
+      host: process.env.LOKI_HOST || 'http://localhost:3100',
       labels: {
         app: 'nestjs-prometheus',
       },

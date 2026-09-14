@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, type FC } from "react";
 import { User, Menu, LogOut, X, Shield, ChevronDown, IdCard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/features/auth";
+import { useSchoolProfileQuery } from "@/features/settings";
 import { Button } from "@/components/ui/button";
 
 interface AdminHeaderProps {
@@ -16,6 +17,11 @@ export const AdminHeader: FC<AdminHeaderProps> = ({ onToggleSidebar }) => {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
+
+  const { data: schoolProfile } = useSchoolProfileQuery();
+  const brandLogo = schoolProfile?.logoUrl || "/neayouk_logo.svg";
+  const brandName = schoolProfile?.name || "Neayouk";
+  const branchTag = schoolProfile?.code || (user?.branchId ? `BRANCH-${user.branchId}` : "CMS_ADMIN");
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -63,16 +69,16 @@ export const AdminHeader: FC<AdminHeaderProps> = ({ onToggleSidebar }) => {
         )}
         <div className="flex items-center gap-3">
           <img
-            src="/neayouk_logo.svg"
-            alt="Neayouk Logo"
-            className="h-9 w-9 shrink-0 object-contain"
+            src={brandLogo}
+            alt={`${brandName} Logo`}
+            className="h-9 w-9 shrink-0 object-contain rounded-md"
           />
           <div className="flex flex-col">
-            <span className="text-xl font-extrabold tracking-tight text-slate-900 font-sans">
-              Neayouk
+            <span className="text-xl font-extrabold tracking-tight text-slate-900 font-sans truncate max-w-[200px] sm:max-w-[320px]">
+              {brandName}
             </span>
             <span className="inline-block px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase text-[#45AC5E] bg-[#EBF6EE] rounded-sm w-fit leading-none">
-              CMS_ADMIN
+              {branchTag}
             </span>
           </div>
         </div>

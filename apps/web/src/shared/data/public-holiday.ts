@@ -20,12 +20,12 @@ export const PUBLIC_HOLIDAYS: Record<number, { day: string; name: string }[]> = 
         { day: '18', name: "Queen Mother's Birthday" },
     ],
     9: [
-        { day: '10', name: 'Pchum Ben' },
-        { day: '11', name: 'Pchum Ben' },
-        { day: '12', name: 'Pchum Ben' },
         { day: '24', name: 'Constitution Day' },
     ],
     10: [
+        { day: '10', name: 'Pchum Ben' },
+        { day: '11', name: 'Pchum Ben' },
+        { day: '12', name: 'Pchum Ben' },
         { day: '15', name: 'Commemoration of Late King Father' },
         { day: '29', name: "King Norodom Sihamoni's Coronation Day" },
     ],

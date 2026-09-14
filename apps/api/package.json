@@ -52,6 +52,7 @@
     "dotenv": "^17.4.2",
     "nest-casl": "^1.9.15",
     "nest-winston": "^1.10.2",
+    "nestjs-form-data": "^11.0.0",
     "nestjs-zod": "^5.4.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",

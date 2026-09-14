@@ -1,5 +1,6 @@
 import { type FC, useRef } from "react";
 import { useStudentReportCardQuery } from "../hooks/use-student-report-card-query";
+import { useSchoolProfileQuery } from "@/features/settings";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +29,7 @@ export const StudentReportCardModal: FC<StudentReportCardModalProps> = ({
     month,
     classId
   );
+  const { data: schoolProfile } = useSchoolProfileQuery();
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -87,6 +89,51 @@ export const StudentReportCardModal: FC<StudentReportCardModalProps> = ({
           </div>
         ) : (
           <div ref={printRef} className="space-y-6 p-6 print:p-0">
+            {/* School Official Letterhead */}
+            <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+              <div className="flex items-center gap-3">
+                {schoolProfile?.logoUrl ? (
+                  <img
+                    src={schoolProfile.logoUrl}
+                    alt={schoolProfile.name}
+                    className="h-14 w-14 rounded-xl object-contain border border-slate-100 p-1"
+                  />
+                ) : (
+                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 font-bold text-xl">
+                    {schoolProfile?.name?.charAt(0) || "S"}
+                  </div>
+                )}
+                <div>
+                  {schoolProfile?.nameKhmer && (
+                    <h2
+                      className="text-base font-bold text-slate-900 font-khmer leading-tight"
+                      style={{
+                        fontFamily:
+                          "'Khmer OS Muol Light', 'Siemreap', 'Battambang', serif",
+                      }}
+                    >
+                      {schoolProfile.nameKhmer}
+                    </h2>
+                  )}
+                  <h1 className="text-lg font-bold tracking-tight text-slate-900">
+                    {schoolProfile?.name || "School Name"}
+                  </h1>
+                  {schoolProfile?.motto && (
+                    <p className="text-xs italic text-slate-500">
+                      "{schoolProfile.motto}"
+                    </p>
+                  )}
+                </div>
+              </div>
+              {(schoolProfile?.address || schoolProfile?.phone || schoolProfile?.email) && (
+                <div className="text-right text-xs text-slate-500 space-y-0.5">
+                  {schoolProfile.address && <p>{schoolProfile.address}</p>}
+                  {schoolProfile.phone && <p>Tel: {schoolProfile.phone}</p>}
+                  {schoolProfile.email && <p>Email: {schoolProfile.email}</p>}
+                </div>
+              )}
+            </div>
+
             {/* Header / Student Info Card */}
             <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-5">
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

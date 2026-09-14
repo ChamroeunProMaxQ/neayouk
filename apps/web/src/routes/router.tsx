@@ -87,6 +87,12 @@ const AcademicReportPage = lazy(() =>
 const AttendanceReportPage = lazy(() =>
   import("./attendance-report-page").then((m) => ({ default: m.AttendanceReportPage }))
 );
+const SchoolProfilePage = lazy(() =>
+  import("./school-profile-page").then((m) => ({ default: m.SchoolProfilePage }))
+);
+const IntegrationsPage = lazy(() =>
+  import("./integrations-page").then((m) => ({ default: m.IntegrationsPage }))
+);
 const DummyPage = lazy(() =>
   import("./dummy-page").then((m) => ({ default: m.DummyPage }))
 );
@@ -410,10 +416,49 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: "/roles",
-            element: <Navigate to="/users/roles" replace />,
+            path: "/settings/profile",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource={ResourceEnum.SETTING} action="read">
+                  <SchoolProfilePage />
+                </PermissionRoute>
+              </Suspense>
+            ),
           },
-
+          {
+            path: "/settings/integrations",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource={ResourceEnum.SETTING} action="read">
+                  <IntegrationsPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/settings/rules",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource={ResourceEnum.SETTING} action="read">
+                  <DummyPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/settings/audit-logs",
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <PermissionRoute resource={ResourceEnum.SETTING} action="read">
+                  <DummyPage />
+                </PermissionRoute>
+              </Suspense>
+            ),
+          },
+          {
+            path: "/settings",
+            element: <Navigate to="/settings/profile" replace />,
+          },
           {
             path: "/forbidden",
             element: <ForbiddenPage />,

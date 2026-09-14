@@ -23,6 +23,9 @@ export class Branch {
   @Column({ type: 'varchar', length: 255 })
   name!: string;
 
+  @Column({ name: 'name_khmer', type: 'varchar', length: 255, nullable: true })
+  nameKhmer!: string | null;
+
   @Column({ type: 'varchar', length: 50, unique: true })
   code!: string;
 
@@ -34,6 +37,27 @@ export class Branch {
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   email!: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  website!: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  motto!: string | null;
+
+  @Column({ name: 'logo_url', type: 'varchar', length: 500, nullable: true })
+  logoUrl!: string | null;
+
+  @Column({ name: 'receipt_footer_terms', type: 'text', nullable: true })
+  receiptFooterTerms!: string | null;
+
+  @Column({
+    name: 'receipt_signature_title',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    default: 'Authorized Signature / Cashier',
+  })
+  receiptSignatureTitle!: string | null;
 
   @Column({ name: 'is_default', type: 'boolean', default: false })
   isDefault!: boolean;
@@ -59,6 +83,9 @@ export class Branch {
 
   @OneToMany(() => User, (user) => user.branch)
   users!: User[];
+
+  @OneToMany('BranchIntegration', 'branch')
+  integrations!: any[];
 
   @BeforeInsert()
   generateUuid() {

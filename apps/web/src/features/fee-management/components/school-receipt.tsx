@@ -1,5 +1,10 @@
 import { forwardRef } from "react";
-import { type StudentInvoiceAttribute, PaymentMethodEnum } from "@repo/contracts";
+import {
+  type StudentInvoiceAttribute,
+  type SchoolProfileDto,
+  PaymentMethodEnum,
+} from "@repo/contracts";
+import { useSchoolProfileQuery } from "@/features/settings";
 
 export interface SchoolReceiptData {
   studentName: string;
@@ -20,9 +25,10 @@ export interface SchoolReceiptData {
   customTerms?: string[];
 }
 
-interface SchoolReceiptProps {
+export interface SchoolReceiptProps {
   data?: SchoolReceiptData;
   invoice?: StudentInvoiceAttribute;
+  profile?: SchoolProfileDto;
   className?: string;
 }
 
@@ -50,8 +56,24 @@ const formatDateSafe = (rawDate?: string | Date | null): string => {
   return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
 };
 
+const formatCurrency = (val: number) => {
+  const num = Number(val || 0);
+  return num % 1 === 0 ? `$${num}` : `$${num.toFixed(2)}`;
+};
+
 export const SchoolReceipt = forwardRef<HTMLDivElement, SchoolReceiptProps>(
-  ({ data, invoice, className = "" }, ref) => {
+  ({ data, invoice, profile: propProfile, className = "" }, ref) => {
+    // Dynamic School Settings query for Universal Branding Binding
+    const { data: fetchedProfile } = useSchoolProfileQuery();
+    const activeProfile = propProfile ?? fetchedProfile;
+
+    const schoolNameEn = activeProfile?.name || "English Learning Center";
+    const schoolNameKm = activeProfile?.nameKhmer || "មជ្ឈមណ្ឌលសិក្សា អ៊ី អិល ស៊ី";
+    const schoolLogo = activeProfile?.logoUrl || null;
+    const schoolAddress = activeProfile?.address || "";
+    const schoolPhone = activeProfile?.phone || "";
+    const signatureTitle = activeProfile?.receiptSignatureTitle || "Cashier / ហេរញ្ញិក";
+
     // Determine level from class name or program if available
     let derivedLevel = "5";
     if (invoice?.className) {
@@ -78,7 +100,7 @@ export const SchoolReceipt = forwardRef<HTMLDivElement, SchoolReceiptProps>(
             }))
           : [
               {
-                description: `Tuition Fee - ${invoice?.className || "Monthly"}`,
+                description: "Monthly Tuition Fee",
                 quantity: 1,
                 price: Number(invoice?.subtotal || invoice?.totalAmount || 0),
                 total: Number(invoice?.subtotal || invoice?.totalAmount || 0),
@@ -89,24 +111,13 @@ export const SchoolReceipt = forwardRef<HTMLDivElement, SchoolReceiptProps>(
       subtotal: Number(invoice?.amountPaid || invoice?.totalAmount || 0),
     };
 
-    const paymentMethodText =
-      receiptData.paymentMethod === PaymentMethodEnum.KHQR
-        ? "KHQR (Bakong)"
-        : receiptData.paymentMethod === PaymentMethodEnum.BANK_TRANSFER
-        ? "bank transfer"
-        : receiptData.paymentMethod === PaymentMethodEnum.CREDIT_CARD
-        ? "credit card"
-        : "cash";
-
-    const terms = receiptData.customTerms || [
-      `The above has been paid by the student by ${paymentMethodText}.`,
-      "The school has received the student's full payment.",
-    ];
-
-    const formatCurrency = (val: number) => {
-      const num = Number(val || 0);
-      return num % 1 === 0 ? `$${num}` : `$${num.toFixed(2)}`;
-    };
+    const terms = activeProfile?.receiptFooterTerms
+      ? activeProfile.receiptFooterTerms.split("\n").filter(Boolean)
+      : receiptData.customTerms || [
+          "1. ទឹកប្រាក់ដែលបានបង់រួចមិនអាចដកវិញបានទេ (Payments are non-refundable).",
+          "2. វិក្កយបត្រនេះជាភស្តុតាងផ្លូវការ សូមរក្សាទុកឲ្យបានត្រឹមត្រូវ (Please retain this official receipt).",
+          "3. ការបង់យឺតយ៉ាវអាចមានការផាកពិន័យទៅតាមការកំណត់របស់សាលា (Late payments subject to policy).",
+        ];
 
     return (
       <div
@@ -125,48 +136,57 @@ export const SchoolReceipt = forwardRef<HTMLDivElement, SchoolReceiptProps>(
         <div className="flex items-center justify-between gap-4 mb-4">
           {/* Logo Badge */}
           <div className="flex flex-col items-center flex-shrink-0 text-center">
-            <span className="text-[10px] font-bold text-[#b91c1c] mb-1 font-serif tracking-tight">
-              ELC Language Center
-            </span>
-            <div className="relative w-16 h-16 rounded-full border-2 border-[#1e40af] bg-sky-50/50 flex flex-col items-center justify-center p-1 shadow-xs">
-              <svg viewBox="0 0 64 64" className="w-9 h-9" fill="none">
-                <path
-                  d="M32 18c-5-2-11-2-15 1v22c4-2 10-2 15 0 5-2 11-2 15 0V19c-4-3-10-3-15-1z"
-                  fill="#bae6fd"
-                  stroke="#0369a1"
-                  strokeWidth="1.75"
+            <div className="relative w-20 h-20 flex flex-col items-center justify-center">
+              {schoolLogo ? (
+                <img
+                  src={schoolLogo}
+                  alt={schoolNameEn}
+                  className="w-full h-full object-contain"
                 />
-                <path d="M32 18v23" stroke="#0369a1" strokeWidth="1.75" />
-                <path
-                  d="M20 14l12-5 12 5-12 5-12-5z"
-                  fill="#0284c7"
-                  stroke="#0369a1"
-                  strokeWidth="1.2"
-                />
-                <circle cx="22" cy="22" r="1.5" fill="#f59e0b" />
-                <circle cx="42" cy="22" r="1.5" fill="#10b981" />
-                <circle cx="32" cy="19" r="1.5" fill="#ef4444" />
-              </svg>
-              <div className="absolute -bottom-1.5 bg-[#1d4ed8] text-white text-[5.5px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-tighter shadow-xs whitespace-nowrap">
-                Morality Quality Virtue
-              </div>
+              ) : (
+                <svg viewBox="0 0 64 64" className="w-12 h-12" fill="none">
+                  <path
+                    d="M32 18c-5-2-11-2-15 1v22c4-2 10-2 15 0 5-2 11-2 15 0V19c-4-3-10-3-15-1z"
+                    fill="#bae6fd"
+                    stroke="#0369a1"
+                    strokeWidth="1.75"
+                  />
+                  <path d="M32 18v23" stroke="#0369a1" strokeWidth="1.75" />
+                  <path
+                    d="M20 14l12-5 12 5-12 5-12-5z"
+                    fill="#0284c7"
+                    stroke="#0369a1"
+                    strokeWidth="1.2"
+                  />
+                  <circle cx="22" cy="22" r="1.5" fill="#f59e0b" />
+                  <circle cx="42" cy="22" r="1.5" fill="#10b981" />
+                  <circle cx="32" cy="19" r="1.5" fill="#ef4444" />
+                </svg>
+              )}
             </div>
           </div>
 
           {/* School Titles */}
           <div className="flex-1 text-center pr-2">
-            <h2
-              className="text-lg sm:text-xl font-bold text-[#b91c1c] tracking-normal mb-0.5 leading-tight"
-              style={{
-                fontFamily:
-                  "'Khmer OS Muol Light', 'Siemreap', 'Battambang', serif",
-              }}
-            >
-              មជ្ឈមណ្ឌលសិក្សា អ៊ី អិល ស៊ី
-            </h2>
+            {schoolNameKm && (
+              <h2
+                className="text-lg sm:text-xl font-bold text-[#b91c1c] tracking-normal mb-0.5 leading-tight font-khmer"
+                style={{
+                  fontFamily:
+                    "'Khmer OS Muol Light', 'Siemreap', 'Battambang', serif",
+                }}
+              >
+                {schoolNameKm}
+              </h2>
+            )}
             <h3 className="text-base sm:text-lg font-bold text-[#b91c1c] font-serif tracking-tight">
-              English Learning Center
+              {schoolNameEn}
             </h3>
+            {schoolAddress && (
+              <p className="text-[9px] text-slate-600 font-sans tracking-tight mt-0.5">
+                {schoolAddress} {schoolPhone ? `• Tel: ${schoolPhone}` : ""}
+              </p>
+            )}
           </div>
         </div>
 
@@ -175,6 +195,11 @@ export const SchoolReceipt = forwardRef<HTMLDivElement, SchoolReceiptProps>(
           <h1 className="text-2xl font-bold text-[#dc2626] underline underline-offset-4 decoration-1 tracking-normal font-serif inline-block">
             School Receipt
           </h1>
+          {receiptData.receiptNumber && (
+            <div className="text-[11px] text-slate-500 font-sans mt-0.5 font-medium">
+              No: {receiptData.receiptNumber}
+            </div>
+          )}
         </div>
 
         {/* Student Metadata Information */}
@@ -199,11 +224,11 @@ export const SchoolReceipt = forwardRef<HTMLDivElement, SchoolReceiptProps>(
           </div>
         </div>
 
-        {/* Line Items Table */}
-        <div className="mb-6">
-          <table className="w-full text-xs font-serif border-collapse">
+        {/* Receipt Line Items Table */}
+        <div className="border-t-2 border-b-2 border-slate-900 my-4">
+          <table className="w-full text-xs font-serif text-slate-900">
             <thead>
-              <tr className="border-y border-slate-300">
+              <tr className="border-b border-slate-300">
                 <th className="py-2 text-left font-bold text-slate-900 w-1/2">
                   Description
                 </th>
@@ -261,14 +286,22 @@ export const SchoolReceipt = forwardRef<HTMLDivElement, SchoolReceiptProps>(
           </div>
         </div>
 
-        {/* Terms and Conditions */}
-        <div className="mt-8 font-serif text-xs">
-          <h4 className="font-bold text-slate-900 mb-2">Term &amp; Conditions</h4>
-          <ul className="space-y-1 text-slate-800 pl-4 list-disc marker:text-slate-600 text-[11px] leading-relaxed">
-            {terms.map((t, idx) => (
-              <li key={idx}>{t}</li>
-            ))}
-          </ul>
+        {/* Terms and Conditions & Signature */}
+        <div className="mt-8 flex items-start justify-between gap-6 font-serif text-xs">
+          <div className="flex-1">
+            <h4 className="font-bold text-slate-900 mb-2">Term &amp; Conditions</h4>
+            <ul className="space-y-1 text-slate-800 pl-4 list-disc marker:text-slate-600 text-[11px] leading-relaxed">
+              {terms.map((t, idx) => (
+                <li key={idx}>{t}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="w-36 text-center pt-2">
+            <div className="font-bold text-[11px] text-slate-800 mb-12">
+              {signatureTitle}
+            </div>
+            <div className="border-b border-dashed border-slate-400"></div>
+          </div>
         </div>
       </div>
     );

@@ -146,6 +146,15 @@ export const API_ROUTE = {
     ATTENDANCE_SUMMARY: '/api/v1/admin/reports/attendance/summary',
     ATTENDANCE_EXPORT: '/api/v1/admin/reports/attendance/export',
   },
+  SETTING: {
+    PROFILE: '/api/v1/admin/settings/profile',
+    UPDATE_PROFILE: '/api/v1/admin/settings/profile',
+    UPLOAD_LOGO: '/api/v1/admin/settings/logo',
+    DELETE_LOGO: '/api/v1/admin/settings/logo',
+    TELEGRAM: '/api/v1/admin/settings/integrations/telegram',
+    UPDATE_TELEGRAM: '/api/v1/admin/settings/integrations/telegram',
+    TEST_TELEGRAM: '/api/v1/admin/settings/integrations/telegram/test',
+  },
 };
 
 

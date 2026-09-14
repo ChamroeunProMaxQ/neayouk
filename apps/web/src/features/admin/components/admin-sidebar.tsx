@@ -51,13 +51,6 @@ export const adminNavGroups: NavGroup[] = [
   {
     items: [
       {
-        id: "dashboard",
-        label: "Dashboard",
-        icon: LayoutDashboard,
-        path: "/dashboard",
-        requiredPermission: { action: "read", resource: ResourceEnum.DASHBOARD },
-      },
-      {
         id: "users",
         label: "User Management",
         icon: Users,
@@ -70,19 +63,6 @@ export const adminNavGroups: NavGroup[] = [
           { label: "User Accounts", path: "/users", requiredPermission: { action: "read", resource: ResourceEnum.USER } },
           { label: "Branches & Campuses", path: "/branches", requiredPermission: { action: "read", resource: ResourceEnum.BRANCH } },
           { label: "Roles & Permissions", path: "/users/roles", requiredPermission: { action: "read", resource: ResourceEnum.ROLE } },
-        ],
-      },
-      {
-        id: "announcements",
-        label: "Announcements",
-        icon: Bell,
-        path: "/announcements",
-        isCollapsible: true,
-        requiredPermission: { action: "read", resource: ResourceEnum.ANNOUNCEMENT },
-        subItems: [
-          { label: "Notices & Bulletins", path: "/announcements/notices", requiredPermission: { action: "read", resource: ResourceEnum.ANNOUNCEMENT } },
-          { label: "SMS & Email Broadcasts", path: "/announcements/broadcasts", requiredPermission: { action: "read", resource: ResourceEnum.ANNOUNCEMENT } },
-          { label: "School Events", path: "/announcements/events", requiredPermission: { action: "read", resource: ResourceEnum.ANNOUNCEMENT } },
         ],
       },
     ],
@@ -99,25 +79,15 @@ export const adminNavGroups: NavGroup[] = [
         requiredPermission: { action: "read", resource: ResourceEnum.ACADEMIC },
         subItems: [
           {
-            label: "Programs & Curriculum Books",
+            label: "Programs & Books",
             path: "/academics/programs",
             requiredPermission: { action: "read", resource: ResourceEnum.PROGRAM },
           },
           {
-            label: "Classes & Cohorts",
+            label: "Classes",
             path: "/academics/classes",
             requiredPermission: { action: "read", resource: ResourceEnum.CLASS },
           },
-          {
-            label: "Academic Years & Terms",
-            path: "/academics/academic-years",
-            requiredPermission: { action: "read", resource: ResourceEnum.ACADEMIC_YEAR },
-          },
-          // {
-          //   label: "Class Timetable",
-          //   path: "/academics/timetable",
-          //   requiredPermission: { action: "read", resource: ResourceEnum.TIMETABLE },
-          // },
         ],
       },
       {
@@ -264,18 +234,8 @@ export const adminNavGroups: NavGroup[] = [
             requiredPermission: { action: "read", resource: ResourceEnum.SETTING },
           },
           {
-            label: "General Rules",
-            path: "/settings/rules",
-            requiredPermission: { action: "read", resource: ResourceEnum.SETTING },
-          },
-          {
             label: "Integrations",
             path: "/settings/integrations",
-            requiredPermission: { action: "read", resource: ResourceEnum.SETTING },
-          },
-          {
-            label: "Audit Logs",
-            path: "/settings/audit-logs",
             requiredPermission: { action: "read", resource: ResourceEnum.SETTING },
           },
         ],
@@ -422,19 +382,19 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({
                     title={!isEnabled ? "Access Restricted" : undefined}
                     aria-disabled={!isEnabled}
                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150 relative ${!isEnabled
-                        ? "opacity-40 text-slate-400 cursor-not-allowed hover:bg-transparent"
-                        : isActive
-                          ? "text-[#45AC5E] bg-[#EBF6EE] border-r-4 border-[#45AC5E] cursor-pointer"
-                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 cursor-pointer"
+                      ? "opacity-40 text-slate-400 cursor-not-allowed hover:bg-transparent"
+                      : isActive
+                        ? "text-[#45AC5E] bg-[#EBF6EE] border-r-4 border-[#45AC5E] cursor-pointer"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 cursor-pointer"
                       }`}
                   >
                     <div className="flex items-center gap-3">
                       <Icon
                         className={`w-4 h-4 ${!isEnabled
-                            ? "text-slate-300"
-                            : isActive
-                              ? "text-[#45AC5E]"
-                              : "text-slate-500"
+                          ? "text-slate-300"
+                          : isActive
+                            ? "text-[#45AC5E]"
+                            : "text-slate-500"
                           }`}
                       />
                       <span>{item.label}</span>
@@ -472,10 +432,10 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({
                             disabled={!isSubEnabled}
                             aria-disabled={!isSubEnabled}
                             className={`flex items-center justify-between w-full text-left py-1.5 px-2 text-xs font-medium rounded transition-colors ${!isSubEnabled
-                                ? "opacity-40 text-slate-400 cursor-not-allowed"
-                                : isSubActive
-                                  ? "text-[#45AC5E] bg-[#EBF6EE] font-bold cursor-pointer"
-                                  : "text-slate-500 hover:text-[#45AC5E] hover:bg-slate-50 cursor-pointer"
+                              ? "opacity-40 text-slate-400 cursor-not-allowed"
+                              : isSubActive
+                                ? "text-[#45AC5E] bg-[#EBF6EE] font-bold cursor-pointer"
+                                : "text-slate-500 hover:text-[#45AC5E] hover:bg-slate-50 cursor-pointer"
                               }`}
                           >
                             <span>{subLabel}</span>

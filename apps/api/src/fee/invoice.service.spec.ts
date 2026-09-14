@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { PaymentStatusEnum, PaymentMethodEnum } from '@repo/contracts';
 import { InvoiceService } from './invoice.service.js';
 

@@ -46,6 +46,11 @@ describe('PayrollService (Unit)', () => {
     mockStaffRepo = {
       findOne: vi.fn(),
       count: vi.fn().mockResolvedValue(5),
+      createQueryBuilder: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnThis(),
+        andWhere: vi.fn().mockReturnThis(),
+        getCount: vi.fn().mockResolvedValue(5),
+      }),
     };
 
     mockTeacherAttendanceRepo = {

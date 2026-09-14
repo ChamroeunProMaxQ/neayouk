@@ -8,13 +8,13 @@ export function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/dashboard", { replace: true });
+      navigate("/users", { replace: true });
     }
   }, [isAuthenticated, navigate]);
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center">
-      <LoginForm onSuccess={() => navigate("/dashboard")} />
+      <LoginForm onSuccess={() => navigate("/users")} />
     </div>
   );
 }

@@ -42,7 +42,6 @@ export enum ResourceEnum {
 
   // General & System
   BRANCH = "branch",
-  DASHBOARD = "dashboard",
   ANNOUNCEMENT = "announcement",
   REPORT = "report",
   SETTING = "setting",

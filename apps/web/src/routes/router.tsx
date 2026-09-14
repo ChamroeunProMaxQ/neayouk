@@ -12,9 +12,6 @@ const LoginPage = lazy(() =>
 const AdminLayout = lazy(() =>
   import("@/features/admin").then((m) => ({ default: m.AdminLayout }))
 );
-const DashboardPage = lazy(() =>
-  import("./dashboard-page").then((m) => ({ default: m.DashboardPage }))
-);
 const UsersPage = lazy(() =>
   import("./users-page").then((m) => ({ default: m.UsersPage }))
 );
@@ -35,12 +32,6 @@ const ClassesPage = lazy(() =>
 );
 const ProgramsPage = lazy(() =>
   import("./programs-page").then((m) => ({ default: m.ProgramsPage }))
-);
-const AcademicYearsPage = lazy(() =>
-  import("./academic-years-page").then((m) => ({ default: m.AcademicYearsPage }))
-);
-const TimetablePage = lazy(() =>
-  import("./timetable-page").then((m) => ({ default: m.TimetablePage }))
 );
 const StudentAttendancePage = lazy(() =>
   import("./student-attendance-page").then((m) => ({ default: m.StudentAttendancePage }))
@@ -93,9 +84,6 @@ const SchoolProfilePage = lazy(() =>
 const IntegrationsPage = lazy(() =>
   import("./integrations-page").then((m) => ({ default: m.IntegrationsPage }))
 );
-const DummyPage = lazy(() =>
-  import("./dummy-page").then((m) => ({ default: m.DummyPage }))
-);
 
 
 function PageFallback() {
@@ -109,7 +97,7 @@ function PageFallback() {
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/dashboard" replace />,
+    element: <Navigate to="/users" replace />,
   },
   {
     path: "/login",
@@ -131,14 +119,6 @@ const router = createBrowserRouter([
           </Suspense>
         ),
         children: [
-          {
-            path: "/dashboard",
-            element: (
-              <Suspense fallback={<PageFallback />}>
-                <DashboardPage />
-              </Suspense>
-            ),
-          },
           {
             path: "/users",
             element: (
@@ -198,16 +178,6 @@ const router = createBrowserRouter([
             element: <Navigate to="/teachers" replace />,
           },
           {
-            path: "/academics/academic-years",
-            element: (
-              <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource={ResourceEnum.ACADEMIC_YEAR} action="read">
-                  <AcademicYearsPage />
-                </PermissionRoute>
-              </Suspense>
-            ),
-          },
-          {
             path: "/academics/programs",
             element: (
               <Suspense fallback={<PageFallback />}>
@@ -230,16 +200,6 @@ const router = createBrowserRouter([
           {
             path: "/academics/subjects",
             element: <Navigate to="/academics/programs" replace />,
-          },
-          {
-            path: "/academics/timetable",
-            element: (
-              <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource={ResourceEnum.TIMETABLE} action="read">
-                  <TimetablePage />
-                </PermissionRoute>
-              </Suspense>
-            ),
           },
           {
             path: "/academics",
@@ -436,26 +396,6 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: "/settings/rules",
-            element: (
-              <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource={ResourceEnum.SETTING} action="read">
-                  <DummyPage />
-                </PermissionRoute>
-              </Suspense>
-            ),
-          },
-          {
-            path: "/settings/audit-logs",
-            element: (
-              <Suspense fallback={<PageFallback />}>
-                <PermissionRoute resource={ResourceEnum.SETTING} action="read">
-                  <DummyPage />
-                </PermissionRoute>
-              </Suspense>
-            ),
-          },
-          {
             path: "/settings",
             element: <Navigate to="/settings/profile" replace />,
           },
@@ -465,11 +405,7 @@ const router = createBrowserRouter([
           },
           {
             path: "*",
-            element: (
-              <Suspense fallback={<PageFallback />}>
-                <DummyPage />
-              </Suspense>
-            ),
+            element: <Navigate to="/users" replace />,
           },
         ],
       },

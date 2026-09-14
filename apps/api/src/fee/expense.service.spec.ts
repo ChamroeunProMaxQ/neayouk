@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NotFoundException } from '@nestjs/common';
-import { ExpenseCategoryEnum, ExpenseStatusEnum, PaymentMethodEnum } from '@repo/contracts';
+import { ExpenseCategoryEnum, ExpenseStatusEnum } from '@repo/contracts';
 import { ExpenseService } from './expense.service.js';
 
 describe('ExpenseService (Unit)', () => {

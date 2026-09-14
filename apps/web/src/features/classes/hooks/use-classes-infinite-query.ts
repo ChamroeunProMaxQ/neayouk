@@ -4,7 +4,6 @@ import {
   type FindClassesDto,
   type ResponseDto,
   type ClassAttribute,
-  type AcademicYearSummaryItem,
 } from "@repo/contracts";
 import { apiClient } from "@/shared/lib/api-client";
 import queryString from "query-string";
@@ -70,18 +69,5 @@ export function useClassesInfiniteQuery(params: UseClassesQueryParams = {}) {
       return page + 1;
     },
     enabled,
-  });
-}
-
-export function useAcademicYearsSummaryQuery() {
-  return useQuery<ResponseDto<AcademicYearSummaryItem[]>, Error>({
-    queryKey: ["academic-years-summary"],
-    queryFn: async ({ signal }) => {
-      const response = await apiClient.get<ResponseDto<AcademicYearSummaryItem[]>>(
-        API_ROUTE.CLASS.ACADEMIC_YEARS_SUMMARY,
-        { signal }
-      );
-      return response.data;
-    },
   });
 }

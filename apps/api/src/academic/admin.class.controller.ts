@@ -49,13 +49,6 @@ export class AdminClassController {
 
   @UseGuards(JwtAuthGuard, CaslAccessGuard)
   @UseAbility(DefaultActions.read, Class)
-  @Get('academic-years/summary')
-  getAcademicYearsSummary(@CurrentUser() currentUser: any) {
-    return this.classService.getAcademicYearsSummary(currentUser);
-  }
-
-  @UseGuards(JwtAuthGuard, CaslAccessGuard)
-  @UseAbility(DefaultActions.read, Class)
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.classService.findOne(id);

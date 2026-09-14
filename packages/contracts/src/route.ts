@@ -49,7 +49,6 @@ export const API_ROUTE = {
   CLASS: {
     LIST: '/api/v1/admin/classes',
     CREATE: '/api/v1/admin/classes',
-    ACADEMIC_YEARS_SUMMARY: '/api/v1/admin/classes/academic-years/summary',
     GET: '/api/v1/admin/classes/:id',
     UPDATE: '/api/v1/admin/classes/:id',
     DELETE: '/api/v1/admin/classes/:id',

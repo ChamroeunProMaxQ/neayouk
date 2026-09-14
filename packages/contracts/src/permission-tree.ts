@@ -216,14 +216,8 @@ export const PERMISSION_GROUPS: PermissionGroupConfig[] = [
   {
     key: "general",
     title: "General & System",
-    description: "Dashboard insights, announcements, reports, settings, and facility management",
+    description: "Announcements, reports, settings, and facility management",
     children: [
-      {
-        resource: ResourceEnum.DASHBOARD,
-        title: "Dashboard & Analytics",
-        description: "View institution-wide KPI statistics and metrics",
-        actions: [DefaultActions.read],
-      },
       {
         resource: ResourceEnum.ANNOUNCEMENT,
         title: "Announcements & Notices",

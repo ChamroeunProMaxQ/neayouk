@@ -6,7 +6,7 @@ import { AdminSidebar } from "./admin-sidebar";
 import { useAuthStore } from "@/features/auth";
 import { UserTypeEnum } from "@repo/contracts";
 
-function renderSidebar(initialEntries = ["/dashboard"]) {
+function renderSidebar(initialEntries = ["/users"]) {
   return render(
     <MemoryRouter initialEntries={initialEntries}>
       <AdminSidebar />
@@ -75,7 +75,6 @@ describe("AdminSidebar RBAC", () => {
         userType: UserTypeEnum.CMS,
         roles: ["teacher"],
         permissions: [
-          { resource: "dashboard", action: "read" },
           { resource: "academic", action: "read" },
           { resource: "attendance", action: "read" },
         ],
@@ -106,7 +105,7 @@ describe("AdminSidebar RBAC", () => {
 
     // Clicking permitted button should open collapsible content
     await user.click(academicsButton);
-    expect(screen.getByText("Academic Years & Terms")).toBeInTheDocument();
+    expect(screen.getByText("Classes")).toBeInTheDocument();
   });
 
   it("disables administrative items for a regular customer/portal user", async () => {
@@ -147,20 +146,20 @@ describe("AdminSidebar RBAC", () => {
     renderSidebar(["/academics/classes"]);
 
     // Auto-expanded because /academics/classes is the active path
-    expect(screen.getByText("Classes & Cohorts")).toBeInTheDocument();
-    expect(screen.getByText("Academic Years & Terms")).toBeInTheDocument();
+    expect(screen.getByText("Classes")).toBeInTheDocument();
+    expect(screen.getByText("Programs & Books")).toBeInTheDocument();
 
     // Click to collapse
     const academicsButton = screen.getByRole("button", { name: /academics & classes/i });
     await user.click(academicsButton);
 
-    expect(screen.queryByText("Classes & Cohorts")).not.toBeInTheDocument();
-    expect(screen.queryByText("Academic Years & Terms")).not.toBeInTheDocument();
+    expect(screen.queryByText("Classes")).not.toBeInTheDocument();
+    expect(screen.queryByText("Programs & Books")).not.toBeInTheDocument();
 
     // Click again to re-expand
     await user.click(academicsButton);
-    expect(screen.getByText("Classes & Cohorts")).toBeInTheDocument();
-    expect(screen.getByText("Academic Years & Terms")).toBeInTheDocument();
+    expect(screen.getByText("Classes")).toBeInTheDocument();
+    expect(screen.getByText("Programs & Books")).toBeInTheDocument();
   });
 
   it("enables only permitted subItems for granular attendance permissions", async () => {
@@ -218,13 +217,11 @@ describe("AdminSidebar RBAC", () => {
 
     await user.click(academicsButton);
 
-    const programsSubItem = screen.getByRole("button", { name: /programs & curriculum books/i });
-    const classesSubItem = screen.getByRole("button", { name: /classes & cohorts/i });
-    const academicYearsSubItem = screen.getByRole("button", { name: /academic years & terms/i });
+    const programsSubItem = screen.getByRole("button", { name: /programs & books/i });
+    const classesSubItem = screen.getByRole("button", { name: /^classes$/i });
 
     expect(programsSubItem).not.toBeDisabled();
     expect(classesSubItem).toBeDisabled();
-    expect(academicYearsSubItem).toBeDisabled();
   });
 });
 

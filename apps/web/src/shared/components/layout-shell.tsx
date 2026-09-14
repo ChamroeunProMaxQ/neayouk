@@ -21,10 +21,10 @@ export function LayoutShell({ children }: LayoutShellProps) {
             </Link>
             <nav className="flex items-center gap-4 text-sm font-medium">
               <Link
-                to="/dashboard"
+                to="/users"
                 className="text-muted-foreground transition-colors hover:text-foreground"
               >
-                Dashboard
+                User Management
               </Link>
             </nav>
           </div>

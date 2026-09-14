@@ -44,15 +44,6 @@ export class HttpExceptionsFilter implements ExceptionFilter {
     this.logger.log(exception?.constructor?.name);
     this.logger.error(exception);
 
-    const calculatedStatus =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : exception instanceof EntityNotFoundError
-          ? HttpStatus.NOT_FOUND
-          : exception instanceof QueryFailedError
-            ? HttpStatus.BAD_REQUEST
-            : HttpStatus.INTERNAL_SERVER_ERROR;
-
     if (
       exception instanceof ForbiddenException ||
       (exception instanceof HttpException &&

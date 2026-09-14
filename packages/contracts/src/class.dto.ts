@@ -330,12 +330,3 @@ export const FindClassTimetablesSchema = z.object({
 
 export type FindClassTimetablesDto = z.infer<typeof FindClassTimetablesSchema>;
 
-export const AcademicYearSummaryItemSchema = z.object({
-  academicYear: z.string(),
-  semester: z.string(),
-  classCount: z.number(),
-  studentCount: z.number(),
-});
-
-export type AcademicYearSummaryItem = z.infer<typeof AcademicYearSummaryItemSchema>;
-

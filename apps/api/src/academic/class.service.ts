@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ClassEnrollmentStatusEnum } from '@repo/contracts';
 import { getSkipTake } from '@src/common/helper/pagination.helper.js';
 import { Class } from './entity/class.entity.js';
 import { ClassTimetable } from './entity/class-timetable.entity.js';
@@ -362,42 +361,5 @@ export class ClassService {
         );
       }
     }
-  }
-
-  async getAcademicYearsSummary(currentUser?: AuthContext) {
-    const qb = this.classRepo
-      .createQueryBuilder('class')
-      .select('class.academicYear', 'academicYear')
-      .addSelect('class.semester', 'semester')
-      .addSelect('COUNT(DISTINCT class.id)', 'classCount')
-      .leftJoin(
-        'class.enrollments',
-        'enrollment',
-        'enrollment.status = :enrolledStatus',
-        { enrolledStatus: ClassEnrollmentStatusEnum.ENROLLED },
-      )
-      .addSelect('COUNT(DISTINCT enrollment.studentId)', 'studentCount')
-      .where('class.academicYear IS NOT NULL');
-
-    applyBranchScoping(qb, 'class', currentUser);
-
-    const raw: Array<{
-      academicYear: string;
-      semester: string;
-      classCount: string | number;
-      studentCount: string | number;
-    }> = await qb
-      .groupBy('class.academicYear')
-      .addGroupBy('class.semester')
-      .orderBy('class.academicYear', 'DESC')
-      .addOrderBy('class.semester', 'ASC')
-      .getRawMany();
-
-    return raw.map((r) => ({
-      academicYear: r.academicYear,
-      semester: r.semester,
-      classCount: Number(r.classCount) || 0,
-      studentCount: Number(r.studentCount) || 0,
-    }));
   }
 }

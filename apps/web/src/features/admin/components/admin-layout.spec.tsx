@@ -6,7 +6,7 @@ import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { AdminLayout } from "./admin-layout";
 import { useAuthStore } from "@/features/auth";
 
-function createWrapper(initialEntries = ["/dashboard"]) {
+function createWrapper(initialEntries = ["/users"]) {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -44,7 +44,6 @@ describe("AdminLayout", () => {
   it("renders sidebar navigation items", () => {
     render(<AdminLayout><div>Layout Content</div></AdminLayout>, { wrapper: createWrapper() });
 
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /user management/i })).toBeInTheDocument();
     expect(screen.getByText("Academic Management")).toBeInTheDocument();
     expect(screen.getByText("School Operations")).toBeInTheDocument();
@@ -56,12 +55,11 @@ describe("AdminLayout", () => {
     render(<AdminLayout><div>Content</div></AdminLayout>, { wrapper: createWrapper() });
 
     const academicsButton = screen.getByRole("button", { name: /academics & classes/i });
-    expect(screen.queryByText("Academic Years & Terms")).not.toBeInTheDocument();
+    expect(screen.queryByText("Programs & Books")).not.toBeInTheDocument();
 
     await user.click(academicsButton);
-    expect(screen.getByText("Programs & Curriculum Books")).toBeInTheDocument();
-    expect(screen.getByText("Classes & Cohorts")).toBeInTheDocument();
-    expect(screen.getByText("Academic Years & Terms")).toBeInTheDocument();
+    expect(screen.getByText("Programs & Books")).toBeInTheDocument();
+    expect(screen.getByText("Classes")).toBeInTheDocument();
   });
 
   it("renders nested route content via Outlet", () => {
@@ -70,11 +68,10 @@ describe("AdminLayout", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/users"]}>
         <QueryClientProvider client={queryClient}>
           <Routes>
             <Route element={<AdminLayout />}>
-              <Route path="/dashboard" element={<div>Dashboard Outlet Content</div>} />
               <Route path="/users" element={<div>Users Outlet Content</div>} />
             </Route>
           </Routes>
@@ -82,7 +79,7 @@ describe("AdminLayout", () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText("Dashboard Outlet Content")).toBeInTheDocument();
+    expect(screen.getByText("Users Outlet Content")).toBeInTheDocument();
   });
 
   it("navigates to sub-route when a sub-item is clicked", async () => {
@@ -92,12 +89,11 @@ describe("AdminLayout", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/reports"]}>
         <QueryClientProvider client={queryClient}>
           <Routes>
             <Route element={<AdminLayout />}>
-              <Route path="/dashboard" element={<div>Dashboard Page</div>} />
-              <Route path="/users" element={<div>Users Main Page</div>} />
+              <Route path="/reports" element={<div>Reports Main Page</div>} />
               <Route path="/students" element={<div>Students Dummy Page</div>} />
             </Route>
           </Routes>

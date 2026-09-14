@@ -54,7 +54,6 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
       'announcement:manage',
       'report:manage',
       'setting:manage',
-      'dashboard:read',
     ],
     teacher: [
       'academic:read',
@@ -74,7 +73,6 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
       'assignment:manage',
       'library:read',
       'report:read',
-      'dashboard:read',
     ],
     staff: [
       'staff:manage',
@@ -87,7 +85,6 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
       'library:manage',
       'teacher_attendance:manage',
       'leave_request:manage',
-      'dashboard:read',
     ],
     student: [
       'academic:read',
@@ -98,7 +95,6 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
       'report_card:read',
       'assignment:read',
       'library:read',
-      'dashboard:read',
     ],
     customer: ['user:read', 'user:update'],
   };

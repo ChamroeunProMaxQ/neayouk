@@ -26,7 +26,6 @@ describe('AdminExaminationController & AdminGradingRuleController (e2e)', () => 
 
   let testClassId: number;
   let testStudentId: number;
-  let createdRuleId: number;
 
   beforeAll(async () => {
     // 1. Fetch classes
@@ -87,7 +86,7 @@ describe('AdminExaminationController & AdminGradingRuleController (e2e)', () => 
 
       const data = res.body.data || res.body;
       expect(data.code).toBe(customCode);
-      createdRuleId = data.id;
+      expect(data.id).toBeDefined();
     });
 
     it('GET /api/v1/admin/examinations/matrix - should fetch gradebook matrix for class and month', async () => {

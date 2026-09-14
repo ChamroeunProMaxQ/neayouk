@@ -4,12 +4,8 @@ import {
   StudentStatusEnum,
   SemesterEnum,
   ClassEnrollmentStatusEnum,
-  PaymentStatusEnum,
 } from '@repo/contracts';
 import { StudentService } from './student.service.js';
-import type { Student } from './entity/student.entity.js';
-import type { Class } from '@src/academic/entity/class.entity.js';
-import type { StudentClass } from './entity/student-class.entity.js';
 
 describe('StudentService (Unit)', () => {
   let service: StudentService;

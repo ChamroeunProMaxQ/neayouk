@@ -1,9 +1,7 @@
 import { useState, useEffect, type FC, type ComponentType } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard,
   Users,
-  Bell,
   GraduationCap,
   ClipboardCheck,
   Award,

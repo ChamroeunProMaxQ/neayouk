@@ -30,7 +30,7 @@ export async function teardown() {
       await dataSource.initialize();
     }
     await dataSource.query('DROP SCHEMA public CASCADE; CREATE SCHEMA public;');
-  } catch (err) {
+  } catch {
     // Ignore teardown schema drop errors
   } finally {
     if (dataSource.isInitialized) {

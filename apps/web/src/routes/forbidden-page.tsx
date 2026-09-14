@@ -34,11 +34,11 @@ export const ForbiddenPage: FC = () => {
         </button>
 
         <button
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/users")}
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-[#45AC5E] hover:bg-[#3d9853] shadow-sm transition-colors cursor-pointer"
         >
           <Home className="w-4 h-4" />
-          Back to Dashboard
+          Back to Users
         </button>
       </div>
     </div>

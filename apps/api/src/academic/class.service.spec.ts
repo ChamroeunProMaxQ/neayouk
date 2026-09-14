@@ -230,39 +230,5 @@ describe('ClassService', () => {
       const res = await service.findOne(2);
       expect(res.studentCount).toBe(0);
     });
-
-    it('should aggregate academic years and semesters correctly in getAcademicYearsSummary', async () => {
-      const mockRaw = [
-        {
-          academicYear: '2025-2026',
-          semester: 'SEMESTER_1',
-          classCount: '5',
-          studentCount: '42',
-        },
-      ];
-
-      const qb: any = {
-        select: vi.fn().mockReturnThis(),
-        addSelect: vi.fn().mockReturnThis(),
-        leftJoin: vi.fn().mockReturnThis(),
-        where: vi.fn().mockReturnThis(),
-        groupBy: vi.fn().mockReturnThis(),
-        addGroupBy: vi.fn().mockReturnThis(),
-        orderBy: vi.fn().mockReturnThis(),
-        addOrderBy: vi.fn().mockReturnThis(),
-        getRawMany: vi.fn().mockResolvedValue(mockRaw),
-      };
-      mockClassRepo.createQueryBuilder.mockReturnValue(qb);
-
-      const res = await service.getAcademicYearsSummary();
-      expect(res).toEqual([
-        {
-          academicYear: '2025-2026',
-          semester: 'SEMESTER_1',
-          classCount: 5,
-          studentCount: 42,
-        },
-      ]);
-    });
   });
 });

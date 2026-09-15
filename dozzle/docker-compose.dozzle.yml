@@ -12,4 +12,4 @@ services:
       - DOZZLE_ENABLE_SHELL=true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./dozzle/users.yml:/data/users.yml:ro
+      - ./users.yml:/data/users.yml:ro

@@ -1,0 +1,15 @@
+services:
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle-master
+    restart: always
+    network_mode: host
+    environment:
+      # Point to your remote servers (IP address or domain names)
+      # - DOZZLE_REMOTE_AGENT=${DOZZLE_REMOTE_AGENT}
+      - DOZZLE_AUTH_PROVIDER=simple
+      - DOZZLE_ENABLE_ACTIONS=true
+      - DOZZLE_ENABLE_SHELL=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./dozzle/users.yml:/data/users.yml:ro

@@ -1,0 +1,9 @@
+
+users:
+  admin:
+    name: "admin"
+    email: "admin@neayouk.kunapheap.com"
+    # Default initial password: password
+    # Please update this password hash for production/staging environments
+    password: "$2a$12$3U.uuj9iuKWIYlDUqXRT3e6egalX7L5Ir19bnf6E31PddTvaeR9q6"
+    roles: "all"

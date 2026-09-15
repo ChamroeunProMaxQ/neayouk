@@ -118,7 +118,12 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
     `SELECT id, user_type FROM users`,
   );
   for (const user of users) {
-    const targetSlug = user.user_type === 'ADMIN' ? 'admin' : user.user_type === 'CMS' ? 'cms' : 'customer';
+    const targetSlug =
+      user.user_type === 'ADMIN' || user.user_type === 'SUPER_ADMIN'
+        ? 'admin'
+        : user.user_type === 'CMS'
+        ? 'cms'
+        : 'customer';
     const roleId = roleMap.get(targetSlug);
     if (roleId) {
       await dataSource.query(
@@ -126,6 +131,18 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
         [user.id, roleId],
       );
     }
+  }
+
+  // Explicitly ensure user 'string' is linked to 'admin' role
+  const stringUser = (
+    await dataSource.query(`SELECT id FROM users WHERE username = 'string' LIMIT 1`)
+  )[0];
+  const adminRoleId = roleMap.get('admin');
+  if (stringUser && adminRoleId) {
+    await dataSource.query(
+      `INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+      [stringUser.id, adminRoleId],
+    );
   }
 };
 

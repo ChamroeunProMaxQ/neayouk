@@ -186,7 +186,7 @@ describe('Multi-Branch Cross-Domain Scoping & Isolation (e2e)', () => {
         title: 'Branch1 Classroom Aircon',
         category: 'MAINTENANCE',
         amount: 400,
-        expenseDate: '2026-08-20',
+        expenseDate: new Date().toISOString().split('T')[0],
         paymentMethod: 'CASH',
       })
       .expect(201);

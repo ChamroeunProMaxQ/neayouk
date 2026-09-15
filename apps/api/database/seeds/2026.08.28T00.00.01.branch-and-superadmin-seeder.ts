@@ -103,22 +103,41 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
     [southAdminUser.id, southBranch.id],
   );
 
-  // Link admin role to admin users
+  // 6. Ensure 'string' SuperAdmin user has default branch and active status
+  let stringUser = (
+    await dataSource.query(`SELECT id FROM users WHERE username = 'string' LIMIT 1`)
+  )[0];
+
+  if (!stringUser) {
+    const hashedPassword = hashPassword('string');
+    const userResult = await dataSource.query(
+      `INSERT INTO users (uuid, username, password, user_type, status, branch_id, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW()) RETURNING id`,
+      [randomUUID(), 'string', hashedPassword, 'SUPER_ADMIN', 'ACTIVE', defaultBranch.id],
+    );
+    stringUser = userResult[0];
+  } else {
+    await dataSource.query(
+      `UPDATE users SET branch_id = $1, user_type = 'SUPER_ADMIN', status = 'ACTIVE' WHERE id = $2`,
+      [defaultBranch.id, stringUser.id],
+    );
+  }
+
+  const superAdminUser = (
+    await dataSource.query(`SELECT id FROM users WHERE username = 'superadmin' LIMIT 1`)
+  )[0];
+
+  // Link admin role to admin & superadmin users
   const adminRole = (
     await dataSource.query(`SELECT id FROM roles WHERE slug = 'admin' LIMIT 1`)
   )[0];
 
   if (adminRole) {
-    if (adminUser) {
+    const targetUserIds = [adminUser?.id, southAdminUser?.id, stringUser?.id, superAdminUser?.id].filter(Boolean);
+    for (const userId of targetUserIds) {
       await dataSource.query(
         `INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-        [adminUser.id, adminRole.id],
-      );
-    }
-    if (southAdminUser) {
-      await dataSource.query(
-        `INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-        [southAdminUser.id, adminRole.id],
+        [userId, adminRole.id],
       );
     }
   }
@@ -207,7 +226,7 @@ export const up: MigrationFn<DataSource> = async ({ context }) => {
     if (!existingSouthExpense) {
       await dataSource.query(
         `INSERT INTO school_expenses (uuid, branch_id, title, category, amount, payment_method, status, expense_date, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW(), NOW())`,
+         VALUES ($1, $2, $3, $4, $5, $6, $7, '2025-09-01', NOW(), NOW())`,
         [randomUUID(), southBranch.id, 'South Campus Office Setup', 'MAINTENANCE', 320, 'BANK_TRANSFER', 'APPROVED'],
       );
     }

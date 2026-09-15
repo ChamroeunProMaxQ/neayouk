@@ -9,13 +9,14 @@ import { Repository } from 'typeorm';
 import { existsSync, mkdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import type { MemoryStoredFile } from 'nestjs-form-data';
-import type {
-  SchoolProfileDto,
-  TelegramIntegrationDto,
-  TestTelegramConnectionDto,
-  TestTelegramResultDto,
-  UpdateSchoolProfileDto,
-  UpdateTelegramIntegrationDto,
+import {
+  type SchoolProfileDto,
+  type TelegramIntegrationDto,
+  type TestTelegramConnectionDto,
+  type TestTelegramResultDto,
+  type UpdateSchoolProfileDto,
+  type UpdateTelegramIntegrationDto,
+  UserTypeEnum,
 } from '@repo/contracts';
 import { Branch } from '@src/branch/entity/branch.entity.js';
 import type { AuthContext } from '@src/common/helper/branch-scoping.helper.js';
@@ -39,15 +40,33 @@ export class SettingService {
     private readonly telegramService: TelegramService,
   ) {}
 
-  private resolveBranchId(currentUser?: AuthContext): number {
-    if (!currentUser?.branchId) {
-      throw new NotFoundException('No branch assigned to current user');
+  private async resolveBranchId(currentUser?: AuthContext): Promise<number> {
+    if (currentUser?.branchId) {
+      return currentUser.branchId;
     }
-    return currentUser.branchId;
+    if (
+      currentUser?.userType === UserTypeEnum.SUPER_ADMIN ||
+      currentUser?.userType === 'SUPER_ADMIN'
+    ) {
+      const defaultBranch = await this.branchRepo.findOne({
+        where: { isDefault: true },
+      });
+      if (defaultBranch) {
+        return defaultBranch.id;
+      }
+      const anyBranch = await this.branchRepo.findOne({
+        where: {},
+        order: { id: 'ASC' },
+      });
+      if (anyBranch) {
+        return anyBranch.id;
+      }
+    }
+    throw new NotFoundException('No branch assigned to current user');
   }
 
   async getSchoolProfile(currentUser: AuthContext): Promise<SchoolProfileDto> {
-    const branchId = this.resolveBranchId(currentUser);
+    const branchId = await this.resolveBranchId(currentUser);
     const branch = await this.branchRepo.findOne({ where: { id: branchId } });
     if (!branch) {
       throw new NotFoundException(`Branch with ID ${branchId} not found`);
@@ -77,7 +96,7 @@ export class SettingService {
     currentUser: AuthContext,
     dto: UpdateSchoolProfileDto,
   ): Promise<SchoolProfileDto> {
-    const branchId = this.resolveBranchId(currentUser);
+    const branchId = await this.resolveBranchId(currentUser);
     const branch = await this.branchRepo.findOne({ where: { id: branchId } });
     if (!branch) {
       throw new NotFoundException(`Branch with ID ${branchId} not found`);
@@ -115,7 +134,7 @@ export class SettingService {
     currentUser: AuthContext,
     file: MemoryStoredFile,
   ): Promise<SchoolProfileDto> {
-    const branchId = this.resolveBranchId(currentUser);
+    const branchId = await this.resolveBranchId(currentUser);
     const branch = await this.branchRepo.findOne({ where: { id: branchId } });
     if (!branch) {
       throw new NotFoundException(`Branch with ID ${branchId} not found`);
@@ -157,7 +176,7 @@ export class SettingService {
   }
 
   async deleteSchoolLogo(currentUser: AuthContext): Promise<SchoolProfileDto> {
-    const branchId = this.resolveBranchId(currentUser);
+    const branchId = await this.resolveBranchId(currentUser);
     const branch = await this.branchRepo.findOne({ where: { id: branchId } });
     if (!branch) {
       throw new NotFoundException(`Branch with ID ${branchId} not found`);
@@ -184,7 +203,7 @@ export class SettingService {
   async getTelegramIntegration(
     currentUser: AuthContext,
   ): Promise<TelegramIntegrationDto> {
-    const branchId = this.resolveBranchId(currentUser);
+    const branchId = await this.resolveBranchId(currentUser);
     let integration = await this.integrationRepo.findOne({
       where: { branchId, provider: 'TELEGRAM' },
     });
@@ -243,7 +262,7 @@ export class SettingService {
     currentUser: AuthContext,
     dto: UpdateTelegramIntegrationDto,
   ): Promise<TelegramIntegrationDto> {
-    const branchId = this.resolveBranchId(currentUser);
+    const branchId = await this.resolveBranchId(currentUser);
     let integration = await this.integrationRepo.findOne({
       where: { branchId, provider: 'TELEGRAM' },
     });
@@ -282,7 +301,7 @@ export class SettingService {
     currentUser: AuthContext,
     dto: TestTelegramConnectionDto,
   ): Promise<TestTelegramResultDto> {
-    const branchId = this.resolveBranchId(currentUser);
+    const branchId = await this.resolveBranchId(currentUser);
     const branch = await this.branchRepo.findOne({ where: { id: branchId } });
     if (!branch) {
       throw new NotFoundException(`Branch with ID ${branchId} not found`);

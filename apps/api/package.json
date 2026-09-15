@@ -63,10 +63,10 @@
     "typeorm": "^0.3.20",
     "umzug": "^3.8.3",
     "winston": "^3.19.0",
-    "winston-loki": "^6.1.5"
+    "winston-loki": "^6.1.5",
+    "@faker-js/faker": "^10.5.0"
   },
   "devDependencies": {
-    "@faker-js/faker": "^10.5.0",
     "@nestjs/cli": "12.0.0-alpha.6",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "12.0.0-alpha.5",

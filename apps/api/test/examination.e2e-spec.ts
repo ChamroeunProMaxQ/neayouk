@@ -69,14 +69,16 @@ describe('AdminExaminationController & AdminGradingRuleController (e2e)', () => 
       expect(data.components).toBeDefined();
     });
 
+    let createdRuleCode: string;
+
     it('POST /api/v1/admin/examinations/rules - should create custom grading rule', async () => {
-      const customCode = `RULE-E2E-${Date.now()}`;
+      createdRuleCode = `RULE-E2E-${Date.now()}`;
       const res = await request(server)
         .post('/api/v1/admin/examinations/rules')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           name: 'E2E Test Grading Scheme',
-          code: customCode,
+          code: createdRuleCode,
           components: DefaultGradingComponents,
           gradeScale: DefaultGradeScale,
           isDefault: false,
@@ -85,8 +87,31 @@ describe('AdminExaminationController & AdminGradingRuleController (e2e)', () => 
         .expect(201);
 
       const data = res.body.data || res.body;
-      expect(data.code).toBe(customCode);
+      expect(data.code).toBe(createdRuleCode);
       expect(data.id).toBeDefined();
+    });
+
+    it('GET /api/v1/admin/examinations/rules - should fetch grading rules including newly created rule', async () => {
+      const res = await request(server)
+        .get('/api/v1/admin/examinations/rules')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      const items = res.body.data || [];
+      expect(Array.isArray(items)).toBe(true);
+      expect(items.length).toBeGreaterThan(0);
+      expect(items.some((r: any) => r.code === createdRuleCode)).toBe(true);
+    });
+
+    it('GET /api/v1/admin/examinations/rules? - should fetch grading rules with query string', async () => {
+      const res = await request(server)
+        .get('/api/v1/admin/examinations/rules?')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      const items = res.body.data || [];
+      expect(Array.isArray(items)).toBe(true);
+      expect(items.length).toBeGreaterThan(0);
     });
 
     it('GET /api/v1/admin/examinations/matrix - should fetch gradebook matrix for class and month', async () => {

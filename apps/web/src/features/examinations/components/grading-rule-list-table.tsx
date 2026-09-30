@@ -57,7 +57,11 @@ export const GradingRuleListTable: FC = () => {
     }
   };
 
-  const rulesList = data?.data ?? [];
+  const rulesList: GradingRuleAttribute[] = Array.isArray(data?.data)
+    ? data.data
+    : Array.isArray(data)
+      ? (data as GradingRuleAttribute[])
+      : [];
 
   const columns = useMemo<ColumnDef<GradingRuleAttribute>[]>(
     () => [

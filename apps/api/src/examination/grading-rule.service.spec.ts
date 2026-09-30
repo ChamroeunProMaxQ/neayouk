@@ -59,6 +59,64 @@ describe('GradingRuleService', () => {
       expect(result.id).toBe(1);
       expect(result.code).toBe('RULE-DEFAULT');
     });
+
+    it('should find all rules returning [items, totalCount] tuple and include global and branch rules', async () => {
+      const mockRules = [
+        {
+          id: 1,
+          uuid: 'rule-uuid-1',
+          name: 'Default Scheme',
+          code: 'RULE-DEFAULT',
+          components: DefaultGradingComponents,
+          gradeScale: DefaultGradeScale,
+          isDefault: true,
+          status: 'ACTIVE',
+          branchId: null,
+        },
+      ];
+
+      const qb: any = {
+        where: vi.fn().mockReturnThis(),
+        andWhere: vi.fn().mockReturnThis(),
+        orderBy: vi.fn().mockReturnThis(),
+        skip: vi.fn().mockReturnThis(),
+        take: vi.fn().mockReturnThis(),
+        getManyAndCount: vi.fn().mockResolvedValue([mockRules, 1]),
+      };
+      mockRuleRepo.createQueryBuilder.mockReturnValue(qb);
+
+      const [items, total] = await service.findAll(
+        { page: 1, pageSize: 10 } as any,
+        { branchId: 2, userType: 'ADMIN' } as any,
+      );
+
+      expect(items).toHaveLength(1);
+      expect(total).toBe(1);
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        '(gr.branch_id IS NULL OR gr.branch_id = :scopedBranchId)',
+        { scopedBranchId: 2 },
+      );
+    });
+
+    it('should assign branchId when creating rule as branch admin', async () => {
+      mockRuleRepo.findOne.mockResolvedValue(null);
+
+      const dto = {
+        name: 'Branch Scheme',
+        code: 'RULE-BRANCH',
+        components: DefaultGradingComponents,
+        gradeScale: DefaultGradeScale,
+        isDefault: false,
+        status: 'ACTIVE',
+      };
+
+      await service.create(dto, { branchId: 5, userType: 'ADMIN' } as any);
+      expect(mockRuleRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          branchId: 5,
+        }),
+      );
+    });
   });
 
   describe('2. Validation Failures (400 Bad Request)', () => {

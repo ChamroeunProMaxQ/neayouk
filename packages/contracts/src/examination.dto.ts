@@ -50,6 +50,7 @@ export const GradingRuleSchema = z.object({
   gradeScale: z.array(GradeScaleItemSchema),
   isDefault: z.boolean().default(true),
   status: z.string().default("ACTIVE"),
+  branchId: z.number().nullable().optional(),
   createdAt: z.date().or(z.string()).optional(),
   updatedAt: z.date().or(z.string()).optional(),
   deletedAt: z.date().or(z.string()).nullable().optional(),
@@ -67,6 +68,7 @@ export const CreateGradingRuleSchema = z
     gradeScale: z.array(GradeScaleItemSchema).min(1, "Grade scale is required"),
     isDefault: z.boolean().default(false),
     status: z.string().default("ACTIVE"),
+    branchId: z.number().optional().nullable(),
   })
   .refine(
     (data) => {
@@ -91,6 +93,7 @@ export const UpdateGradingRuleSchema = z
     gradeScale: z.array(GradeScaleItemSchema).min(1).optional(),
     isDefault: z.boolean().optional(),
     status: z.string().optional(),
+    branchId: z.number().optional().nullable(),
   })
   .refine(
     (data) => {
@@ -111,6 +114,7 @@ export const FindGradingRulesSchema = PaginationSchema.extend({
   search: z.string().optional(),
   status: z.string().optional(),
   academicYear: z.string().optional(),
+  branchId: z.coerce.number().optional().nullable(),
 });
 
 export type FindGradingRulesDto = z.infer<typeof FindGradingRulesSchema>;

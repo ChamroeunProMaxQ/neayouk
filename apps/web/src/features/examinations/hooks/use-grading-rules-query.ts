@@ -20,21 +20,17 @@ export const GRADING_RULES_QUERY_KEYS = {
 };
 
 export function useGradingRulesQuery(params?: Partial<FindGradingRulesDto>) {
-  return useQuery<{
-    data: GradingRuleAttribute[];
-    pagination: { page: number; pageSize: number; totalCount: number; totalPages: number };
-  }>({
+  return useQuery<ResponseDto<GradingRuleAttribute[]>>({
     queryKey: GRADING_RULES_QUERY_KEYS.list(params as Record<string, unknown>),
     queryFn: async () => {
       const query = queryString.stringify(params || {}, {
         skipNull: true,
         skipEmptyString: true,
       });
-      const res = await apiClient.get<ResponseDto<{
-        data: GradingRuleAttribute[];
-        pagination: { page: number; pageSize: number; totalCount: number; totalPages: number };
-      }>>(`${API_ROUTE.EXAMINATION.RULES_LIST}?${query}`);
-      return res.data.data as any;
+      const res = await apiClient.get<ResponseDto<GradingRuleAttribute[]>>(
+        `${API_ROUTE.EXAMINATION.RULES_LIST}?${query}`
+      );
+      return res.data;
     },
   });
 }

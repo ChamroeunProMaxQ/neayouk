@@ -50,6 +50,9 @@ export class GradingRule {
   @Column({ type: 'varchar', length: 20, default: 'ACTIVE' })
   status!: string;
 
+  @Column({ name: 'branch_id', type: 'int', nullable: true })
+  branchId!: number | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

@@ -6,17 +6,17 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
-import type {
-  GradingRuleAttribute,
-  CreateGradingRuleDto,
-  UpdateGradingRuleDto,
-  FindGradingRulesDto,
+import {
+  type GradingRuleAttribute,
+  type CreateGradingRuleDto,
+  type UpdateGradingRuleDto,
+  type FindGradingRulesDto,
+  UserTypeEnum,
 } from '@repo/contracts';
 import { GradingRule } from './entity/grading-rule.entity.js';
 import { GradingRuleMapper } from './mapper/grading-rule.mapper.js';
 
 import {
-  applyBranchScoping,
   resolveBranchId,
   type AuthContext,
 } from '@src/common/helper/branch-scoping.helper.js';
@@ -48,11 +48,20 @@ export class GradingRuleService {
       throw new ConflictException(`Grading rule with code '${dto.code}' already exists`);
     }
 
+    const branchId = resolveBranchId(currentUser, dto.branchId);
+
     if (dto.isDefault) {
-      await this.gradingRuleRepo.update(
-        { isDefault: true, deletedAt: IsNull() },
-        { isDefault: false },
-      );
+      if (branchId) {
+        await this.gradingRuleRepo.update(
+          { isDefault: true, branchId, deletedAt: IsNull() },
+          { isDefault: false },
+        );
+      } else {
+        await this.gradingRuleRepo.update(
+          { isDefault: true, deletedAt: IsNull() },
+          { isDefault: false },
+        );
+      }
     }
 
     const entity = this.gradingRuleRepo.create({
@@ -64,7 +73,7 @@ export class GradingRuleService {
       gradeScale: dto.gradeScale,
       isDefault: dto.isDefault ?? true,
       status: dto.status ?? 'ACTIVE',
-      branchId: resolveBranchId(currentUser, (dto as any).branchId),
+      branchId,
     });
 
     const saved = await this.gradingRuleRepo.save(entity);
@@ -93,10 +102,17 @@ export class GradingRuleService {
     }
 
     if (dto.isDefault) {
-      await this.gradingRuleRepo.update(
-        { isDefault: true, deletedAt: IsNull() },
-        { isDefault: false },
-      );
+      if (entity.branchId) {
+        await this.gradingRuleRepo.update(
+          { isDefault: true, branchId: entity.branchId, deletedAt: IsNull() },
+          { isDefault: false },
+        );
+      } else {
+        await this.gradingRuleRepo.update(
+          { isDefault: true, deletedAt: IsNull() },
+          { isDefault: false },
+        );
+      }
     }
 
     this.gradingRuleRepo.merge(entity, dto);
@@ -113,7 +129,20 @@ export class GradingRuleService {
       .createQueryBuilder('gr')
       .where('gr.deletedAt IS NULL');
 
-    applyBranchScoping(qb, 'gr', currentUser, (filter as any).branchId);
+    if (
+      currentUser &&
+      currentUser.userType !== UserTypeEnum.SUPER_ADMIN &&
+      currentUser.userType !== 'SUPER_ADMIN' &&
+      currentUser.branchId
+    ) {
+      qb.andWhere('(gr.branch_id IS NULL OR gr.branch_id = :scopedBranchId)', {
+        scopedBranchId: currentUser.branchId,
+      });
+    } else if (filter.branchId) {
+      qb.andWhere('(gr.branch_id IS NULL OR gr.branch_id = :explicitBranchId)', {
+        explicitBranchId: filter.branchId,
+      });
+    }
 
     if (filter.search) {
       qb.andWhere('(gr.name ILIKE :search OR gr.code ILIKE :search)', {
@@ -137,15 +166,7 @@ export class GradingRuleService {
 
     const [items, totalCount] = await qb.skip(skip).take(pageSize).getManyAndCount();
 
-    return {
-      data: GradingRuleMapper.toDtoList(items),
-      pagination: {
-        page,
-        pageSize,
-        totalCount,
-        totalPages: Math.ceil(totalCount / pageSize),
-      },
-    };
+    return [GradingRuleMapper.toDtoList(items), totalCount] as const;
   }
 
   async findById(id: number): Promise<GradingRuleAttribute> {

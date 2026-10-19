@@ -10,6 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const nodeEnv = process.env.NODE_ENV;
+console.log('migration in env', nodeEnv)
 dotenv.config({
   path: nodeEnv === 'test' ? '.env.test' : '.env',
 });
@@ -27,6 +28,7 @@ export const dataSource = new DataSource({
   database: DB_NAME,
   username: DB_USER,
   password: DB_PASSWORD,
+  ssl: { rejectUnauthorized: false },
 });
 
 console.log('running in env: ', nodeEnv ?? 'development');

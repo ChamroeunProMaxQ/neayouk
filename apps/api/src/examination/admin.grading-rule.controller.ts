@@ -26,6 +26,7 @@ import {
 } from './dto/grading-rule.dto.js';
 
 import { CurrentUser } from '@src/common/decorator/current-user.decorator.js';
+import { resolveBranchId } from '@src/common/helper/branch-scoping.helper.js';
 
 @ApiTags('Admin Grading Rules')
 @ApiBearerAuth()
@@ -48,8 +49,9 @@ export class AdminGradingRuleController {
   @UserTypes(UserTypeEnum.CMS, UserTypeEnum.ADMIN, UserTypeEnum.SUPER_ADMIN)
   @UseAbility(DefaultActions.read, GradingRule)
   @Get('default')
-  async findDefault() {
-    return this.gradingRuleService.findDefault();
+  async findDefault(@CurrentUser() currentUser?: any) {
+    const branchId = resolveBranchId(currentUser);
+    return this.gradingRuleService.findDefault(branchId);
   }
 
   @UseGuards(JwtAuthGuard, UserTypesGuard, CaslAccessGuard)

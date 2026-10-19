@@ -44,7 +44,7 @@ export class ExaminationService {
       throw new NotFoundException(`Class with ID ${classId} not found`);
     }
 
-    const gradingRule = await this.gradingRuleService.findDefault();
+    const gradingRule = await this.gradingRuleService.findDefault(classEntity.branchId);
 
     // Fetch enrolled students
     const enrollments = await this.studentClassRepo.find({
@@ -130,7 +130,7 @@ export class ExaminationService {
       throw new NotFoundException(`Class with ID ${dto.classId} not found`);
     }
 
-    const gradingRule = await this.gradingRuleService.findDefault();
+    const gradingRule = await this.gradingRuleService.findDefault(classEntity.branchId);
     const academicYear = classEntity.academicYear || '2025-2026';
     const semester = classEntity.semester || 'SEMESTER_1';
 

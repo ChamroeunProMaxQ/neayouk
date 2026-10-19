@@ -132,11 +132,16 @@ export const GradebookMatrix: FC = () => {
   const [editingFeedbackStudentId, setEditingFeedbackStudentId] = useState<number | null>(null);
   const [feedbackText, setFeedbackText] = useState<string>("");
 
-  // Clear local edits when class or month changes
+  // Clear local edits when class, month, or server grading rule changes
   useEffect(() => {
     setLocalEdits({});
     setIsDirty(false);
-  }, [selectedClassId, monthStr]);
+  }, [
+    selectedClassId,
+    monthStr,
+    matrixData?.gradingRule?.id,
+    matrixData?.gradingRule?.updatedAt,
+  ]);
 
   // 4. UI controls
   const [showAnalytics, setShowAnalytics] = useState<boolean>(false);

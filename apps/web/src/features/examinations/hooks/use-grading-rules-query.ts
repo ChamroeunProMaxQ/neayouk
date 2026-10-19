@@ -9,6 +9,7 @@ import {
   type ResponseDto,
 } from "@repo/contracts";
 import { apiClient } from "@/shared/lib/api-client";
+import { GRADEBOOK_QUERY_KEYS } from "./use-gradebook-matrix-query";
 
 export const GRADING_RULES_QUERY_KEYS = {
   all: ["grading-rules"] as const,
@@ -60,6 +61,7 @@ export function useCreateGradingRuleMutation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: GRADING_RULES_QUERY_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: GRADEBOOK_QUERY_KEYS.all });
     },
   });
 }
@@ -75,6 +77,7 @@ export function useUpdateGradingRuleMutation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: GRADING_RULES_QUERY_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: GRADEBOOK_QUERY_KEYS.all });
     },
   });
 }
@@ -90,6 +93,8 @@ export function useDeleteGradingRuleMutation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: GRADING_RULES_QUERY_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: GRADEBOOK_QUERY_KEYS.all });
     },
   });
 }
+

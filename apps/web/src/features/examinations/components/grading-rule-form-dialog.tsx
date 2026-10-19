@@ -166,6 +166,23 @@ export const GradingRuleFormDialog: FC<GradingRuleFormDialogProps> = ({
             </div>
           </div>
 
+          {/* Default Active Scheme Checkbox */}
+          <div className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/60 p-3">
+            <input
+              type="checkbox"
+              id="isDefaultScheme"
+              checked={isDefault}
+              onChange={(e) => setIsDefault(e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 text-[#45AC5E] focus:ring-[#45AC5E] cursor-pointer"
+            />
+            <label
+              htmlFor="isDefaultScheme"
+              className="text-xs font-semibold text-slate-700 cursor-pointer select-none"
+            >
+              Set as Default Active Grading Scheme for Gradebook
+            </label>
+          </div>
+
           {/* Component weights editor */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">

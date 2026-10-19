@@ -60,6 +60,112 @@ describe('GradingRuleService', () => {
       expect(result.code).toBe('RULE-DEFAULT');
     });
 
+    it('should find branch-specific default grading rule when branchId is provided', async () => {
+      const branchRule = {
+        id: 2,
+        uuid: 'rule-uuid-2',
+        name: 'South Campus Scheme',
+        code: 'RULE-SOUTH',
+        components: DefaultGradingComponents,
+        gradeScale: DefaultGradeScale,
+        isDefault: true,
+        branchId: 2,
+        status: 'ACTIVE',
+      };
+      mockRuleRepo.findOne.mockResolvedValue(branchRule);
+
+      const result = await service.findDefault(2);
+      expect(result.id).toBe(2);
+      expect(result.code).toBe('RULE-SOUTH');
+      expect(mockRuleRepo.findOne).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ isDefault: true, branchId: 2 }),
+        }),
+      );
+    });
+
+    it('should fall back to global default rule when branch has no default rule configured', async () => {
+      const globalDefaultRule = {
+        id: 7,
+        uuid: 'rule-uuid-7',
+        name: 'Grading rule #1',
+        code: 'RULE_1',
+        components: DefaultGradingComponents,
+        gradeScale: DefaultGradeScale,
+        isDefault: true,
+        branchId: null,
+        status: 'ACTIVE',
+      };
+
+      // First call for branch-specific default returns null, second call for global default returns globalDefaultRule
+      mockRuleRepo.findOne
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(globalDefaultRule);
+
+      const result = await service.findDefault(5);
+      expect(result.id).toBe(7);
+      expect(result.code).toBe('RULE_1');
+      expect(mockRuleRepo.findOne).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          where: expect.objectContaining({ isDefault: true, branchId: 5 }),
+        }),
+      );
+      expect(mockRuleRepo.findOne).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          where: expect.objectContaining({ isDefault: true }),
+        }),
+      );
+    });
+
+    it('should recalculate existing student scores when components are updated', async () => {
+      const existingRule = {
+        id: 1,
+        uuid: 'rule-uuid-1',
+        name: 'Standard Scheme',
+        code: 'RULE-STD',
+        components: DefaultGradingComponents,
+        gradeScale: DefaultGradeScale,
+        isDefault: true,
+        status: 'ACTIVE',
+        branchId: 1,
+      };
+      mockRuleRepo.findOne.mockResolvedValue(existingRule);
+
+      const mockScores = [
+        {
+          id: 1,
+          scores: { reading: 10, vocab: 30, grammar: 20, listening: 20, speaking: 10, homework: 10 },
+          totalRawScore: 0,
+          totalWeightedScore: 0,
+          percentage: 0,
+          gradeLetter: 'F',
+        },
+      ];
+
+      const mockScoreQb: any = {
+        where: vi.fn().mockReturnThis(),
+        andWhere: vi.fn().mockReturnThis(),
+        getMany: vi.fn().mockResolvedValue(mockScores),
+      };
+
+      const mockScoreRepo: any = {
+        createQueryBuilder: vi.fn().mockReturnValue(mockScoreQb),
+        save: vi.fn().mockResolvedValue(mockScores),
+      };
+
+      const serviceWithScoreRepo = new GradingRuleService(mockRuleRepo, mockScoreRepo);
+
+      await serviceWithScoreRepo.update(1, {
+        components: DefaultGradingComponents,
+      });
+
+      expect(mockScoreRepo.save).toHaveBeenCalled();
+      expect(mockScores[0].percentage).toBe(100);
+      expect(mockScores[0].gradeLetter).toBe('A');
+    });
+
     it('should find all rules returning [items, totalCount] tuple and include global and branch rules', async () => {
       const mockRules = [
         {

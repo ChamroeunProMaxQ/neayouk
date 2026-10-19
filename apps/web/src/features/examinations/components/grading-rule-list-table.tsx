@@ -10,6 +10,7 @@ import {
 } from "@repo/contracts";
 import {
   useGradingRulesQuery,
+  useUpdateGradingRuleMutation,
   useDeleteGradingRuleMutation,
 } from "../hooks/use-grading-rules-query";
 import { GradingRuleFormDialog } from "./grading-rule-form-dialog";
@@ -28,6 +29,7 @@ import {
   Edit2,
   Trash2,
   CheckCircle2,
+  Star,
   Loader2,
 } from "lucide-react";
 
@@ -57,11 +59,23 @@ export const GradingRuleListTable: FC = () => {
     }
   };
 
-  const rulesList: GradingRuleAttribute[] = Array.isArray(data?.data)
-    ? data.data
-    : Array.isArray(data)
-      ? (data as GradingRuleAttribute[])
-      : [];
+  const updateMutation = useUpdateGradingRuleMutation();
+
+  const handleSetDefault = async (rule: GradingRuleAttribute) => {
+    await updateMutation.mutateAsync({
+      id: rule.id,
+      data: { isDefault: true },
+    });
+  };
+
+  const rulesList: GradingRuleAttribute[] = useMemo(() => {
+    const rawData = data?.data as any;
+    if (Array.isArray(rawData)) return rawData;
+    if (Array.isArray(rawData?.data)) return rawData.data;
+    if (Array.isArray(rawData?.rows)) return rawData.rows;
+    if (Array.isArray(data)) return data as GradingRuleAttribute[];
+    return [];
+  }, [data]);
 
   const columns = useMemo<ColumnDef<GradingRuleAttribute>[]>(
     () => [
@@ -147,6 +161,19 @@ export const GradingRuleListTable: FC = () => {
                   title="Edit Scheme"
                 >
                   <Edit2 className="h-3.5 w-3.5" />
+                </Button>
+              )}
+
+              {canManage && !rule.isDefault && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleSetDefault(rule)}
+                  className="h-8 w-8 text-amber-500 hover:text-amber-600 hover:bg-amber-50 cursor-pointer"
+                  title="Set as Default Scheme"
+                >
+                  <Star className="h-3.5 w-3.5" />
                 </Button>
               )}
 

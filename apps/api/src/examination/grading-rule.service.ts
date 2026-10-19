@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
@@ -14,7 +15,9 @@ import {
   UserTypeEnum,
 } from '@repo/contracts';
 import { GradingRule } from './entity/grading-rule.entity.js';
+import { StudentScore } from './entity/student-score.entity.js';
 import { GradingRuleMapper } from './mapper/grading-rule.mapper.js';
+import { GradebookMapper } from './mapper/gradebook.mapper.js';
 
 import {
   resolveBranchId,
@@ -26,6 +29,9 @@ export class GradingRuleService {
   constructor(
     @InjectRepository(GradingRule)
     private readonly gradingRuleRepo: Repository<GradingRule>,
+    @Optional()
+    @InjectRepository(StudentScore)
+    private readonly scoreRepo?: Repository<StudentScore>,
   ) {}
 
   private validateComponentWeights(components: { weight: number }[]) {
@@ -58,7 +64,7 @@ export class GradingRuleService {
         );
       } else {
         await this.gradingRuleRepo.update(
-          { isDefault: true, deletedAt: IsNull() },
+          { isDefault: true, branchId: IsNull(), deletedAt: IsNull() },
           { isDefault: false },
         );
       }
@@ -109,7 +115,7 @@ export class GradingRuleService {
         );
       } else {
         await this.gradingRuleRepo.update(
-          { isDefault: true, deletedAt: IsNull() },
+          { isDefault: true, branchId: IsNull(), deletedAt: IsNull() },
           { isDefault: false },
         );
       }
@@ -117,6 +123,30 @@ export class GradingRuleService {
 
     this.gradingRuleRepo.merge(entity, dto);
     const saved = await this.gradingRuleRepo.save(entity);
+
+    // If components or grade scale changed, sync and recalculate existing scores in student_scores
+    if ((dto.components || dto.gradeScale) && this.scoreRepo) {
+      const qb = this.scoreRepo.createQueryBuilder('score').where('score.deleted_at IS NULL');
+      if (saved.branchId) {
+        qb.andWhere('score.branch_id = :branchId', { branchId: saved.branchId });
+      }
+      const existingScores = await qb.getMany();
+      if (existingScores.length > 0) {
+        for (const sc of existingScores) {
+          const calc = GradebookMapper.calculateScores(
+            sc.scores ?? {},
+            saved.components,
+            saved.gradeScale,
+          );
+          sc.totalRawScore = calc.totalRawScore;
+          sc.totalWeightedScore = calc.totalWeightedScore;
+          sc.percentage = calc.percentage;
+          sc.gradeLetter = calc.gradeLetter;
+        }
+        await this.scoreRepo.save(existingScores);
+      }
+    }
+
     return GradingRuleMapper.toDto(saved);
   }
 
@@ -179,15 +209,54 @@ export class GradingRuleService {
     return GradingRuleMapper.toDto(entity);
   }
 
-  async findDefault(): Promise<GradingRuleAttribute> {
-    let entity = await this.gradingRuleRepo.findOne({
-      where: { isDefault: true, status: 'ACTIVE', deletedAt: IsNull() },
-    });
+  async findDefault(branchId?: number | null): Promise<GradingRuleAttribute> {
+    let entity: GradingRule | null = null;
 
+    // 1. Branch-specific default active rule
+    if (branchId) {
+      entity = await this.gradingRuleRepo.findOne({
+        where: { isDefault: true, branchId, status: 'ACTIVE', deletedAt: IsNull() },
+        order: { updatedAt: 'DESC', createdAt: 'DESC' },
+      });
+    }
+
+    // 2. Global default active rule (branch_id IS NULL and isDefault = true)
+    if (!entity) {
+      entity = await this.gradingRuleRepo.findOne({
+        where: { isDefault: true, branchId: IsNull(), status: 'ACTIVE', deletedAt: IsNull() },
+        order: { updatedAt: 'DESC', createdAt: 'DESC' },
+      });
+    }
+
+    // 3. Global any active rule (branch_id IS NULL)
+    if (!entity) {
+      entity = await this.gradingRuleRepo.findOne({
+        where: { branchId: IsNull(), status: 'ACTIVE', deletedAt: IsNull() },
+        order: { isDefault: 'DESC', updatedAt: 'DESC', createdAt: 'DESC' },
+      });
+    }
+
+    // 4. Fallback: If branch has any active rule (even if not explicitly marked default)
+    if (!entity && branchId) {
+      entity = await this.gradingRuleRepo.findOne({
+        where: { branchId, status: 'ACTIVE', deletedAt: IsNull() },
+        order: { isDefault: 'DESC', updatedAt: 'DESC', createdAt: 'DESC' },
+      });
+    }
+
+    // 5. Fallback to any active default rule
+    if (!entity) {
+      entity = await this.gradingRuleRepo.findOne({
+        where: { isDefault: true, status: 'ACTIVE', deletedAt: IsNull() },
+        order: { updatedAt: 'DESC', createdAt: 'DESC' },
+      });
+    }
+
+    // 6. Fallback to any active rule
     if (!entity) {
       entity = await this.gradingRuleRepo.findOne({
         where: { status: 'ACTIVE', deletedAt: IsNull() },
-        order: { createdAt: 'DESC' },
+        order: { isDefault: 'DESC', updatedAt: 'DESC', createdAt: 'DESC' },
       });
     }
 

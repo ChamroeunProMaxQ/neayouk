@@ -81,8 +81,8 @@ ssh "${REMOTE_SERVER}" "echo '${SUDO_PASS}' | sudo -S cp -rf ${REMOTE_WEB_TEMP_D
 # ------------------------------------------
 # Step 7: Run database migrations
 # ------------------------------------------
-echo "🗄️ Step 7: Running database migrations on ${REMOTE_HOST}..."
-ssh "${REMOTE_SERVER}" "bash -lc '${REMOTE_ENV}; cd ${REMOTE_API_DIR} && node dist-db/migrator.js up'"
+# echo "🗄️ Step 7: Running database migrations on ${REMOTE_HOST}..."
+# ssh "${REMOTE_SERVER}" "bash -lc '${REMOTE_ENV}; cd ${REMOTE_API_DIR} && node dist-db/migrator.js up'"
 
 # ------------------------------------------
 # Step 8: Reload API via PM2
